@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "211106728309",
+    "project_id": "ashley-app-2e7a3",
+    "storage_bucket": "ashley-app-2e7a3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:211106728309:android:75c3c929d5e77d9dc6ab3c",
+        "android_client_info": {
+          "package_name": "com.grupo2.ashley"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAprt39C2VDnd-98MqfDc12Khvt8pWtt9w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
