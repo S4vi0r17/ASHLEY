@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "211106728309",
-    "project_id": "ashley-app-2e7a3",
-    "storage_bucket": "ashley-app-2e7a3.firebasestorage.app"
+    "project_number": "440995167304",
+    "project_id": "test-ashley-51245",
+    "storage_bucket": "test-ashley-51245.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:211106728309:android:75c3c929d5e77d9dc6ab3c",
+        "mobilesdk_app_id": "1:440995167304:android:097080621ccd26f890ac7d",
         "android_client_info": {
           "package_name": "com.grupo2.ashley"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAprt39C2VDnd-98MqfDc12Khvt8pWtt9w"
+          "current_key": "AIzaSyAMLlURlh8bm8P3tVcloN64tpkOhYrezww"
         }
       ],
       "services": {
