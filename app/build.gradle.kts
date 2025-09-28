@@ -63,5 +63,5 @@ dependencies {
     implementation ("com.google.firebase:firebase-auth")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.4")
     implementation(libs.androidx.material.icons.extended)
-
+    implementation("com.google.android.gms:play-services-auth:20.4.1")
 }

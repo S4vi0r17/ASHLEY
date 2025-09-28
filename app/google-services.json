@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "440995167304",
+    "firebase_url": "https://test-ashley-51245-default-rtdb.firebaseio.com",
     "project_id": "test-ashley-51245",
     "storage_bucket": "test-ashley-51245.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.grupo2.ashley"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "440995167304-c0542tgla0kigvrrg9r2v83jtmv3vqet.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.grupo2.ashley",
+            "certificate_hash": "45a46e49475aa2ef6ae0526f9ee2965c1cf27d2f"
+          }
+        },
+        {
+          "client_id": "440995167304-8hc733q2dgvfbf6k9pmf04mlmil1qsfb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAMLlURlh8bm8P3tVcloN64tpkOhYrezww"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "440995167304-8hc733q2dgvfbf6k9pmf04mlmil1qsfb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

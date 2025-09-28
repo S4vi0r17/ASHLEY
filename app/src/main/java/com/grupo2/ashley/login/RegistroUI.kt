@@ -1,7 +1,7 @@
 package com.grupo2.ashley.login
 
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,10 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -42,7 +42,7 @@ class RegistroUI : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ASHLEYTheme {
-                var viewModel: RegistroViewModel = viewModel()
+                val viewModel: RegistroViewModel = viewModel()
                 Registro(
                     viewModel
                 )
@@ -55,12 +55,13 @@ class RegistroUI : ComponentActivity() {
 fun Registro(
     viewModel: RegistroViewModel
 ){
-    var email = viewModel.email.collectAsState().value
-    var password = viewModel.password.collectAsState().value
-    var rPassword = viewModel.rPassword.collectAsState().value
-    var visibility1 = viewModel.visibility1.collectAsState().value
-    var visibility2 = viewModel.visibility2.collectAsState().value
+    val email = viewModel.email.collectAsState().value
+    val password = viewModel.password.collectAsState().value
+    val rPassword = viewModel.rPassword.collectAsState().value
+    val visibility1 = viewModel.visibility1.collectAsState().value
+    val visibility2 = viewModel.visibility2.collectAsState().value
     val image = R.drawable.uicon512
+    val context = LocalContext.current
 
     LazyColumn(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -151,9 +152,14 @@ fun Registro(
             Spacer(modifier = Modifier.height(6.dp))
             Button(
                 onClick = {
-                    Log.i("EMAIL",viewModel.validateEmail().second)
-                    Log.i("PASSWORD",viewModel.validatePassword().second)
-                    viewModel.registrarUsuario()
+                    if(!viewModel.validateEmail().first){
+                        Toast.makeText(context,viewModel.validateEmail().second,Toast.LENGTH_SHORT).show()
+                    } else if (!viewModel.validatePassword().first){
+                        Toast.makeText(context,viewModel.validatePassword().second,Toast.LENGTH_SHORT).show()
+                    } else {
+                        val success = viewModel.registrarUsuario()
+                        Toast.makeText(context,success,Toast.LENGTH_SHORT).show()
+                    }
                 },
                 content = {
                     Text(

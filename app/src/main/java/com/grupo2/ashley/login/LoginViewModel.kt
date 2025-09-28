@@ -2,6 +2,7 @@ package com.grupo2.ashley.login
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,9 @@ class LoginViewModel : ViewModel() {
     fun toggleVisibility(){
         _visibility.value = !_visibility.value
     }
-    fun authLoginEmail(){
+    fun authLoginEmail(
+        home:()-> Unit
+    ){
         val emailLogin = _email.value
         val passwordLogin = _password.value
 
@@ -45,8 +48,24 @@ class LoginViewModel : ViewModel() {
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){
                     Log.i("AUTH", "COMPLETO")
+                    home()
                 } else {
                     Log.e("AUTH", "ERROR")
+                }
+            }
+    }
+
+    fun authGmailSignIn(
+        credential: AuthCredential,
+        home:()-> Unit
+    ){
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if(task.isSuccessful){
+                    Log.i("AUTHGOOGLE", "COMPLETO")
+                    home()
+                } else {
+                    Log.e("AUTHGOOGLE", "ERROR")
                 }
             }
     }

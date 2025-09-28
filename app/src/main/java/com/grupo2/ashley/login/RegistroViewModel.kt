@@ -59,25 +59,34 @@ class RegistroViewModel : ViewModel() {
         val rPasswordRegister = _rPassword.value
         return when{
             passwordRegister.isEmpty() -> Pair(false, "Password Vacio")
-            rPasswordRegister.isEmpty() -> Pair(false,"Repetir Vacio")
+            rPasswordRegister.isEmpty() -> Pair(false,"Repetir Password Vacio")
             passwordRegister == rPasswordRegister -> Pair(true, "Completado")
             else -> Pair(false, "No son iguales")
         }
     }
 
-    fun registrarUsuario(){
+    fun registrarUsuario() : String{
         val emailRegister = _email.value
         val passwordRegister = _password.value
         val auth = Firebase.auth
+        var success = false
 
         if(validateEmail().first && validatePassword().first){
             auth.createUserWithEmailAndPassword(emailRegister,passwordRegister)
                 .addOnCompleteListener { task ->
-                    if(task.isSuccessful)
-                        Log.i("LOGIN","LOGIN EXITOSO")
+                    if(task.isSuccessful) {
+                        Log.i("LOGIN", "Registro Completado")
+                        success = true
+                    }
                     else
                         Log.e("LOGIN","ERROR")
                 }
+        }
+
+        return if(success){
+            "Completado"
+        } else {
+            "Error al registrarse"
         }
     }
 }

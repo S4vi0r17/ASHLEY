@@ -3,8 +3,10 @@ package com.grupo2.ashley.login
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,25 +20,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -44,6 +43,10 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
 import com.grupo2.ashley.AshleyApp
 import com.grupo2.ashley.R
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
@@ -73,6 +76,9 @@ class Login : ComponentActivity() {
                         Registro(
                             viewModel
                         )
+                    }
+                    composable("recover"){
+                        RecuperarContra()
                     }
                 }
             }
@@ -106,12 +112,16 @@ fun LoginOpt(
         Spacer(
             modifier = Modifier.height(16.dp)
         )
-        GoogleOption()
+        GoogleOption(
+            viewModel,
+            navController
+        )
         Spacer(
             modifier = Modifier.height(16.dp)
         )
         EmailOption(
-            viewModel
+            viewModel,
+            navController
         )
         Spacer(
             modifier = Modifier.height(16.dp)
@@ -122,18 +132,44 @@ fun LoginOpt(
         Spacer(
             modifier = Modifier.height(4.dp)
         )
-        RecoverTexto()
+        RecoverTexto(
+            navController
+        )
     }
 }
 
 @Composable
-fun GoogleOption(){
+fun GoogleOption(
+    viewModel: LoginViewModel,
+    navController: NavController
+){
     val googleLogo = R.drawable.googlelogowhite
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+        try{
+            val account = task.getResult(ApiException::class.java)
+            val credential = GoogleAuthProvider.getCredential(account.idToken,null)
+            viewModel.authGmailSignIn(credential){
+                navController.navigate("login")
+            }
+        } catch (ex: Exception){
+            Log.e("GAUTH","Error en autenticación con Google: ${ex.message}", ex)
+        }
+    }
+    val token = "440995167304-8hc733q2dgvfbf6k9pmf04mlmil1qsfb.apps.googleusercontent.com"
+    val context = LocalContext.current
 
     Button(
         onClick = {
-            // Debug
-            Log.i("GBoton", "GBoton Funciona")
+            val opciones = GoogleSignInOptions.Builder(
+                GoogleSignInOptions.DEFAULT_SIGN_IN
+            ).requestIdToken(token)
+                .requestEmail()
+                .build()
+            val googleSignInFinal = GoogleSignIn.getClient(context,opciones)
+            launcher.launch(googleSignInFinal.signInIntent)
         },
         modifier = Modifier.size(height = 52.dp, width = 286.dp),
         content = {
@@ -154,11 +190,12 @@ fun GoogleOption(){
 
 @Composable
 fun EmailOption(
-    viewModel: LoginViewModel
+    viewModel: LoginViewModel,
+    navController: NavController
 ){
-    var email = viewModel.email.collectAsState().value
-    var password = viewModel.password.collectAsState().value
-    var visibilidad = viewModel.visibility.collectAsState().value
+    val email = viewModel.email.collectAsState().value
+    val password = viewModel.password.collectAsState().value
+    val visibilidad = viewModel.visibility.collectAsState().value
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -219,7 +256,9 @@ fun EmailOption(
 
         OutlinedButton(
             onClick = {
-                viewModel.authLoginEmail()
+                viewModel.authLoginEmail{
+                    navController.navigate("login")
+                }
             },
             modifier = Modifier.size(height = 52.dp, width = 286.dp),
             content = {
@@ -236,7 +275,7 @@ fun EmailOption(
 fun RegistroTexto(
     navController : NavController
 ){
-    Row(){
+    Row{
         Text(
             "¿No tiene cuenta?",
             fontSize = 12.sp
@@ -247,7 +286,7 @@ fun RegistroTexto(
         Text(
             "Regístrese",
             fontSize = 12.sp,
-            modifier = Modifier.clickable() {
+            modifier = Modifier.clickable{
                 navController.navigate("registro")
             },
             fontWeight = FontWeight.Bold
@@ -256,12 +295,14 @@ fun RegistroTexto(
 }
 
 @Composable
-fun RecoverTexto(){
+fun RecoverTexto(
+    navController: NavController
+){
     Text(
         "Olvidé mi contraseña",
         fontSize = 12.sp,
-        modifier = Modifier.clickable() {
-            Log.i("RVBoton","BotonFunciona")
+        modifier = Modifier.clickable{
+            navController.navigate("recover")
         },
         fontWeight = FontWeight.Bold
     )
