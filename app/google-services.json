@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "440995167304-4njjj8fguq8lghm7oviv7rrra23dii30.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.grupo2.ashley",
+            "certificate_hash": "dbcd53aa01ea8256cd7fec4ef81107b088c82d6c"
+          }
+        },
+        {
           "client_id": "440995167304-c0542tgla0kigvrrg9r2v83jtmv3vqet.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

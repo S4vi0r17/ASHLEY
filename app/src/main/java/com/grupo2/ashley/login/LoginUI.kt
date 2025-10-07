@@ -15,15 +15,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -36,6 +39,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -74,7 +78,8 @@ class Login : ComponentActivity() {
                     composable("registro"){
                         val viewModel : RegistroViewModel = viewModel()
                         Registro(
-                            viewModel
+                            viewModel,
+                            navController
                         )
                     }
                     composable("recover"){
@@ -91,6 +96,8 @@ fun LoginOpt(
     viewModel: LoginViewModel,
     navController: NavController
 ){
+    val errorMessage = viewModel.errorMessage.collectAsState().value
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -112,6 +119,19 @@ fun LoginOpt(
         Spacer(
             modifier = Modifier.height(16.dp)
         )
+
+        // Mostrar mensaje de error global
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 32.dp),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
         GoogleOption(
             viewModel,
             navController
@@ -146,20 +166,30 @@ fun GoogleOption(
     val googleLogo = R.drawable.googlelogowhite
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ) {
-        val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try{
             val account = task.getResult(ApiException::class.java)
-            val credential = GoogleAuthProvider.getCredential(account.idToken,null)
-            viewModel.authGmailSignIn(credential){
-                navController.navigate("login")
+            if (account.idToken != null) {
+                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                viewModel.authGmailSignIn(credential) {
+                    navController.navigate("login")
+                }
+            } else {
+                Log.e("GAUTH", "Error: idToken es null")
+                viewModel.setGoogleError("Error: No se pudo obtener el token de Google")
             }
+        } catch (ex: ApiException){
+            Log.e("GAUTH", "Error en autenticación con Google (ApiException): ${ex.statusCode} - ${ex.message}", ex)
+            viewModel.setGoogleError("Error al iniciar sesión con Google. Código: ${ex.statusCode}")
         } catch (ex: Exception){
-            Log.e("GAUTH","Error en autenticación con Google: ${ex.message}", ex)
+            Log.e("GAUTH", "Error en autenticación con Google: ${ex.message}", ex)
+            viewModel.setGoogleError("Error inesperado: ${ex.message ?: "Intenta nuevamente"}")
         }
     }
     val token = "440995167304-8hc733q2dgvfbf6k9pmf04mlmil1qsfb.apps.googleusercontent.com"
     val context = LocalContext.current
+    val isLoading = viewModel.isLoading.collectAsState().value
 
     Button(
         onClick = {
@@ -171,19 +201,28 @@ fun GoogleOption(
             val googleSignInFinal = GoogleSignIn.getClient(context,opciones)
             launcher.launch(googleSignInFinal.signInIntent)
         },
+        enabled = !isLoading,
         modifier = Modifier.size(height = 52.dp, width = 286.dp),
         content = {
-            Image(
-                painter = painterResource(googleLogo),
-                contentDescription = null
-            )
-            Spacer(
-                modifier = Modifier.width(16.dp)
-            )
-            Text(
-                "Ingresar con Gmail",
-                fontSize = 16.sp
-            )
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Image(
+                    painter = painterResource(googleLogo),
+                    contentDescription = null
+                )
+                Spacer(
+                    modifier = Modifier.width(16.dp)
+                )
+                Text(
+                    "Ingresar con Gmail",
+                    fontSize = 16.sp
+                )
+            }
         }
     )
 }
@@ -196,6 +235,7 @@ fun EmailOption(
     val email = viewModel.email.collectAsState().value
     val password = viewModel.password.collectAsState().value
     val visibilidad = viewModel.visibility.collectAsState().value
+    val isLoading = viewModel.isLoading.collectAsState().value
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -251,7 +291,7 @@ fun EmailOption(
         )
 
         Spacer(
-            modifier = Modifier.height(24.dp)
+            modifier = Modifier.height(16.dp)
         )
 
         OutlinedButton(
@@ -260,12 +300,20 @@ fun EmailOption(
                     navController.navigate("login")
                 }
             },
+            enabled = !isLoading,
             modifier = Modifier.size(height = 52.dp, width = 286.dp),
             content = {
-                Text(
-                    "Ingresar con Email",
-                    fontSize = 16.sp
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        "Ingresar con Email",
+                        fontSize = 16.sp
+                    )
+                }
             }
         )
     }

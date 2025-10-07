@@ -20,6 +20,12 @@ class LoginViewModel : ViewModel() {
     private val _visibility = MutableStateFlow(false)
     val visibility : StateFlow<Boolean> = _visibility
 
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage : StateFlow<String?> = _errorMessage
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading : StateFlow<Boolean> = _isLoading
+
     fun onEmailChange(newEmail: String) {
         _email.value = newEmail
     }
@@ -42,15 +48,36 @@ class LoginViewModel : ViewModel() {
             passwordLogin.isBlank()
         ) {
             Log.i("AUTH", "Blank")
+            _errorMessage.value = "Por favor, completa todos los campos"
+            return
         }
+
+        _isLoading.value = true
+        _errorMessage.value = null
 
         auth.signInWithEmailAndPassword(emailLogin,passwordLogin)
             .addOnCompleteListener { task ->
+                _isLoading.value = false
                 if(task.isSuccessful){
                     Log.i("AUTH", "COMPLETO")
+                    _errorMessage.value = null
                     home()
                 } else {
-                    Log.e("AUTH", "ERROR")
+                    val errorMsg = when {
+                        task.exception?.message?.contains("no user record", ignoreCase = true) == true ->
+                            "Este correo no está registrado"
+                        task.exception?.message?.contains("password is invalid", ignoreCase = true) == true ->
+                            "La contraseña es incorrecta"
+                        task.exception?.message?.contains("badly formatted", ignoreCase = true) == true ->
+                            "El formato del correo no es válido"
+                        task.exception?.message?.contains("disabled", ignoreCase = true) == true ->
+                            "Esta cuenta ha sido deshabilitada"
+                        task.exception?.message?.contains("network", ignoreCase = true) == true ->
+                            "Error de conexión. Verifica tu internet"
+                        else -> "Credenciales inválidas. Verifica tu correo y contraseña"
+                    }
+                    Log.e("AUTH", "ERROR: ${task.exception?.message}")
+                    _errorMessage.value = errorMsg
                 }
             }
     }
@@ -59,14 +86,24 @@ class LoginViewModel : ViewModel() {
         credential: AuthCredential,
         home:()-> Unit
     ){
+        _isLoading.value = true
+        _errorMessage.value = null
+
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
+                _isLoading.value = false
                 if(task.isSuccessful){
                     Log.i("AUTHGOOGLE", "COMPLETO")
+                    _errorMessage.value = null
                     home()
                 } else {
-                    Log.e("AUTHGOOGLE", "ERROR")
+                    Log.e("AUTHGOOGLE", "ERROR: ${task.exception?.message}")
+                    _errorMessage.value = "Error al iniciar sesión con Google: ${task.exception?.message}"
                 }
             }
+    }
+
+    fun setGoogleError(message: String) {
+        _errorMessage.value = message
     }
 }
