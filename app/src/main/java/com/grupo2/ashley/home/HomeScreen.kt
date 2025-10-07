@@ -33,7 +33,8 @@ import com.grupo2.ashley.home.models.Product
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onLocationClick: () -> Unit = {}
+    onLocationClick: () -> Unit = {},
+    innerPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp)
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
@@ -45,6 +46,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .padding(innerPadding)
     ) {
         // Selector de ubicación
         LocationSelector(

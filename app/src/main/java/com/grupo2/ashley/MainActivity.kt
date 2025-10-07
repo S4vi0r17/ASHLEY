@@ -65,7 +65,8 @@ fun AshleyApp() {
                 val homeViewModel: HomeViewModel = viewModel()
                 HomeScreen(
                     viewModel = homeViewModel,
-                    onLocationClick = { /* TODO: Abrir diálogo para cambiar ubicación */ }
+                    onLocationClick = { /* TODO: Abrir diálogo para cambiar ubicación */ },
+                    innerPadding = innerPadding
                 )
             }
             1 -> ScreenContent("Lista de chats", innerPadding)
