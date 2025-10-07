@@ -16,6 +16,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.grupo2.ashley.home.HomeScreen
+import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 
 class MainActivity : ComponentActivity() {
@@ -58,7 +61,13 @@ fun AshleyApp() {
         }
     ) { innerPadding ->
         when (selectedItem) {
-            0 -> ScreenContent("Bienvenido a ASHLEY", innerPadding)
+            0 -> {
+                val homeViewModel: HomeViewModel = viewModel()
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    onLocationClick = { /* TODO: Abrir diálogo para cambiar ubicación */ }
+                )
+            }
             1 -> ScreenContent("Lista de chats", innerPadding)
             2 -> ScreenContent("Publica algo en Vender", innerPadding)
             3 -> ScreenContent("Tus anuncios publicados", innerPadding)
