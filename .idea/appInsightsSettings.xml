@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.grupo2.ashley" />
-                  <option name="mobileSdkAppId" value="1:440995167304:android:097080621ccd26f890ac7d" />
-                  <option name="projectId" value="test-ashley-51245" />
-                  <option name="projectNumber" value="440995167304" />
+                  <option name="mobileSdkAppId" value="1:211106728309:android:75c3c929d5e77d9dc6ab3c" />
+                  <option name="projectId" value="ashley-app-2e7a3" />
+                  <option name="projectNumber" value="211106728309" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
