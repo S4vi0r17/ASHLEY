@@ -48,5 +48,5 @@ Puedes ver el mock del proyecto en [Excalidraw](https://excalidraw.com/#json=SEX
 
 ## 📄 Licencia
 
-Este proyecto fue desarrollado con fines académicos por el **Grupo 2**.  
+Este proyecto fue desarrollado con fines académicos por el **Grupo 2 🦎**.  
 © 2025 — Todos los derechos reservados.
