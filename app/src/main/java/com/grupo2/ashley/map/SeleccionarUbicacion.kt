@@ -1,46 +1,59 @@
-package com.grupo2.ashley
+package com.grupo2.ashley.map
 
-import android.util.Log
-import android.view.View
-import android.widget.FrameLayout
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.FragmentActivity
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.fragment.app.findFragment
-import androidx.fragment.app.commit
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.FetchPlaceRequest
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberMarkerState
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("MissingPermission")
 @Composable
 fun SeleccionarUbicacionScreen(
-    viewModel: SeleccionarUbicacionViewModel = viewModel()
+    viewModel: SeleccionarUbicacionViewModel
 ) {
     val context = LocalContext.current
     val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()
@@ -75,7 +88,6 @@ fun SeleccionarUbicacionScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-
         OutlinedTextField(
             value = query,
             onValueChange = { newValue ->
@@ -97,9 +109,18 @@ fun SeleccionarUbicacionScreen(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(30.dp),
             label = { Text("Buscar dirección...") },
-            singleLine = true
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.Black,
+                unfocusedTextColor = Color.Gray,
+                cursorColor = Color(0xFF90CAF9),
+                focusedLabelColor = Color(0xFF90CAF9),
+                unfocusedLabelColor = Color(0xFFB0BEC5),
+                focusedBorderColor = Color(0xFF64B5F6),
+                unfocusedBorderColor = Color.Gray
+            )
         )
 
 
@@ -124,7 +145,7 @@ fun SeleccionarUbicacionScreen(
                                     if (first != null) {
                                         val placeId = first.placeId
                                         val fetchRequest =
-                                            com.google.android.libraries.places.api.net.FetchPlaceRequest.builder(
+                                            FetchPlaceRequest.builder(
                                                 placeId,
                                                 listOf(
                                                     Place.Field.LAT_LNG,
@@ -135,7 +156,8 @@ fun SeleccionarUbicacionScreen(
                                         placesClient.fetchPlace(fetchRequest)
                                             .addOnSuccessListener { placeResponse ->
                                                 placeResponse.place.latLng?.let { latLng ->
-                                                    viewModel.actualizarUbicacion(latLng.latitude, latLng.longitude)
+                                                    val nombreLugar = placeResponse.place.name ?: "Dirección sin nombre"
+                                                    viewModel.actualizarUbicacion(latLng.latitude, latLng.longitude, nombreLugar)
                                                     cameraPositionState.move(
                                                         CameraUpdateFactory.newLatLngZoom(latLng, 16f)
                                                     )
@@ -146,7 +168,7 @@ fun SeleccionarUbicacionScreen(
                         }
                         .padding(12.dp)
                 )
-                Divider()
+                HorizontalDivider()
             }
         }
 
@@ -162,6 +184,69 @@ fun SeleccionarUbicacionScreen(
                 )
             }
 
+            val context = LocalContext.current
+
+
+            val locationPermissionLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    Toast.makeText(context, "Permiso de ubicación concedido", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+
+            Button(
+                onClick = {
+                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+                if (ActivityCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                        location?.let {
+                            val currentLatLng = LatLng(it.latitude, it.longitude)
+
+                            // 🔹 Usa Geocoder para convertir coordenadas → dirección
+                            val geocoder = Geocoder(context, Locale.getDefault())
+                            val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                            val direccion = if (!addresses.isNullOrEmpty()) {
+                                val address = addresses[0]
+                                address.getAddressLine(0) ?: "Dirección desconocida"
+                    } else {
+                        "Dirección desconocida"
+                    }
+
+
+                    viewModel.actualizarUbicacion(
+                        it.latitude,
+                        it.longitude,
+                        direccion
+                    )
+
+
+                    cameraPositionState.move(
+                        CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
+                    )
+
+                    Toast.makeText(context, "Ubicación actual detectada", Toast.LENGTH_SHORT).show()
+                } ?: Toast.makeText(context, "No se pudo obtener ubicación", Toast.LENGTH_SHORT).show()
+            }
+                    } else {
+
+                         locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(100.dp)
+            ) {
+                Text("Mi ubicación")
+            }
+
             Button(
                 onClick = {
                     Toast.makeText(
@@ -172,7 +257,7 @@ fun SeleccionarUbicacionScreen(
                 },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(16.dp)
+                    .padding(50.dp)
             ) {
                 Text("Confirmar ubicación")
             }
