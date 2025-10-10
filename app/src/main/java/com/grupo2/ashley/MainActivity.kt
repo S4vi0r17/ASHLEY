@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+<<<<<<< HEAD
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.libraries.places.api.Places
@@ -31,6 +32,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.grupo2.ashley.map.SeleccionarUbicacionScreen
 import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
+=======
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.grupo2.ashley.home.HomeScreen
+import com.grupo2.ashley.home.HomeViewModel
+>>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 
 class MainActivity : ComponentActivity() {
@@ -87,6 +93,7 @@ fun AshleyApp() {
             }
         }
     ) { innerPadding ->
+<<<<<<< HEAD
         NavHost(
             navController = navController,
             startDestination = "inicio",
@@ -144,6 +151,21 @@ fun VenderScreen(
             navController.navigate("seleccionar_ubicacion")
         }) {
             Text("Seleccionar ubicación")
+=======
+        when (selectedItem) {
+            0 -> {
+                val homeViewModel: HomeViewModel = viewModel()
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    onLocationClick = { /* TODO: Abrir diálogo para cambiar ubicación */ },
+                    innerPadding = innerPadding
+                )
+            }
+            1 -> ScreenContent("Lista de chats", innerPadding)
+            2 -> ScreenContent("Publica algo en Vender", innerPadding)
+            3 -> ScreenContent("Tus anuncios publicados", innerPadding)
+            4 -> ScreenContent("Tu perfil", innerPadding)
+>>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
         }
     }
 }
