@@ -29,18 +29,22 @@ import coil.compose.AsyncImage
 import com.grupo2.ashley.home.models.Category
 import com.grupo2.ashley.home.models.CategoryIcon
 import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    ubicacionViewModel: SeleccionarUbicacionViewModel,
     onLocationClick: () -> Unit = {},
-    innerPadding: androidx.compose.foundation.layout.PaddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp)
+    innerPadding: PaddingValues = androidx.compose.foundation.layout.PaddingValues(0.dp)
+
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val location by viewModel.location.collectAsState()
     val categories by viewModel.categories.collectAsState()
     val products by viewModel.products.collectAsState()
+    val direccion by ubicacionViewModel.direccionSeleccionada.collectAsState()
 
     Column(
         modifier = Modifier
@@ -50,7 +54,7 @@ fun HomeScreen(
     ) {
         // Selector de ubicación
         LocationSelector(
-            location = location,
+            location = direccion,
             onClick = onLocationClick
         )
         
@@ -97,6 +101,8 @@ fun LocationSelector(
     location: String,
     onClick: () -> Unit
 ) {
+    val mostrarTextoPorDefecto = location.isBlank() || location == "Sin dirección seleccionada"
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -118,14 +124,19 @@ fun LocationSelector(
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             Text(
-                text = "Elegir otra ubicación",
+                text = if (mostrarTextoPorDefecto) "Elegir otra ubicación" else location,
                 fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
+                color = if (mostrarTextoPorDefecto)
+                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                else
+                    MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

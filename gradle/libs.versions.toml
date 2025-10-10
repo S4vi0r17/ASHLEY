@@ -10,7 +10,6 @@ lifecycleRuntimeKtx = "2.9.3"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 googleServicesVersion = "4.4.3"
-<<<<<<< HEAD
 mapasV="19.2.0"
 placesV="4.3.1"
 mapacomposeV = "4.4.1"
@@ -21,9 +20,7 @@ constraintlayout = "2.1.4"
 fragmentV = "1.8.8"
 viewmodel-composeV = "2.8.4"
 navigation = "2.8.3"
-=======
 lifecycleViewmodelKtx = "2.9.4"
->>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,7 +41,6 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
-<<<<<<< HEAD
 mapas = {group = "com.google.android.gms", name = "play-services-maps", version.ref = "mapasV"}
 places = {group = "com.google.android.libraries.places", name = "places", version.ref = "placesV"}
 fragment = {group = "androidx.fragment", name = "fragment-ktx", version.ref = "fragmentV"}
@@ -55,10 +51,8 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 navigation = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
-=======
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
->>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
