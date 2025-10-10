@@ -3,5 +3,15 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
+<<<<<<< HEAD
+    alias(libs.plugins.googleService) apply false
+}
+
+buildscript {
+    dependencies {
+        classpath("com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1")
+    }
+=======
     id("com.google.gms.google-services") version "4.4.3" apply false
+>>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
 }
