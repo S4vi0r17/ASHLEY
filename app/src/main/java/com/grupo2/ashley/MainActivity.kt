@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-<<<<<<< HEAD
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.libraries.places.api.Places
@@ -32,13 +31,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.grupo2.ashley.map.SeleccionarUbicacionScreen
 import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
-=======
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
->>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,53 +54,68 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AshleyApp() {
     val navController = rememberNavController()
-    var selectedItem by remember { mutableIntStateOf(0) }
-
+    val homeViewModel: HomeViewModel = viewModel()
     val ubicacionViewModel: SeleccionarUbicacionViewModel = viewModel()
 
+    // Define rutas e íconos
     val items = listOf(
-        "Inicio" to Icons.Default.Home,
-        "Chats" to Icons.AutoMirrored.Filled.Message,
-        "Vender" to Icons.Default.AddCircle,
-        "Anuncios" to Icons.AutoMirrored.Filled.List,
-        "Cuenta" to Icons.Default.Person
+        Triple("Inicio", Icons.Default.Home, "home"),
+        Triple("Chats", Icons.AutoMirrored.Filled.Message, "chats"),
+        Triple("Vender", Icons.Default.AddCircle, "vender"),
+        Triple("Anuncios", Icons.AutoMirrored.Filled.List, "anuncios"),
+        Triple("Cuenta", Icons.Default.Person, "cuenta")
     )
+
+    // Estado actual de la ruta
+    val currentBackStack by navController.currentBackStackEntryAsState()
+    val currentDestination = currentBackStack?.destination?.route
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar {
-                items.forEachIndexed { index, item ->
+                items.forEach { (label, icon, route) ->
                     NavigationBarItem(
-                        selected = selectedItem == index,
+                        selected = currentDestination == route,
                         onClick = {
-                            selectedItem = index
-                            when (index) {
-                                0 -> navController.navigate("inicio")
-                                1 -> navController.navigate("chats")
-                                2 -> navController.navigate("vender")
-                                3 -> navController.navigate("anuncios")
-                                4 -> navController.navigate("cuenta")
+                            // Evita re-navegar si ya estás en esa ruta
+                            if (currentDestination != route) {
+                                navController.navigate(route) {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             }
                         },
-                        icon = { Icon(item.second, contentDescription = item.first) },
-                        label = { Text(item.first, maxLines = 1, textAlign = TextAlign.Center) }
+                        icon = { Icon(icon, contentDescription = label) },
+                        label = { Text(label, maxLines = 1, textAlign = TextAlign.Center) }
                     )
                 }
             }
         }
     ) { innerPadding ->
-<<<<<<< HEAD
         NavHost(
             navController = navController,
-            startDestination = "inicio",
+            startDestination = "home",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("inicio") { ScreenContent("Bienvenido a ASHLEY", innerPadding) }
+            composable("home") {
+                HomeScreen(
+                    viewModel = homeViewModel,
+                    ubicacionViewModel = ubicacionViewModel,
+                    onLocationClick = { navController.navigate("seleccionar_ubicacion") },
+                    innerPadding = innerPadding
+                )
+            }
+
             composable("chats") { ScreenContent("Lista de chats", innerPadding) }
 
             composable("vender") { VenderScreen(navController, ubicacionViewModel) }
+
             composable("anuncios") { ScreenContent("Tus anuncios publicados", innerPadding) }
+
             composable("cuenta") { ScreenContent("Tu perfil", innerPadding) }
 
             composable("seleccionar_ubicacion") {
@@ -141,31 +153,14 @@ fun VenderScreen(
         )
 
         Text(
-            text = "Direccion: ${direccion.toString()}",
+            text = "Dirección: ${direccion.toString()}",
             color = Color.Gray
         )
 
         Spacer(Modifier.height(20.dp))
 
-        Button(onClick = {
-            navController.navigate("seleccionar_ubicacion")
-        }) {
+        Button(onClick = { navController.navigate("seleccionar_ubicacion") }) {
             Text("Seleccionar ubicación")
-=======
-        when (selectedItem) {
-            0 -> {
-                val homeViewModel: HomeViewModel = viewModel()
-                HomeScreen(
-                    viewModel = homeViewModel,
-                    onLocationClick = { /* TODO: Abrir diálogo para cambiar ubicación */ },
-                    innerPadding = innerPadding
-                )
-            }
-            1 -> ScreenContent("Lista de chats", innerPadding)
-            2 -> ScreenContent("Publica algo en Vender", innerPadding)
-            3 -> ScreenContent("Tus anuncios publicados", innerPadding)
-            4 -> ScreenContent("Tu perfil", innerPadding)
->>>>>>> 5445d488c2a802b232472d2850ba0051cffbb11a
         }
     }
 }
@@ -178,6 +173,7 @@ fun ScreenContent(text: String, innerPadding: PaddingValues) {
         textAlign = TextAlign.Center
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable
