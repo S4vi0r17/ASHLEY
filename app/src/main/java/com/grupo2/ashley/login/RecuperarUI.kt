@@ -5,16 +5,22 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,7 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
+import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
+import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.ui.theme.AppGradients
 
 class RecuperarUI : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,64 +52,90 @@ class RecuperarUI : ComponentActivity() {
 }
 
 @Composable
-fun RecuperarContra(){
+fun RecuperarContra() {
     var email by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val context = LocalContext.current
-        
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
+    var isVisible by remember { mutableStateOf(false) }
+
+    // Animación de fade-in inicial
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+
+    AnimatedVisibility(
+        visible = isVisible, enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
     ) {
-        Text(
-            "Escriba su correo",
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            "Le llegará un correo con las instrucciones",
-            modifier = Modifier.alpha(0.5f)
-        )
-        Spacer(
-            modifier = Modifier.height(6.dp)
-        )
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(
+                "Recuperar contraseña",
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Te enviaremos un correo con las instrucciones",
+                modifier = Modifier.alpha(0.7f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+            OutlinedTextField(
+                value = email, onValueChange = {
                 email = it
-            },
-            label = {
+            }, label = {
                 Text(
-                    "Email",
-                    modifier = Modifier.alpha(0.3f)
+                    "Email", style = MaterialTheme.typography.bodyMedium
+                )
+            }, colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
+            ), singleLine = true
+            )
+            Spacer(
+                modifier = Modifier.height(24.dp)
+            )
+            GradientButton(
+                onClick = {
+                    if (!email.isEmpty()) {
+                        auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Toast.makeText(
+                                        context,
+                                        "Correo enviado satisfactoriamente",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    Toast.makeText(
+                                        context, "Correo no registrado", Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                    }
+                },
+                modifier = Modifier
+                    .width(286.dp)
+                    .height(52.dp),
+                gradient = AppGradients.SecondaryGradient
+            ) {
+                Text(
+                    "Enviar correo",
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelLarge
                 )
             }
-        )
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-        Button(
-            onClick = {
-                if(!email.isEmpty()){
-                    auth.sendPasswordResetEmail(email)
-                        .addOnCompleteListener { task ->
-                            if(task.isSuccessful) {
-                               Toast.makeText(context,"Correo Enviado Satisfactoriamente",Toast.LENGTH_SHORT).show()
-                           } else {
-                                Toast.makeText(context,"Correo no registrado",Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                }
-            },
-            content = {
-                Text(
-                    "Enviar Correo",
-                    fontSize = 16.sp,
-                    color = Color.White
-                )
-            },
-            modifier = Modifier.size(height = 52.dp, width = 286.dp)
-        )
+        }
     }
 }
 

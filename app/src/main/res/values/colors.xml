@@ -1,10 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colores primarios púrpura -->
+    <color name="purple_60">#6C63FF</color>
+    <color name="purple_50">#5A52D5</color>
+    <color name="purple_70">#8B7FFF</color>
+    <color name="purple_80">#A89FFF</color>
+    <color name="purple_90">#E0DCFF</color>
+    
+    <!-- Colores secundarios turquesa/cyan -->
+    <color name="cyan_50">#26C6DA</color>
+    <color name="cyan_60">#4DD0E1</color>
+    <color name="cyan_70">#80DEEA</color>
+    <color name="cyan_90">#E0F7FA</color>
+    
+    <!-- Fondos modo claro -->
+    <color name="light_background">#F8F7FF</color>
+    <color name="light_surface">#FFFFFF</color>
+    <color name="light_surface_variant">#F0EFFF</color>
+    
+    <!-- Fondos modo oscuro -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_surface_variant">#2A2A2E</color>
+    
+    <!-- Colores de texto -->
+    <color name="text_primary_light">#1C1B1F</color>
+    <color name="text_secondary_light">#49454F</color>
+    <color name="text_primary_dark">#E6E1E5</color>
+    <color name="text_secondary_dark">#CAC4D0</color>
+    
+    <!-- Colores de estado -->
+    <color name="error_light">#B3261E</color>
+    <color name="error_dark">#F2B8B5</color>
+    <color name="success_light">#2E7D32</color>
+    <color name="success_dark">#81C784</color>
+    
+    <!-- Colores básicos -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    
+    <!-- Compatibilidad con colores antiguos -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
 </resources>

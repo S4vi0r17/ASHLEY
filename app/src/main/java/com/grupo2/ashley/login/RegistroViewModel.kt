@@ -11,64 +11,64 @@ import kotlinx.coroutines.flow.StateFlow
 class RegistroViewModel : ViewModel() {
 
     private val _email = MutableStateFlow("")
-    val email : StateFlow<String> = _email
+    val email: StateFlow<String> = _email
 
     private val _password = MutableStateFlow("")
-    val password : StateFlow<String> = _password
+    val password: StateFlow<String> = _password
 
     private val _rPassword = MutableStateFlow("")
-    val rPassword : StateFlow<String> = _rPassword
+    val rPassword: StateFlow<String> = _rPassword
 
     private val _visibility1 = MutableStateFlow(false)
-    val visibility1 : StateFlow<Boolean> = _visibility1
+    val visibility1: StateFlow<Boolean> = _visibility1
 
     private val _visibility2 = MutableStateFlow(false)
-    val visibility2 : StateFlow<Boolean> = _visibility2
+    val visibility2: StateFlow<Boolean> = _visibility2
 
     private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage : StateFlow<String?> = _errorMessage
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading : StateFlow<Boolean> = _isLoading
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _registroExitoso = MutableStateFlow(false)
-    val registroExitoso : StateFlow<Boolean> = _registroExitoso
+    val registroExitoso: StateFlow<Boolean> = _registroExitoso
 
-    fun onEmailChange(newEmail: String){
+    fun onEmailChange(newEmail: String) {
         _email.value = newEmail
     }
 
-    fun onPasswordChange(newPassword: String){
+    fun onPasswordChange(newPassword: String) {
         _password.value = newPassword
     }
 
-    fun onRPasswordChange(newRPassword: String){
+    fun onRPasswordChange(newRPassword: String) {
         _rPassword.value = newRPassword
     }
 
-    fun toggleVisibility1(){
+    fun toggleVisibility1() {
         _visibility1.value = !_visibility1.value
     }
 
-    fun toggleVisibility2(){
+    fun toggleVisibility2() {
         _visibility2.value = !_visibility2.value
     }
 
-    fun validateEmail() : Pair<Boolean, String>{
+    fun validateEmail(): Pair<Boolean, String> {
         val emailRegister = _email.value
-        return when{
-            emailRegister.isEmpty() -> Pair(false,"Email Vacio")
-            !Patterns.EMAIL_ADDRESS.matcher(emailRegister).matches() -> Pair(false,"No es email")
-            else -> Pair(true,"Completado")
+        return when {
+            emailRegister.isEmpty() -> Pair(false, "Email Vacio")
+            !Patterns.EMAIL_ADDRESS.matcher(emailRegister).matches() -> Pair(false, "No es email")
+            else -> Pair(true, "Completado")
         }
     }
 
-    fun validatePassword() : Pair<Boolean, String>{
+    fun validatePassword(): Pair<Boolean, String> {
         val passwordRegister = _password.value
         val rPasswordRegister = _rPassword.value
-        return when{
+        return when {
             passwordRegister.isEmpty() -> Pair(false, "Password Vacio")
-            rPasswordRegister.isEmpty() -> Pair(false,"Repetir Password Vacio")
+            rPasswordRegister.isEmpty() -> Pair(false, "Repetir Password Vacio")
             passwordRegister == rPasswordRegister -> Pair(true, "Completado")
             else -> Pair(false, "No son iguales")
         }
@@ -112,12 +112,12 @@ class RegistroViewModel : ViewModel() {
                     onSuccess()
                 } else {
                     val errorMsg = when {
-                        task.exception?.message?.contains("badly formatted") == true -> 
-                            "El correo electrónico está mal formateado"
-                        task.exception?.message?.contains("already in use") == true -> 
-                            "Este correo ya está registrado"
-                        task.exception?.message?.contains("weak password") == true -> 
-                            "La contraseña es muy débil"
+                        task.exception?.message?.contains("badly formatted") == true -> "El correo electrónico está mal formateado"
+
+                        task.exception?.message?.contains("already in use") == true -> "Este correo ya está registrado"
+
+                        task.exception?.message?.contains("weak password") == true -> "La contraseña es muy débil"
+
                         else -> "Error: ${task.exception?.message ?: "Intenta nuevamente"}"
                     }
                     Log.e("REGISTRO", "ERROR: ${task.exception?.message}")

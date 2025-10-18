@@ -73,8 +73,7 @@ fun SeleccionarUbicacionScreen(
 
     if (!isPlacesReady) {
         Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
         ) {
             CircularProgressIndicator()
         }
@@ -93,14 +92,14 @@ fun SeleccionarUbicacionScreen(
             onValueChange = { newValue ->
                 query = newValue
                 if (newValue.length > 2) {
-                    val request = FindAutocompletePredictionsRequest.builder()
-                        .setQuery(newValue)
-                        .build()
+                    val request =
+                        FindAutocompletePredictionsRequest.builder().setQuery(newValue).build()
                     placesClient.findAutocompletePredictions(request)
                         .addOnSuccessListener { response ->
-                            predictions = response.autocompletePredictions.map { it.getFullText(null).toString() }
-                        }
-                        .addOnFailureListener {
+                            predictions = response.autocompletePredictions.map {
+                                it.getFullText(null).toString()
+                            }
+                        }.addOnFailureListener {
                             predictions = emptyList()
                         }
                 } else {
@@ -126,48 +125,46 @@ fun SeleccionarUbicacionScreen(
 
         LazyColumn {
             items(predictions.size) { index ->
-                Text(
-                    text = predictions[index],
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable() {
-                            query = predictions[index]
-                            predictions = emptyList()
+                Text(text = predictions[index], modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable() {
+                        query = predictions[index]
+                        predictions = emptyList()
 
 
-                            val request = FindAutocompletePredictionsRequest.builder()
-                                .setQuery(query)
-                                .build()
+                        val request =
+                            FindAutocompletePredictionsRequest.builder().setQuery(query).build()
 
-                            placesClient.findAutocompletePredictions(request)
-                                .addOnSuccessListener { response ->
-                                    val first = response.autocompletePredictions.firstOrNull()
-                                    if (first != null) {
-                                        val placeId = first.placeId
-                                        val fetchRequest =
-                                            FetchPlaceRequest.builder(
-                                                placeId,
-                                                listOf(
-                                                    Place.Field.LAT_LNG,
-                                                    Place.Field.NAME
+                        placesClient.findAutocompletePredictions(request)
+                            .addOnSuccessListener { response ->
+                                val first = response.autocompletePredictions.firstOrNull()
+                                if (first != null) {
+                                    val placeId = first.placeId
+                                    val fetchRequest = FetchPlaceRequest.builder(
+                                        placeId, listOf(
+                                            Place.Field.LAT_LNG, Place.Field.NAME
+                                        )
+                                    ).build()
+
+                                    placesClient.fetchPlace(fetchRequest)
+                                        .addOnSuccessListener { placeResponse ->
+                                            placeResponse.place.latLng?.let { latLng ->
+                                                val nombreLugar = placeResponse.place.name
+                                                    ?: "Dirección sin nombre"
+                                                viewModel.actualizarUbicacion(
+                                                    latLng.latitude, latLng.longitude, nombreLugar
                                                 )
-                                            ).build()
-
-                                        placesClient.fetchPlace(fetchRequest)
-                                            .addOnSuccessListener { placeResponse ->
-                                                placeResponse.place.latLng?.let { latLng ->
-                                                    val nombreLugar = placeResponse.place.name ?: "Dirección sin nombre"
-                                                    viewModel.actualizarUbicacion(latLng.latitude, latLng.longitude, nombreLugar)
-                                                    cameraPositionState.move(
-                                                        CameraUpdateFactory.newLatLngZoom(latLng, 16f)
+                                                cameraPositionState.move(
+                                                    CameraUpdateFactory.newLatLngZoom(
+                                                        latLng, 16f
                                                     )
-                                                }
+                                                )
                                             }
-                                    }
+                                        }
                                 }
-                        }
-                        .padding(12.dp)
-                )
+                            }
+                    }
+                    .padding(12.dp))
                 HorizontalDivider()
             }
         }
@@ -175,12 +172,10 @@ fun SeleccionarUbicacionScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState
+                modifier = Modifier.fillMaxSize(), cameraPositionState = cameraPositionState
             ) {
                 Marker(
-                    state = MarkerState(position = ubicacion),
-                    title = "Ubicación seleccionada"
+                    state = MarkerState(position = ubicacion), title = "Ubicación seleccionada"
                 )
             }
 
@@ -191,56 +186,60 @@ fun SeleccionarUbicacionScreen(
                 contract = ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (isGranted) {
-                    Toast.makeText(context, "Permiso de ubicación concedido", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Permiso de ubicación concedido", Toast.LENGTH_SHORT)
+                        .show()
                 } else {
-                    Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
 
 
             Button(
                 onClick = {
-                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-                if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                        location?.let {
-                            val currentLatLng = LatLng(it.latitude, it.longitude)
+                    val fusedLocationClient =
+                        LocationServices.getFusedLocationProviderClient(context)
+                    if (ActivityCompat.checkSelfPermission(
+                            context, Manifest.permission.ACCESS_FINE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                            location?.let {
+                                val currentLatLng = LatLng(it.latitude, it.longitude)
 
-                            // 🔹 Usa Geocoder para convertir coordenadas → dirección
-                            val geocoder = Geocoder(context, Locale.getDefault())
-                            val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
-                            val direccion = if (!addresses.isNullOrEmpty()) {
-                                val address = addresses[0]
-                                address.getAddressLine(0) ?: "Dirección desconocida"
+                                // 🔹 Usa Geocoder para convertir coordenadas → dirección
+                                val geocoder = Geocoder(context, Locale.getDefault())
+                                val addresses =
+                                    geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                                val direccion = if (!addresses.isNullOrEmpty()) {
+                                    val address = addresses[0]
+                                    address.getAddressLine(0) ?: "Dirección desconocida"
+                                } else {
+                                    "Dirección desconocida"
+                                }
+
+
+                                viewModel.actualizarUbicacion(
+                                    it.latitude, it.longitude, direccion
+                                )
+
+
+                                cameraPositionState.move(
+                                    CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
+                                )
+
+                                Toast.makeText(
+                                    context, "Ubicación actual detectada", Toast.LENGTH_SHORT
+                                ).show()
+                            } ?: Toast.makeText(
+                                context, "No se pudo obtener ubicación", Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     } else {
-                        "Dirección desconocida"
+
+                        locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                     }
-
-
-                    viewModel.actualizarUbicacion(
-                        it.latitude,
-                        it.longitude,
-                        direccion
-                    )
-
-
-                    cameraPositionState.move(
-                        CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
-                    )
-
-                    Toast.makeText(context, "Ubicación actual detectada", Toast.LENGTH_SHORT).show()
-                } ?: Toast.makeText(context, "No se pudo obtener ubicación", Toast.LENGTH_SHORT).show()
-            }
-                    } else {
-
-                         locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                    }
-                },
-                modifier = Modifier
+                }, modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(100.dp)
             ) {
@@ -254,8 +253,7 @@ fun SeleccionarUbicacionScreen(
                         "Ubicación guardada: ${ubicacion.latitude}, ${ubicacion.longitude}",
                         Toast.LENGTH_LONG
                     ).show()
-                },
-                modifier = Modifier
+                }, modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(50.dp)
             ) {

@@ -4,12 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -17,25 +12,19 @@ import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.google.android.libraries.places.api.Places
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.grupo2.ashley.map.SeleccionarUbicacionScreen
-import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.grupo2.ashley.home.HomeScreen
+import androidx.navigation.compose.rememberNavController
+import com.google.android.libraries.places.api.Places
 import com.grupo2.ashley.home.HomeViewModel
+import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
+import com.grupo2.ashley.navigation.AppNavigation
+import com.grupo2.ashley.navigation.Routes
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,12 +47,12 @@ fun AshleyApp() {
     val ubicacionViewModel: SeleccionarUbicacionViewModel = viewModel()
 
     // Define rutas e íconos
-    val items = listOf(
-        Triple("Inicio", Icons.Default.Home, "home"),
-        Triple("Chats", Icons.AutoMirrored.Filled.Message, "chats"),
-        Triple("Vender", Icons.Default.AddCircle, "vender"),
-        Triple("Anuncios", Icons.AutoMirrored.Filled.List, "anuncios"),
-        Triple("Cuenta", Icons.Default.Person, "cuenta")
+    val navigationItems = listOf(
+        Triple("Inicio", Icons.Default.Home, Routes.HOME),
+        Triple("Chats", Icons.AutoMirrored.Filled.Message, Routes.CHATS),
+        Triple("Vender", Icons.Default.AddCircle, Routes.VENDER),
+        Triple("Anuncios", Icons.AutoMirrored.Filled.List, Routes.ANUNCIOS),
+        Triple("Cuenta", Icons.Default.Person, Routes.CUENTA)
     )
 
     // Estado actual de la ruta
@@ -73,112 +62,67 @@ fun AshleyApp() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            NavigationBar {
-                items.forEach { (label, icon, route) ->
-                    NavigationBarItem(
-                        selected = currentDestination == route,
-                        onClick = {
-                            // Evita re-navegar si ya estás en esa ruta
-                            if (currentDestination != route) {
-                                navController.navigate(route) {
-                                    popUpTo(navController.graph.startDestinationId) {
-                                        saveState = true
+            // Solo mostrar la barra de navegación si no estamos en la pantalla de seleccionar ubicación
+            if (currentDestination != Routes.SELECCIONAR_UBICACION) {
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 3.dp
+                ) {
+                    navigationItems.forEach { (label, icon, route) ->
+                        NavigationBarItem(
+                            selected = currentDestination == route,
+                            onClick = {
+                                if (currentDestination != route) {
+                                    navController.navigate(route) {
+                                        popUpTo(navController.graph.startDestinationId) {
+                                            saveState = true
+                                        }
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
-                            }
-                        },
-                        icon = { Icon(icon, contentDescription = label) },
-                        label = { Text(label, maxLines = 1, textAlign = TextAlign.Center) }
-                    )
+                            },
+                            icon = {
+                                Icon(
+                                    icon,
+                                    contentDescription = label,
+                                    tint = if (currentDestination == route)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            label = {
+                                Text(
+                                    label,
+                                    maxLines = 1,
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (currentDestination == route)
+                                        MaterialTheme.colorScheme.primary
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
-        NavHost(
+        AppNavigation(
             navController = navController,
-            startDestination = "home",
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable("home") {
-                HomeScreen(
-                    viewModel = homeViewModel,
-                    ubicacionViewModel = ubicacionViewModel,
-                    onLocationClick = { navController.navigate("seleccionar_ubicacion") },
-                    innerPadding = innerPadding
-                )
-            }
-
-            composable("chats") { ScreenContent("Lista de chats", innerPadding) }
-
-            composable("vender") { VenderScreen(navController, ubicacionViewModel) }
-
-            composable("anuncios") { ScreenContent("Tus anuncios publicados", innerPadding) }
-
-            composable("cuenta") { ScreenContent("Tu perfil", innerPadding) }
-
-            composable("seleccionar_ubicacion") {
-                SeleccionarUbicacionScreen(viewModel = ubicacionViewModel)
-            }
-        }
-    }
-}
-
-@Composable
-fun VenderScreen(
-    navController: NavHostController,
-    viewModel: SeleccionarUbicacionViewModel
-) {
-    val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()
-    val direccion by viewModel.direccionSeleccionada.collectAsState()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text("Publica algo en Vender")
-
-        Spacer(Modifier.height(16.dp))
-
-        Text(
-            text = "Ubicación guardada:",
-            style = MaterialTheme.typography.titleMedium
+            homeViewModel = homeViewModel,
+            ubicacionViewModel = ubicacionViewModel,
+            innerPadding = innerPadding,
+            navigationItems = navigationItems
         )
-
-        Text(
-            text = "Lat: ${ubicacion.latitude}, Lng: ${ubicacion.longitude}",
-            color = Color.Gray
-        )
-
-        Text(
-            text = "Dirección: ${direccion.toString()}",
-            color = Color.Gray
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        Button(onClick = { navController.navigate("seleccionar_ubicacion") }) {
-            Text("Seleccionar ubicación")
-        }
-    }
-}
-
-@Composable
-fun ScreenContent(text: String, innerPadding: PaddingValues) {
-    Text(
-        text = text,
-        modifier = Modifier.padding(innerPadding),
-        textAlign = TextAlign.Center
-    )
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun AshleyPreview() {
-    ASHLEYTheme {
-        AshleyApp()
     }
 }
