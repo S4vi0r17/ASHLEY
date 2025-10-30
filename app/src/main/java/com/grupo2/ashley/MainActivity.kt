@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Message
@@ -20,7 +19,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.libraries.places.api.Places
 import com.grupo2.ashley.home.HomeViewModel
-import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
+import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.AppNavigation
 import com.grupo2.ashley.navigation.Routes
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
@@ -44,7 +43,7 @@ class MainActivity : ComponentActivity() {
 fun AshleyApp() {
     val navController = rememberNavController()
     val homeViewModel: HomeViewModel = viewModel()
-    val ubicacionViewModel: SeleccionarUbicacionViewModel = viewModel()
+    val ubicacionViewModel: UbicacionViewModel = viewModel()
 
     // Define rutas e íconos
     val navigationItems = listOf(

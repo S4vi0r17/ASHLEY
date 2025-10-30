@@ -28,7 +28,7 @@ fun ProductsGrid(
         modifier = modifier
     ) {
         items(products) { product ->
-            ProductCard(
+            ProductoCard(
                 product = product,
                 onFavoriteClick = { onFavoriteClick(product.id) },
                 onClick = { onProductClick(product.id) })

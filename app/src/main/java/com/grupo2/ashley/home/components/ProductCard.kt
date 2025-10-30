@@ -29,7 +29,7 @@ import com.grupo2.ashley.home.models.Product
 import com.grupo2.ashley.ui.theme.AnimationConstants
 
 @Composable
-fun ProductCard(
+fun ProductoCard(
     product: Product, onFavoriteClick: () -> Unit, onClick: () -> Unit
 ) {
     // Animación de escala para interacción

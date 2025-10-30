@@ -11,13 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
+import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.Routes
 
 @Composable
 fun VenderScreen(
     navController: NavHostController,
-    viewModel: SeleccionarUbicacionViewModel,
+    viewModel: UbicacionViewModel,
     innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()

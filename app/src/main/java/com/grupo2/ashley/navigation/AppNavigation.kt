@@ -12,15 +12,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
-import com.grupo2.ashley.map.SeleccionarUbicacionScreen
-import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
+import com.grupo2.ashley.map.MapScreen
+import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.ChatsScreen
 import com.grupo2.ashley.screens.CuentaScreen
@@ -40,7 +39,7 @@ object Routes {
 fun AppNavigation(
     navController: NavHostController,
     homeViewModel: HomeViewModel,
-    ubicacionViewModel: SeleccionarUbicacionViewModel,
+    ubicacionViewModel: UbicacionViewModel,
     innerPadding: PaddingValues,
     navigationItems: List<Triple<String, Any, String>>
 ) {
@@ -122,7 +121,7 @@ fun AppNavigation(
         }
 
         composable(Routes.SELECCIONAR_UBICACION) {
-            SeleccionarUbicacionScreen(viewModel = ubicacionViewModel)
+            MapScreen(viewModel = ubicacionViewModel)
         }
     }
 }
