@@ -59,19 +59,19 @@ private val LightColorScheme = lightColorScheme(
 
 // ========== Esquema de Colores Modo Oscuro ==========
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple70,
-    onPrimary = Purple50,
+    primary = Purple60,
+    onPrimary = Color.White,
     primaryContainer = Purple50,
     onPrimaryContainer = Purple90,
 
-    secondary = Cyan70,
-    onSecondary = Cyan50,
+    secondary = Cyan60,
+    onSecondary = Color.Black,
     secondaryContainer = Cyan50,
     onSecondaryContainer = Cyan90,
 
-    tertiary = Purple80,
-    onTertiary = Purple60,
-    tertiaryContainer = Purple60,
+    tertiary = Purple70,
+    onTertiary = Color.White,
+    tertiaryContainer = Purple50,
     onTertiaryContainer = Purple90,
 
     error = ErrorDark,
@@ -94,9 +94,9 @@ private val DarkColorScheme = darkColorScheme(
 
     inverseSurface = LightSurface,
     inverseOnSurface = TextPrimaryLight,
-    inversePrimary = Purple60,
+    inversePrimary = Purple70,
 
-    surfaceTint = Purple70
+    surfaceTint = Purple60
 )
 
 // ========== Formas/Shapes Redondeadas ==========
@@ -111,8 +111,8 @@ private val AppShapes = Shapes(
 @Composable
 fun ASHLEYTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color está deshabilitado para mantener consistencia
-    dynamicColor: Boolean = false, content: @Composable () -> Unit
+    dynamicColor: Boolean = false,
+    content: @Composable () -> Unit
 ) {
     val colorScheme = when {
         darkTheme -> DarkColorScheme

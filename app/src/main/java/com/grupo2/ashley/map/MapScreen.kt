@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -52,8 +51,8 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
-fun SeleccionarUbicacionScreen(
-    viewModel: SeleccionarUbicacionViewModel
+fun MapScreen(
+    viewModel: UbicacionViewModel
 ) {
     val context = LocalContext.current
     val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()

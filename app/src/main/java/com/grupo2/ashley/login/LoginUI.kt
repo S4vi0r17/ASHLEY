@@ -12,16 +12,21 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -103,7 +108,8 @@ class Login : ComponentActivity() {
 
 @Composable
 fun LoginOpt(
-    viewModel: LoginViewModel, navController: NavController
+    viewModel: LoginViewModel,
+    navController: NavController
 ) {
     val errorMessage = viewModel.errorMessage.collectAsState().value
     var isVisible by remember { mutableStateOf(false) }
@@ -113,78 +119,75 @@ fun LoginOpt(
         isVisible = true
     }
 
-    AnimatedVisibility(
-        visible = isVisible, enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center
+    ){
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
         ) {
-            Text(
-                "Bienvenido a",
-                fontSize = 24.sp,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
-            Text(
-                "ASHLEY",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            // Mostrar mensaje de error global
-            AnimatedVisibility(
-                visible = errorMessage != null,
-                enter = fadeIn(animationSpec = tween(AnimationConstants.FLUID_DURATION)),
-                exit = fadeOut(animationSpec = tween(AnimationConstants.FLUID_DURATION))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                errorMessage?.let {
-                    Text(
-                        text = it,
-                        color = MaterialTheme.colorScheme.error,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(horizontal = 32.dp),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                Text(
+                    "Bienvenido a",
+                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+
+                Text(
+                    "ASHLEY",
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                // Mostrar mensaje de error global
+                AnimatedVisibility(
+                    visible = errorMessage != null,
+                    enter = fadeIn(animationSpec = tween(AnimationConstants.FLUID_DURATION)),
+                    exit = fadeOut(animationSpec = tween(AnimationConstants.FLUID_DURATION))
+                ) {
+                    errorMessage?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(horizontal = 32.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
-            }
 
-            if (errorMessage != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
-            GoogleOption(
-                viewModel, navController
-            )
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-            EmailOption(
-                viewModel, navController
-            )
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-            RegistroTexto(
-                navController
-            )
-            Spacer(
-                modifier = Modifier.height(4.dp)
-            )
-            RecoverTexto(
-                navController
-            )
+                GoogleOption(
+                    viewModel, navController
+                )
+                EmailOption(
+                    viewModel, navController
+                )
+                RegistroTexto(
+                    navController
+                )
+                RecoverTexto(
+                    navController
+                )
+            }
         }
     }
 }
@@ -271,96 +274,108 @@ fun EmailOption(
     val visibilidad = viewModel.visibility.collectAsState().value
     val isLoading = viewModel.isLoading.collectAsState().value
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HorizontalDivider(
-            modifier = Modifier.width(282.dp)
-        )
-        Spacer(
-            modifier = Modifier.height(10.dp)
-        )
-        OutlinedTextField(
-            value = email, onValueChange = {
-            viewModel.onEmailChange(it)
-        }, label = {
-            Text(
-                "Email", style = MaterialTheme.typography.bodyMedium
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.width(282.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
             )
-        }, colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-            cursorColor = MaterialTheme.colorScheme.primary
-        ), singleLine = true
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-            visualTransformation = if (visibilidad) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (visibilidad) Icons.Filled.Visibility
-                else Icons.Filled.VisibilityOff
-
-                IconButton(
-                    onClick = {
-                        viewModel.toggleVisibility()
-                    }) {
-                    Icon(
-                        imageVector = image,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            },
-            onValueChange = {
-                viewModel.onPasswordChange(it)
-            },
-            label = {
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+            OutlinedTextField(
+                value = email, onValueChange = {
+                viewModel.onEmailChange(it)
+            }, label = {
                 Text(
-                    "Contraseña", style = MaterialTheme.typography.bodyMedium
+                    "Email",
+                    style = MaterialTheme.typography.bodyMedium
                 )
-            },
-            colors = OutlinedTextFieldDefaults.colors(
+            }, colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.primary,
                 unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                 focusedLabelColor = MaterialTheme.colorScheme.primary,
                 cursorColor = MaterialTheme.colorScheme.primary
-            ),
-            singleLine = true
-        )
+            ), singleLine = true
+            )
 
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
 
-        GradientButton(
-            onClick = {
-                viewModel.authLoginEmail {
-                    navController.navigate("login")
+            OutlinedTextField(
+                value = password,
+                visualTransformation = if (visibilidad) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (visibilidad) Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    IconButton(
+                        onClick = {
+                            viewModel.toggleVisibility()
+                        }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                onValueChange = {
+                    viewModel.onPasswordChange(it)
+                },
+                label = {
+                    Text(
+                        "Contraseña", style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                ),
+                singleLine = true
+            )
+
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
+
+            GradientButton(
+                onClick = {
+                    viewModel.authLoginEmail {
+                        navController.navigate("login")
+                    }
+                },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .width(286.dp)
+                    .height(52.dp),
+                gradient = AppGradients.SecondaryGradient
+            ) {
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text(
+                        "Ingresar",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
-            },
-            enabled = !isLoading,
-            modifier = Modifier
-                .width(286.dp)
-                .height(52.dp),
-            gradient = AppGradients.SecondaryGradient
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp), strokeWidth = 2.dp, color = Color.White
-                )
-            } else {
-                Text(
-                    "Ingresar",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge
-                )
             }
         }
     }

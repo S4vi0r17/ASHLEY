@@ -1,12 +1,11 @@
 package com.grupo2.ashley.map
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class SeleccionarUbicacionViewModel : ViewModel() {
+class UbicacionViewModel : ViewModel() {
 
     private val _ubicacionSeleccionada = MutableStateFlow(LatLng(-12.0464, -77.0428)) // Lima
     val ubicacionSeleccionada = _ubicacionSeleccionada.asStateFlow()

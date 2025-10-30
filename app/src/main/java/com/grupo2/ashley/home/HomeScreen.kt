@@ -11,12 +11,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.ashley.home.components.*
-import com.grupo2.ashley.map.SeleccionarUbicacionViewModel
+import com.grupo2.ashley.map.UbicacionViewModel
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    ubicacionViewModel: SeleccionarUbicacionViewModel,
+    ubicacionViewModel: UbicacionViewModel,
     onLocationClick: () -> Unit = {},
     innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {

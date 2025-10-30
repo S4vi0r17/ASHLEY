@@ -8,11 +8,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -63,52 +67,60 @@ fun RecuperarContra() {
         isVisible = true
     }
 
-    AnimatedVisibility(
-        visible = isVisible, enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
         ) {
-            Text(
-                "Recuperar contraseña",
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                "Te enviaremos un correo con las instrucciones",
-                modifier = Modifier.alpha(0.7f),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
-            OutlinedTextField(
-                value = email, onValueChange = {
-                email = it
-            }, label = {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 Text(
-                    "Email", style = MaterialTheme.typography.bodyMedium
+                    "Recuperar contraseña",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.primary
                 )
-            }, colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
-            ), singleLine = true
-            )
-            Spacer(
-                modifier = Modifier.height(24.dp)
-            )
-            GradientButton(
-                onClick = {
-                    if (!email.isEmpty()) {
-                        auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Te enviaremos un correo con las instrucciones",
+                    modifier = Modifier.alpha(0.7f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+                OutlinedTextField(
+                    value = email, onValueChange = {
+                        email = it
+                    }, label = {
+                        Text(
+                            "Email", style = MaterialTheme.typography.bodyMedium
+                        )
+                    }, colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                        focusedLabelColor = MaterialTheme.colorScheme.primary,
+                        cursorColor = MaterialTheme.colorScheme.primary
+                    ), singleLine = true
+                )
+                Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
+                GradientButton(
+                    onClick = {
+                        if (!email.isEmpty()) {
+                            auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
                                     Toast.makeText(
                                         context,
@@ -121,21 +133,21 @@ fun RecuperarContra() {
                                     ).show()
                                 }
                             }
-                    }
-                },
-                modifier = Modifier
-                    .width(286.dp)
-                    .height(52.dp),
-                gradient = AppGradients.SecondaryGradient
-            ) {
-                Text(
-                    "Enviar correo",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    style = MaterialTheme.typography.labelLarge
-                )
+                        }
+                    },
+                    modifier = Modifier
+                        .width(286.dp)
+                        .height(52.dp),
+                    gradient = AppGradients.SecondaryGradient
+                ) {
+                    Text(
+                        "Enviar correo",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
             }
         }
     }
 }
-
