@@ -57,6 +57,7 @@ class ProfileViewModel : ViewModel() {
 
     init {
         loadUserProfile()
+        loadGooglePhotoIfAvailable()
     }
 
     /**
@@ -90,6 +91,26 @@ class ProfileViewModel : ViewModel() {
                     Log.e(TAG, "Error al cargar perfil", error)
                 }
             )
+        }
+    }
+
+    /**
+     * Carga la foto de Google si está disponible y el usuario no tiene foto
+     */
+    private fun loadGooglePhotoIfAvailable() {
+        viewModelScope.launch {
+            try {
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                val currentUser = auth.currentUser
+                val googlePhotoUrl = currentUser?.photoUrl?.toString()
+                
+                if (!googlePhotoUrl.isNullOrBlank() && _profileImageUrl.value.isBlank()) {
+                    _profileImageUrl.value = googlePhotoUrl
+                    Log.d(TAG, "Foto de Google cargada: $googlePhotoUrl")
+                }
+            } catch (e: Exception) {
+                Log.w(TAG, "No se pudo cargar foto de Google: ${e.message}")
+            }
         }
     }
 

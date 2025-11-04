@@ -132,22 +132,41 @@ class LoginViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             try {
-                // Guardar foto de perfil de Google si existe
                 val currentUser = auth.currentUser
+                val userId = currentUser?.uid
+                
+                Log.d("AUTH", "================================================")
+                Log.d("AUTH", "INICIO DE VERIFICACIÓN DE PERFIL")
+                Log.d("AUTH", "Usuario autenticado: $userId")
+                Log.d("AUTH", "Email: ${currentUser?.email}")
+                
+                // Pequeña pausa para asegurar que Firestore esté sincronizado
+                Log.d("AUTH", "Esperando 500ms para sincronización...")
+                kotlinx.coroutines.delay(500)
+                
+                // Verificar si el perfil está completo (ahora lee desde servidor)
+                Log.d("AUTH", "Llamando a profileRepository.isProfileComplete()...")
+                val isComplete = profileRepository.isProfileComplete()
+                
+                Log.d("AUTH", "================================================")
+                Log.d("AUTH", "RESULTADO FINAL: isComplete = $isComplete")
+                Log.d("AUTH", "================================================")
+                
+                // Guardar foto de perfil de Google si existe (después de verificar)
                 val photoUrl = currentUser?.photoUrl?.toString()
-                if (!photoUrl.isNullOrBlank()) {
+                if (!photoUrl.isNullOrBlank() && !isComplete) {
+                    Log.d("AUTH", "Guardando foto de Google para nuevo usuario")
                     saveGoogleProfilePhoto(photoUrl)
                 }
                 
-                val isComplete = profileRepository.isProfileComplete()
                 _isLoading.value = false
                 
                 if (isComplete) {
-                    Log.d("AUTH", "Perfil completo, navegando a Home")
+                    Log.d("AUTH", "✓ Perfil completo, navegando a Home")
                     _needsProfileSetup.value = false
                     home()
                 } else {
-                    Log.d("AUTH", "Perfil incompleto, navegando a ProfileSetup")
+                    Log.d("AUTH", "✗ Perfil incompleto, navegando a ProfileSetup")
                     _needsProfileSetup.value = true
                     profileSetup()
                 }
@@ -170,16 +189,23 @@ class LoginViewModel : ViewModel() {
                 val userId = auth.currentUser?.uid ?: return@launch
                 val firestore = FirebaseFirestore.getInstance()
                 
-                // Verificar si ya existe una foto
+                // Verificar si ya existe el documento
                 val docRef = firestore.collection("users").document(userId)
                 val snapshot = docRef.get().await()
                 
-                val currentPhotoUrl = snapshot.getString("profileImageUrl") ?: ""
-                
-                // Solo actualizar si no tiene foto o si está vacía
-                if (currentPhotoUrl.isBlank()) {
-                    docRef.update("profileImageUrl", photoUrl).await()
-                    Log.d("AUTH", "Foto de Google guardada: $photoUrl")
+                if (snapshot.exists()) {
+                    // El documento existe, solo actualizar la foto si está vacía
+                    val currentPhotoUrl = snapshot.getString("profileImageUrl") ?: ""
+                    if (currentPhotoUrl.isBlank()) {
+                        docRef.update("profileImageUrl", photoUrl).await()
+                        Log.d("AUTH", "Foto de Google guardada en perfil existente: $photoUrl")
+                    } else {
+                        Log.d("AUTH", "El usuario ya tiene foto, no se reemplaza")
+                    }
+                } else {
+                    // El documento no existe, solo guardar la URL para usar después
+                    // No crear el documento aquí para no interferir con isProfileComplete
+                    Log.d("AUTH", "Documento no existe, la foto se guardará al completar perfil")
                 }
             } catch (e: Exception) {
                 // No fallar el login si no se puede guardar la foto

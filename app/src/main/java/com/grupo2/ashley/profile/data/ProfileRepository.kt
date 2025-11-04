@@ -26,14 +26,17 @@ class ProfileRepository {
                 return Result.failure(Exception("Usuario no autenticado"))
             }
 
+            Log.d(TAG, "Obteniendo perfil para userId: $userId")
             val document = profilesCollection.document(userId).get().await()
             
             if (document.exists()) {
                 val profile = document.toObject(UserProfile::class.java)
-                Log.d(TAG, "Perfil obtenido exitosamente para userId: $userId")
+                Log.d(TAG, "✓ Perfil obtenido exitosamente")
+                Log.d(TAG, "  - firstName: ${profile?.firstName}")
+                Log.d(TAG, "  - isProfileComplete: ${profile?.isProfileComplete}")
                 Result.success(profile)
             } else {
-                Log.d(TAG, "No existe perfil para userId: $userId")
+                Log.d(TAG, "✗ No existe perfil en Firestore para userId: $userId")
                 Result.success(null)
             }
         } catch (e: Exception) {
@@ -55,21 +58,79 @@ class ProfileRepository {
      */
     suspend fun isProfileComplete(): Boolean {
         return try {
-            val userId = auth.currentUser?.uid ?: return false
-            val document = profilesCollection.document(userId).get().await()
+            val userId = auth.currentUser?.uid
+            if (userId == null) {
+                Log.w(TAG, "Usuario no autenticado al verificar perfil")
+                return false
+            }
+            
+            Log.d(TAG, "============================================")
+            Log.d(TAG, "Verificando perfil completo para userId: $userId")
+            Log.d(TAG, "Leyendo desde: SERVIDOR")
+            
+            // Forzar lectura desde el servidor en lugar de caché
+            val document = profilesCollection.document(userId)
+                .get(com.google.firebase.firestore.Source.SERVER)
+                .await()
+            
+            Log.d(TAG, "Documento existe: ${document.exists()}")
             
             if (document.exists()) {
-                val isComplete = document.getBoolean("isProfileComplete") ?: false
-                Log.d(TAG, "Perfil completo: $isComplete")
+                // Intentar leer ambos campos por compatibilidad
+                var isComplete = document.getBoolean("isProfileComplete") ?: false
+                val profileComplete = document.getBoolean("profileComplete")
+                
+                // Si existe el campo viejo "profileComplete", migrar al nuevo
+                if (profileComplete != null && !document.contains("isProfileComplete")) {
+                    Log.d(TAG, "⚠️ Migrando campo 'profileComplete' a 'isProfileComplete'")
+                    isComplete = profileComplete
+                    // Actualizar el documento con el nuevo nombre
+                    profilesCollection.document(userId).update(
+                        mapOf(
+                            "isProfileComplete" to profileComplete
+                        )
+                    ).await()
+                }
+                
+                val firstName = document.getString("firstName") ?: ""
+                val lastName = document.getString("lastName") ?: ""
+                val phoneNumber = document.getString("phoneNumber") ?: ""
+                
+                Log.d(TAG, "✓ Documento encontrado:")
+                Log.d(TAG, "  - isProfileComplete: $isComplete")
+                Log.d(TAG, "  - firstName: '$firstName'")
+                Log.d(TAG, "  - lastName: '$lastName'")
+                Log.d(TAG, "  - phoneNumber: '$phoneNumber'")
+                Log.d(TAG, "  - Todos los datos: ${document.data}")
+                Log.d(TAG, "============================================")
+                
                 isComplete
             } else {
-                Log.d(TAG, "No existe documento de perfil")
+                Log.d(TAG, "✗ No existe documento de perfil")
+                Log.d(TAG, "============================================")
                 false
             }
         } catch (e: Exception) {
-            // Si está offline, asumir que el perfil puede no estar completo
-            Log.w(TAG, "Error al verificar perfil (posiblemente offline): ${e.message}")
-            false
+            // Si hay error (offline, etc), intentar leer de caché
+            Log.w(TAG, "Error al verificar perfil desde servidor: ${e.message}, intentando caché")
+            try {
+                val userId = auth.currentUser?.uid ?: return false
+                val document = profilesCollection.document(userId)
+                    .get(com.google.firebase.firestore.Source.CACHE)
+                    .await()
+                
+                if (document.exists()) {
+                    val isComplete = document.getBoolean("isProfileComplete") 
+                        ?: document.getBoolean("profileComplete") 
+                        ?: false
+                    Log.d(TAG, "Perfil obtenido de caché - isProfileComplete: $isComplete")
+                    return isComplete
+                }
+                false
+            } catch (cacheError: Exception) {
+                Log.e(TAG, "Error al leer de caché: ${cacheError.message}")
+                false
+            }
         }
     }
 
@@ -94,8 +155,21 @@ class ProfileRepository {
                 isProfileComplete = isProfileDataComplete(profile)
             )
 
+            Log.d(TAG, "Guardando perfil con isProfileComplete: ${updatedProfile.isProfileComplete}")
             profilesCollection.document(userId).set(updatedProfile).await()
             Log.d(TAG, "Perfil guardado exitosamente para userId: $userId")
+            
+            // Verificar que se guardó correctamente leyendo desde el servidor
+            val verification = profilesCollection.document(userId)
+                .get(com.google.firebase.firestore.Source.SERVER)
+                .await()
+            val savedIsComplete = verification.getBoolean("isProfileComplete") ?: false
+            Log.d(TAG, "Verificación post-guardado - isProfileComplete: $savedIsComplete")
+            
+            if (!savedIsComplete) {
+                Log.w(TAG, "Advertencia: El perfil se guardó pero isProfileComplete es false")
+            }
+            
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Error al guardar perfil: ${e.message}", e)

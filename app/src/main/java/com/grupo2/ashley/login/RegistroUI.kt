@@ -98,11 +98,11 @@ fun Registro(
         isVisible = true
     }
 
-    // Navegar a login cuando el registro es exitoso
+    // Navegar a ProfileSetup cuando el registro es exitoso
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
             Toast.makeText(context, "¡Registro completado exitosamente!", Toast.LENGTH_LONG).show()
-            navController.navigate("login") {
+            navController.navigate("profileSetup") {
                 popUpTo("registro") { inclusive = true }
             }
         }
