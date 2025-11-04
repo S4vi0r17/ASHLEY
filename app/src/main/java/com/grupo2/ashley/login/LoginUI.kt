@@ -91,6 +91,13 @@ class Login : ComponentActivity() {
                     composable("login") {
                         AshleyApp()
                     }
+                    composable("profileSetup") {
+                        com.grupo2.ashley.profile.ProfileSetupScreen {
+                            navController.navigate("login") {
+                                popUpTo("main") { inclusive = true }
+                            }
+                        }
+                    }
                     composable("registro") {
                         val viewModel: RegistroViewModel = viewModel()
                         Registro(
@@ -205,9 +212,11 @@ fun GoogleOption(
             val account = task.getResult(ApiException::class.java)
             if (account.idToken != null) {
                 val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                viewModel.authGmailSignIn(credential) {
-                    navController.navigate("login")
-                }
+                viewModel.authGmailSignIn(
+                    credential,
+                    home = { navController.navigate("login") },
+                    profileSetup = { navController.navigate("profileSetup") }
+                )
             } else {
                 Log.e("GAUTH", "Error: idToken es null")
                 viewModel.setGoogleError("Error: No se pudo obtener el token de Google")
@@ -352,9 +361,10 @@ fun EmailOption(
 
             GradientButton(
                 onClick = {
-                    viewModel.authLoginEmail {
-                        navController.navigate("login")
-                    }
+                    viewModel.authLoginEmail(
+                        home = { navController.navigate("login") },
+                        profileSetup = { navController.navigate("profileSetup") }
+                    )
                 },
                 enabled = !isLoading,
                 modifier = Modifier
