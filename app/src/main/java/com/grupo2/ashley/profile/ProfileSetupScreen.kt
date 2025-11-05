@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Row
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +39,8 @@ import com.grupo2.ashley.ui.theme.AppGradients
 @Composable
 fun ProfileSetupScreen(
     viewModel: ProfileViewModel = viewModel(),
-    onProfileComplete: () -> Unit
+    onProfileComplete: () -> Unit,
+    onSelectLocation: () -> Unit = {}
 ) {
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
@@ -49,6 +51,7 @@ fun ProfileSetupScreen(
     val profileImageUrl by viewModel.profileImageUrl.collectAsState()
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
+    val defaultPickupLocationName by viewModel.defaultPickupLocationName.collectAsState()
 
     var isVisible by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -298,6 +301,75 @@ fun ProfileSetupScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     enabled = !updateState.isLoading
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Ubicación de entrega predeterminada
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (defaultPickupLocationName.isBlank())
+                            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                        else
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(enabled = !updateState.isLoading) {
+                                onSelectLocation()
+                            }
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = if (defaultPickupLocationName.isBlank())
+                                    MaterialTheme.colorScheme.error
+                                else
+                                    MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    "Ubicación de Entrega Predeterminada *",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    if (defaultPickupLocationName.isBlank())
+                                        "Toca para seleccionar tu ubicación en el mapa"
+                                    else
+                                        defaultPickupLocationName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (defaultPickupLocationName.isBlank())
+                                        MaterialTheme.colorScheme.error
+                                    else
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Text(
+                    "Esta será la ubicación predeterminada donde los compradores recogerán los productos que vendas",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

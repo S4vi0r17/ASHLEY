@@ -79,6 +79,8 @@ class Login : ComponentActivity() {
         setContent {
             ASHLEYTheme {
                 val navController = rememberNavController()
+                // ViewModel compartido para el perfil
+                val profileViewModel: com.grupo2.ashley.profile.ProfileViewModel = viewModel()
 
                 NavHost(navController = navController, startDestination = "main") {
                     composable("main") {
@@ -92,11 +94,28 @@ class Login : ComponentActivity() {
                         AshleyApp()
                     }
                     composable("profileSetup") {
-                        com.grupo2.ashley.profile.ProfileSetupScreen {
-                            navController.navigate("login") {
-                                popUpTo("main") { inclusive = true }
+                        com.grupo2.ashley.profile.ProfileSetupScreen(
+                            viewModel = profileViewModel,
+                            onProfileComplete = {
+                                navController.navigate("login") {
+                                    popUpTo("main") { inclusive = true }
+                                }
+                            },
+                            onSelectLocation = {
+                                navController.navigate("selectProfileLocation")
                             }
-                        }
+                        )
+                    }
+                    composable("selectProfileLocation") {
+                        com.grupo2.ashley.profile.ProfileLocationPickerScreen(
+                            viewModel = profileViewModel,
+                            onLocationSelected = {
+                                navController.popBackStack()
+                            },
+                            onBack = {
+                                navController.popBackStack()
+                            }
+                        )
                     }
                     composable("registro") {
                         val viewModel: RegistroViewModel = viewModel()

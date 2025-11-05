@@ -51,6 +51,16 @@ class ProfileViewModel : ViewModel() {
     private val _isUploadingImage = MutableStateFlow(false)
     val isUploadingImage: StateFlow<Boolean> = _isUploadingImage.asStateFlow()
 
+    // Ubicación predeterminada
+    private val _defaultPickupLocationName = MutableStateFlow("")
+    val defaultPickupLocationName: StateFlow<String> = _defaultPickupLocationName.asStateFlow()
+
+    private val _defaultPickupLatitude = MutableStateFlow(0.0)
+    val defaultPickupLatitude: StateFlow<Double> = _defaultPickupLatitude.asStateFlow()
+
+    private val _defaultPickupLongitude = MutableStateFlow(0.0)
+    val defaultPickupLongitude: StateFlow<Double> = _defaultPickupLongitude.asStateFlow()
+
     companion object {
         private const val TAG = "ProfileViewModel"
     }
@@ -78,6 +88,9 @@ class ProfileViewModel : ViewModel() {
                         _city.value = it.city
                         _postalCode.value = it.postalCode
                         _profileImageUrl.value = it.profileImageUrl
+                        _defaultPickupLocationName.value = it.defaultPickupLocationName
+                        _defaultPickupLatitude.value = it.defaultPickupLatitude
+                        _defaultPickupLongitude.value = it.defaultPickupLongitude
                         _isProfileComplete.value = it.isProfileComplete
                     }
                     _updateState.value = ProfileUpdateState(isLoading = false)
@@ -155,6 +168,12 @@ class ProfileViewModel : ViewModel() {
         _postalCode.value = value
     }
 
+    fun setDefaultPickupLocation(locationName: String, latitude: Double, longitude: Double) {
+        _defaultPickupLocationName.value = locationName
+        _defaultPickupLatitude.value = latitude
+        _defaultPickupLongitude.value = longitude
+    }
+
     /**
      * Sube una imagen de perfil
      */
@@ -202,6 +221,7 @@ class ProfileViewModel : ViewModel() {
             _phoneNumber.value.length < 9 -> "El teléfono debe tener al menos 9 dígitos"
             _address.value.isBlank() -> "La dirección es requerida"
             _city.value.isBlank() -> "La ciudad es requerida"
+            _defaultPickupLocationName.value.isBlank() -> "Debes seleccionar tu ubicación de entrega predeterminada"
             else -> null
         }
     }
@@ -227,6 +247,9 @@ class ProfileViewModel : ViewModel() {
                 city = _city.value.trim(),
                 postalCode = _postalCode.value.trim(),
                 profileImageUrl = _profileImageUrl.value,
+                defaultPickupLocationName = _defaultPickupLocationName.value,
+                defaultPickupLatitude = _defaultPickupLatitude.value,
+                defaultPickupLongitude = _defaultPickupLongitude.value,
                 isProfileComplete = true
             )
 
@@ -274,6 +297,9 @@ class ProfileViewModel : ViewModel() {
                 city = _city.value.trim(),
                 postalCode = _postalCode.value.trim(),
                 profileImageUrl = _profileImageUrl.value,
+                defaultPickupLocationName = _defaultPickupLocationName.value,
+                defaultPickupLatitude = _defaultPickupLatitude.value,
+                defaultPickupLongitude = _defaultPickupLongitude.value,
                 isProfileComplete = true,
                 updatedAt = System.currentTimeMillis()
             )
