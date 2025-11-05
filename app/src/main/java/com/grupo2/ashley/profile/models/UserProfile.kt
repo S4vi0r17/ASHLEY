@@ -12,13 +12,10 @@ data class UserProfile(
     val city: String = "",
     val postalCode: String = "",
     val profileImageUrl: String = "",
-<<<<<<< HEAD
     // Ubicación predeterminada para punto de recogida/entrega
     val defaultPickupLocationName: String = "",
     val defaultPickupLatitude: Double = 0.0,
     val defaultPickupLongitude: Double = 0.0,
-=======
->>>>>>> 8173e2c072e34be5d44e0c5daac6f68cd97c7bf9
     @PropertyName("isProfileComplete")
     val isProfileComplete: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
