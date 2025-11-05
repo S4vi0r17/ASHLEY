@@ -94,6 +94,7 @@ class Login : ComponentActivity() {
                         AshleyApp()
                     }
                     composable("profileSetup") {
+<<<<<<< HEAD
                         com.grupo2.ashley.profile.ProfileSetupScreen(
                             viewModel = profileViewModel,
                             onProfileComplete = {
@@ -123,6 +124,20 @@ class Login : ComponentActivity() {
                             viewModel, navController
                         )
                     }
+=======
+                        com.grupo2.ashley.profile.ProfileSetupScreen {
+                            navController.navigate("login") {
+                                popUpTo("main") { inclusive = true }
+                            }
+                        }
+                    }
+                    composable("registro") {
+                        val viewModel: RegistroViewModel = viewModel()
+                        Registro(
+                            viewModel, navController
+                        )
+                    }
+>>>>>>> 8173e2c072e34be5d44e0c5daac6f68cd97c7bf9
                     composable("recover") {
                         RecuperarContra()
                     }

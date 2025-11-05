@@ -18,7 +18,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+<<<<<<< HEAD
 import androidx.compose.foundation.layout.Row
+=======
+>>>>>>> 8173e2c072e34be5d44e0c5daac6f68cd97c7bf9
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,8 +42,12 @@ import com.grupo2.ashley.ui.theme.AppGradients
 @Composable
 fun ProfileSetupScreen(
     viewModel: ProfileViewModel = viewModel(),
+<<<<<<< HEAD
     onProfileComplete: () -> Unit,
     onSelectLocation: () -> Unit = {}
+=======
+    onProfileComplete: () -> Unit
+>>>>>>> 8173e2c072e34be5d44e0c5daac6f68cd97c7bf9
 ) {
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
@@ -51,7 +58,10 @@ fun ProfileSetupScreen(
     val profileImageUrl by viewModel.profileImageUrl.collectAsState()
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
+<<<<<<< HEAD
     val defaultPickupLocationName by viewModel.defaultPickupLocationName.collectAsState()
+=======
+>>>>>>> 8173e2c072e34be5d44e0c5daac6f68cd97c7bf9
 
     var isVisible by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -305,6 +315,7 @@ fun ProfileSetupScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+<<<<<<< HEAD
                 // Ubicación de entrega predeterminada
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -374,6 +385,8 @@ fun ProfileSetupScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+=======
+>>>>>>> 8173e2c072e34be5d44e0c5daac6f68cd97c7bf9
                 // Botón guardar
                 GradientButton(
                     onClick = {
