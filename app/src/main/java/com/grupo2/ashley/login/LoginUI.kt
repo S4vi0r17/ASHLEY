@@ -7,33 +7,47 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +67,10 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.grupo2.ashley.AshleyApp
 import com.grupo2.ashley.R
+import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
+import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.ui.theme.AppGradients
 
 class Login : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,27 +79,51 @@ class Login : ComponentActivity() {
         setContent {
             ASHLEYTheme {
                 val navController = rememberNavController()
+                // ViewModel compartido para el perfil
+                val profileViewModel: com.grupo2.ashley.profile.ProfileViewModel = viewModel()
 
-                NavHost(navController = navController, startDestination = "main"){
-                    composable("main"){
-                        val viewModel : LoginViewModel = viewModel()
+                NavHost(navController = navController, startDestination = "main") {
+                    composable("main") {
+                        val viewModel: LoginViewModel = viewModel()
 
                         LoginOpt(
-                            viewModel,
-                            navController
+                            viewModel, navController
                         )
                     }
-                    composable("login"){
+                    composable("login") {
                         AshleyApp()
                     }
-                    composable("registro"){
-                        val viewModel : RegistroViewModel = viewModel()
-                        Registro(
-                            viewModel,
-                            navController
+                    composable("profileSetup") {
+                        com.grupo2.ashley.profile.ProfileSetupScreen(
+                            viewModel = profileViewModel,
+                            onProfileComplete = {
+                                navController.navigate("login") {
+                                    popUpTo("main") { inclusive = true }
+                                }
+                            },
+                            onSelectLocation = {
+                                navController.navigate("selectProfileLocation")
+                            }
                         )
                     }
-                    composable("recover"){
+                    composable("selectProfileLocation") {
+                        com.grupo2.ashley.profile.ProfileLocationPickerScreen(
+                            viewModel = profileViewModel,
+                            onLocationSelected = {
+                                navController.popBackStack()
+                            },
+                            onBack = {
+                                navController.popBackStack()
+                            }
+                        )
+                    }
+                    composable("registro") {
+                        val viewModel: RegistroViewModel = viewModel()
+                        Registro(
+                            viewModel, navController
+                        )
+                    }
+                    composable("recover") {
                         RecuperarContra()
                     }
                 }
@@ -95,94 +136,118 @@ class Login : ComponentActivity() {
 fun LoginOpt(
     viewModel: LoginViewModel,
     navController: NavController
-){
+) {
     val errorMessage = viewModel.errorMessage.collectAsState().value
+    var isVisible by remember { mutableStateOf(false) }
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
+    // Animación de fade-in inicial
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center
     ){
-        Text(
-            "Bienvenido a",
-            fontSize = 24.sp
-        )
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-        Text(
-            "ASHLEY",
-            fontSize = 36.sp,
-            fontWeight = FontWeight.Bold
-        )
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "Bienvenido a",
+                    fontSize = 24.sp,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
 
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
+                Text(
+                    "ASHLEY",
+                    fontSize = 36.sp,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
 
-        // Mostrar mensaje de error global
-        errorMessage?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 32.dp),
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+                // Mostrar mensaje de error global
+                AnimatedVisibility(
+                    visible = errorMessage != null,
+                    enter = fadeIn(animationSpec = tween(AnimationConstants.FLUID_DURATION)),
+                    exit = fadeOut(animationSpec = tween(AnimationConstants.FLUID_DURATION))
+                ) {
+                    errorMessage?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 13.sp,
+                            modifier = Modifier.padding(horizontal = 32.dp),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+
+                if (errorMessage != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                GoogleOption(
+                    viewModel, navController
+                )
+                EmailOption(
+                    viewModel, navController
+                )
+                RegistroTexto(
+                    navController
+                )
+                RecoverTexto(
+                    navController
+                )
+            }
         }
-
-        GoogleOption(
-            viewModel,
-            navController
-        )
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-        EmailOption(
-            viewModel,
-            navController
-        )
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-        RegistroTexto(
-            navController
-        )
-        Spacer(
-            modifier = Modifier.height(4.dp)
-        )
-        RecoverTexto(
-            navController
-        )
     }
 }
 
 @Composable
 fun GoogleOption(
-    viewModel: LoginViewModel,
-    navController: NavController
-){
+    viewModel: LoginViewModel, navController: NavController
+) {
     val googleLogo = R.drawable.googlelogowhite
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-        try{
+        try {
             val account = task.getResult(ApiException::class.java)
             if (account.idToken != null) {
                 val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                viewModel.authGmailSignIn(credential) {
-                    navController.navigate("login")
-                }
+                viewModel.authGmailSignIn(
+                    credential,
+                    home = { navController.navigate("login") },
+                    profileSetup = { navController.navigate("profileSetup") }
+                )
             } else {
                 Log.e("GAUTH", "Error: idToken es null")
                 viewModel.setGoogleError("Error: No se pudo obtener el token de Google")
             }
-        } catch (ex: ApiException){
-            Log.e("GAUTH", "Error en autenticación con Google (ApiException): ${ex.statusCode} - ${ex.message}", ex)
+        } catch (ex: ApiException) {
+            Log.e(
+                "GAUTH",
+                "Error en autenticación con Google (ApiException): ${ex.statusCode} - ${ex.message}",
+                ex
+            )
             viewModel.setGoogleError("Error al iniciar sesión con Google. Código: ${ex.statusCode}")
-        } catch (ex: Exception){
+        } catch (ex: Exception) {
             Log.e("GAUTH", "Error en autenticación con Google: ${ex.message}", ex)
             viewModel.setGoogleError("Error inesperado: ${ex.message ?: "Intenta nuevamente"}")
         }
@@ -191,142 +256,170 @@ fun GoogleOption(
     val context = LocalContext.current
     val isLoading = viewModel.isLoading.collectAsState().value
 
-    Button(
+    GradientButton(
         onClick = {
             val opciones = GoogleSignInOptions.Builder(
                 GoogleSignInOptions.DEFAULT_SIGN_IN
-            ).requestIdToken(token)
-                .requestEmail()
-                .build()
-            val googleSignInFinal = GoogleSignIn.getClient(context,opciones)
+            ).requestIdToken(token).requestEmail().build()
+            val googleSignInFinal = GoogleSignIn.getClient(context, opciones)
             launcher.launch(googleSignInFinal.signInIntent)
         },
         enabled = !isLoading,
-        modifier = Modifier.size(height = 52.dp, width = 286.dp),
-        content = {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
-            } else {
-                Image(
-                    painter = painterResource(googleLogo),
-                    contentDescription = null
-                )
-                Spacer(
-                    modifier = Modifier.width(16.dp)
-                )
-                Text(
-                    "Ingresar con Gmail",
-                    fontSize = 16.sp
-                )
-            }
+        modifier = Modifier
+            .width(286.dp)
+            .height(52.dp),
+        gradient = AppGradients.PrimaryGradient
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(24.dp), strokeWidth = 2.dp, color = Color.White
+            )
+        } else {
+            Image(
+                painter = painterResource(googleLogo),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(
+                modifier = Modifier.width(16.dp)
+            )
+            Text(
+                "Continuar con Google",
+                fontSize = 16.sp,
+                color = Color.White,
+                style = MaterialTheme.typography.labelLarge
+            )
         }
-    )
+    }
 }
 
 @Composable
 fun EmailOption(
-    viewModel: LoginViewModel,
-    navController: NavController
-){
+    viewModel: LoginViewModel, navController: NavController
+) {
     val email = viewModel.email.collectAsState().value
     val password = viewModel.password.collectAsState().value
     val visibilidad = viewModel.visibility.collectAsState().value
     val isLoading = viewModel.isLoading.collectAsState().value
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HorizontalDivider(
-            modifier = Modifier.width(282.dp)
-        )
-        Spacer(
-            modifier = Modifier.height(10.dp)
-        )
-        OutlinedTextField(
-            value = email,
-            onValueChange = {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.width(282.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+            OutlinedTextField(
+                value = email, onValueChange = {
                 viewModel.onEmailChange(it)
-            },
-            label = {
+            }, label = {
                 Text(
-                    "Email"
+                    "Email",
+                    style = MaterialTheme.typography.bodyMedium
                 )
-            }
-        )
+            }, colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                focusedLabelColor = MaterialTheme.colorScheme.primary,
+                cursorColor = MaterialTheme.colorScheme.primary
+            ), singleLine = true
+            )
 
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
 
-        OutlinedTextField(
-            value = password,
-            visualTransformation = if (visibilidad) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (visibilidad) Icons.Filled.Visibility
-                else Icons.Filled.VisibilityOff
+            OutlinedTextField(
+                value = password,
+                visualTransformation = if (visibilidad) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (visibilidad) Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
 
-                IconButton(
-                    onClick = {
-                        viewModel.toggleVisibility()
+                    IconButton(
+                        onClick = {
+                            viewModel.toggleVisibility()
+                        }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = image,
-                        contentDescription = null
+                },
+                onValueChange = {
+                    viewModel.onPasswordChange(it)
+                },
+                label = {
+                    Text(
+                        "Contraseña", style = MaterialTheme.typography.bodyMedium
                     )
-                }
-            },
-            onValueChange = {
-                viewModel.onPasswordChange(it)
-            },
-            label = {
-                Text(
-                    "Contraseña"
-                )
-            }
-        )
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                ),
+                singleLine = true
+            )
 
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
 
-        OutlinedButton(
-            onClick = {
-                viewModel.authLoginEmail{
-                    navController.navigate("login")
-                }
-            },
-            enabled = !isLoading,
-            modifier = Modifier.size(height = 52.dp, width = 286.dp),
-            content = {
+            GradientButton(
+                onClick = {
+                    viewModel.authLoginEmail(
+                        home = { navController.navigate("login") },
+                        profileSetup = { navController.navigate("profileSetup") }
+                    )
+                },
+                enabled = !isLoading,
+                modifier = Modifier
+                    .width(286.dp)
+                    .height(52.dp),
+                gradient = AppGradients.SecondaryGradient
+            ) {
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
                     Text(
-                        "Ingresar con Email",
-                        fontSize = 16.sp
+                        "Ingresar",
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.labelLarge
                     )
                 }
             }
-        )
+        }
     }
 }
 
 @Composable
 fun RegistroTexto(
-    navController : NavController
-){
-    Row{
+    navController: NavController
+) {
+    Row {
         Text(
             "¿No tiene cuenta?",
-            fontSize = 12.sp
+            fontSize = 12.sp,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(
             modifier = Modifier.width(8.dp)
@@ -334,10 +427,12 @@ fun RegistroTexto(
         Text(
             "Regístrese",
             fontSize = 12.sp,
-            modifier = Modifier.clickable{
+            modifier = Modifier.clickable {
                 navController.navigate("registro")
             },
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -345,13 +440,15 @@ fun RegistroTexto(
 @Composable
 fun RecoverTexto(
     navController: NavController
-){
+) {
     Text(
         "Olvidé mi contraseña",
         fontSize = 12.sp,
-        modifier = Modifier.clickable{
+        modifier = Modifier.clickable {
             navController.navigate("recover")
         },
-        fontWeight = FontWeight.Bold
+        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.primary
     )
 }
