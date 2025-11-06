@@ -7,6 +7,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,14 +15,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
 import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.MapScreen
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.product.ProductViewModel
+import com.grupo2.ashley.productdetail.ProductDetailScreen
+import com.grupo2.ashley.productdetail.ProductDetailViewModel
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.ChatsScreen
 import com.grupo2.ashley.screens.CuentaScreen
@@ -35,6 +40,9 @@ object Routes {
     const val ANUNCIOS = "anuncios"
     const val CUENTA = "cuenta"
     const val SELECCIONAR_UBICACION = "seleccionar_ubicacion"
+    const val PRODUCT_DETAIL = "product_detail/{productId}"
+    
+    fun productDetail(productId: String) = "product_detail/$productId"
 }
 
 @Composable
@@ -94,6 +102,9 @@ fun AppNavigation(
                 viewModel = homeViewModel,
                 ubicacionViewModel = ubicacionViewModel,
                 onLocationClick = { navController.navigate(Routes.SELECCIONAR_UBICACION) },
+                onProductClick = { productId ->
+                    navController.navigate(Routes.productDetail(productId))
+                },
                 innerPadding = innerPadding
             )
         }
@@ -127,6 +138,39 @@ fun AppNavigation(
 
         composable(Routes.SELECCIONAR_UBICACION) {
             MapScreen(viewModel = ubicacionViewModel)
+        }
+
+        composable(
+            route = Routes.PRODUCT_DETAIL,
+            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
+            val product = homeViewModel.getProductById(productId)
+            
+            if (product != null) {
+                val productDetailViewModel: ProductDetailViewModel = viewModel()
+                productDetailViewModel.setProduct(product)
+                
+                val sellerProfile by productDetailViewModel.sellerProfile.collectAsState()
+                
+                ProductDetailScreen(
+                    product = product,
+                    sellerProfile = sellerProfile,
+                    onBackClick = { navController.popBackStack() },
+                    onMapClick = {
+                        // TODO: Implementar navegación al mapa con dirección del producto
+                    },
+                    onCallClick = {
+                        // TODO: Implementar llamada telefónica
+                    },
+                    onChatClick = {
+                        // TODO: Implementar navegación al chat
+                    }
+                )
+            } else {
+                // Producto no encontrado, volver atrás
+                navController.popBackStack()
+            }
         }
     }
 }

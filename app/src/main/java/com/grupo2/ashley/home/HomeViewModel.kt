@@ -90,4 +90,8 @@ class HomeViewModel : ViewModel() {
     fun refreshProducts() {
         loadProducts()
     }
+
+    fun getProductById(productId: String): Product? {
+        return _allProducts.value.find { it.id == productId }
+    }
 }

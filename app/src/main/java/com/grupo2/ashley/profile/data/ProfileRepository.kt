@@ -54,6 +54,30 @@ class ProfileRepository {
     }
 
     /**
+     * Obtiene el perfil de cualquier usuario por su ID
+     */
+    suspend fun getUserProfile(userId: String): Result<UserProfile?> {
+        return try {
+            Log.d(TAG, "Obteniendo perfil para userId: $userId")
+            val document = profilesCollection.document(userId).get().await()
+            
+            if (document.exists()) {
+                val profile = document.toObject(UserProfile::class.java)
+                Log.d(TAG, "✓ Perfil obtenido exitosamente para $userId")
+                Log.d(TAG, "  - firstName: ${profile?.firstName}")
+                Result.success(profile)
+            } else {
+                Log.d(TAG, "✗ No existe perfil en Firestore para userId: $userId")
+                Result.success(null)
+            }
+        } catch (e: Exception) {
+            val errorMessage = "Error al cargar perfil del usuario: ${e.message}"
+            Log.e(TAG, errorMessage, e)
+            Result.failure(Exception(errorMessage))
+        }
+    }
+
+    /**
      * Verifica si el usuario tiene su perfil completo
      */
     suspend fun isProfileComplete(): Boolean {

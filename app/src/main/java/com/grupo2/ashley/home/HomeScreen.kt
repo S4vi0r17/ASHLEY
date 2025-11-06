@@ -22,6 +22,7 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     ubicacionViewModel: UbicacionViewModel,
     onLocationClick: () -> Unit = {},
+    onProductClick: (String) -> Unit = {},
     innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -146,7 +147,7 @@ fun HomeScreen(
                     ProductsGrid(
                         products = products,
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
-                        onProductClick = { /* TODO: Navegar a detalle */ },
+                        onProductClick = onProductClick,
                         modifier = Modifier.fillMaxSize(),
                         bottomPadding = innerPadding.calculateBottomPadding()
                     )
