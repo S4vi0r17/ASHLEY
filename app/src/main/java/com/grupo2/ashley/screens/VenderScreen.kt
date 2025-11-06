@@ -60,14 +60,15 @@ fun VenderScreen(
     // Sincronizar ubicación del mapa
     val ubicacionMapa by viewModel.ubicacionSeleccionada.collectAsState()
     val direccionMapa by viewModel.direccionSeleccionada.collectAsState()
+    val nombreUbicacionMapa by viewModel.nombreUbicacion.collectAsState()
 
-    LaunchedEffect(ubicacionMapa, direccionMapa) {
+    LaunchedEffect(ubicacionMapa, direccionMapa, nombreUbicacionMapa) {
         if (!useDefaultLocation && direccionMapa != "Sin dirección seleccionada") {
             productViewModel.updateDeliveryLocation(
                 latitude = ubicacionMapa.latitude,
                 longitude = ubicacionMapa.longitude,
                 address = direccionMapa,
-                locationName = "Ubicación personalizada"
+                locationName = nombreUbicacionMapa.ifEmpty { "Ubicación personalizada" }
             )
         }
     }
@@ -95,14 +96,19 @@ fun VenderScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
     ) {
-        Text(
-            text = "Publicar Producto",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 16.dp)
+        ) {
+            Text(
+                text = "Publicar Producto",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -325,11 +331,17 @@ fun VenderScreen(
             Text("Usar dirección del perfil")
         }
 
-        if (useDefaultLocation) {
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Mostrar ubicación si está configurada (predeterminada o personalizada)
+        if (deliveryAddress.isNotEmpty()) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    containerColor = if (useDefaultLocation) 
+                        MaterialTheme.colorScheme.primaryContainer 
+                    else 
+                        MaterialTheme.colorScheme.secondaryContainer
                 )
             ) {
                 Row(
@@ -339,25 +351,70 @@ fun VenderScreen(
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = "Ubicación",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = if (useDefaultLocation) 
+                            MaterialTheme.colorScheme.onPrimaryContainer 
+                        else 
+                            MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
+                        // Mostrar el nombre de la ubicación
                         Text(
-                            text = deliveryLocationName.ifEmpty { "Ubicación predeterminada" },
-                            fontWeight = FontWeight.SemiBold
+                            text = if (deliveryLocationName.isNotEmpty()) {
+                                deliveryLocationName
+                            } else if (useDefaultLocation) {
+                                "Dirección del perfil"
+                            } else {
+                                "Ubicación personalizada"
+                            },
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = if (useDefaultLocation) 
+                                MaterialTheme.colorScheme.onPrimaryContainer 
+                            else 
+                                MaterialTheme.colorScheme.onSecondaryContainer
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        // Mostrar la dirección completa
                         Text(
                             text = deliveryAddress,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color.Gray
+                            color = if (useDefaultLocation) 
+                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f) 
+                            else 
+                                MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                         )
                     }
                 }
             }
+        } else {
+            // Mensaje cuando no hay ubicación seleccionada
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Sin ubicación",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Selecciona una ubicación de entrega",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
             onClick = { navController.navigate(Routes.SELECCIONAR_UBICACION) },
@@ -412,6 +469,7 @@ fun VenderScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
     }
 
     // Diálogo de éxito

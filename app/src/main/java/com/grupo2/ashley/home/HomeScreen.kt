@@ -37,34 +37,39 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(innerPadding)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = innerPadding.calculateTopPadding())
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        SearchBar(
-            query = searchQuery,
-            onQueryChange = { viewModel.onSearchQueryChange(it) },
-            onClearClick = { viewModel.clearSearch() }
-        )
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { viewModel.onSearchQueryChange(it) },
+                onClearClick = { viewModel.clearSearch() }
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Categorías",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+            Text(
+                text = "Categorías",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-        CategoriesRow(
-            categories = categories,
-            selectedCategory = selectedCategory,
-            onCategoryClick = { viewModel.onCategorySelected(it) }
-        )
+            CategoriesRow(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategoryClick = { viewModel.onCategorySelected(it) }
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         Box(modifier = Modifier.weight(1f)) {
             when {
@@ -149,7 +154,7 @@ fun HomeScreen(
                         onFavoriteClick = { viewModel.toggleFavorite(it) },
                         onProductClick = onProductClick,
                         modifier = Modifier.fillMaxSize(),
-                        bottomPadding = innerPadding.calculateBottomPadding()
+                        bottomPadding = innerPadding.calculateBottomPadding() + 16.dp
                     )
                 }
             }

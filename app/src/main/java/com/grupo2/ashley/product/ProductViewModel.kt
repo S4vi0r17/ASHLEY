@@ -72,7 +72,7 @@ class ProductViewModel : ViewModel() {
             profileRepository.getUserProfile().onSuccess { profile ->
                 if (profile != null) {
                     _deliveryLocationName.value = profile.defaultPickupLocationName
-                    _deliveryAddress.value = profile.address
+                    _deliveryAddress.value = profile.fullAddress
                     _deliveryLatitude.value = profile.defaultPickupLatitude
                     _deliveryLongitude.value = profile.defaultPickupLongitude
                 }
@@ -135,13 +135,8 @@ class ProductViewModel : ViewModel() {
         _useDefaultLocation.value = !_useDefaultLocation.value
         if (_useDefaultLocation.value) {
             loadDefaultDeliveryLocation()
-        } else {
-            // Limpiar ubicación para que el usuario seleccione una nueva
-            _deliveryLocationName.value = ""
-            _deliveryAddress.value = ""
-            _deliveryLatitude.value = 0.0
-            _deliveryLongitude.value = 0.0
         }
+        // No limpiar la ubicación cuando se desactiva, solo cuando se seleccione una nueva
     }
 
     fun publishProduct() {

@@ -36,14 +36,8 @@ class ProfileViewModel : ViewModel() {
     private val _phoneNumber = MutableStateFlow("")
     val phoneNumber: StateFlow<String> = _phoneNumber.asStateFlow()
 
-    private val _address = MutableStateFlow("")
-    val address: StateFlow<String> = _address.asStateFlow()
-
-    private val _city = MutableStateFlow("")
-    val city: StateFlow<String> = _city.asStateFlow()
-
-    private val _postalCode = MutableStateFlow("")
-    val postalCode: StateFlow<String> = _postalCode.asStateFlow()
+    private val _fullAddress = MutableStateFlow("")
+    val fullAddress: StateFlow<String> = _fullAddress.asStateFlow()
 
     private val _profileImageUrl = MutableStateFlow("")
     val profileImageUrl: StateFlow<String> = _profileImageUrl.asStateFlow()
@@ -84,9 +78,7 @@ class ProfileViewModel : ViewModel() {
                         _firstName.value = it.firstName
                         _lastName.value = it.lastName
                         _phoneNumber.value = it.phoneNumber
-                        _address.value = it.address
-                        _city.value = it.city
-                        _postalCode.value = it.postalCode
+                        _fullAddress.value = it.fullAddress
                         _profileImageUrl.value = it.profileImageUrl
                         _defaultPickupLocationName.value = it.defaultPickupLocationName
                         _defaultPickupLatitude.value = it.defaultPickupLatitude
@@ -156,16 +148,14 @@ class ProfileViewModel : ViewModel() {
         }
     }
 
-    fun onAddressChange(value: String) {
-        _address.value = value
-    }
-
-    fun onCityChange(value: String) {
-        _city.value = value
-    }
-
-    fun onPostalCodeChange(value: String) {
-        _postalCode.value = value
+    fun updateLocation(address: String, latitude: Double, longitude: Double, locationName: String = "") {
+        _fullAddress.value = address
+        _defaultPickupLatitude.value = latitude
+        _defaultPickupLongitude.value = longitude
+        _defaultPickupLocationName.value = locationName.ifEmpty { 
+            // Extraer nombre corto de la dirección (primera parte antes de la coma)
+            address.split(",").firstOrNull()?.trim() ?: "Mi ubicación"
+        }
     }
 
     fun setDefaultPickupLocation(locationName: String, latitude: Double, longitude: Double) {
@@ -219,8 +209,7 @@ class ProfileViewModel : ViewModel() {
             _lastName.value.isBlank() -> "El apellido es requerido"
             _phoneNumber.value.isBlank() -> "El teléfono es requerido"
             _phoneNumber.value.length < 9 -> "El teléfono debe tener al menos 9 dígitos"
-            _address.value.isBlank() -> "La dirección es requerida"
-            _city.value.isBlank() -> "La ciudad es requerida"
+            _fullAddress.value.isBlank() -> "La dirección es requerida"
             _defaultPickupLocationName.value.isBlank() -> "Debes seleccionar tu ubicación de entrega predeterminada"
             else -> null
         }
@@ -243,9 +232,7 @@ class ProfileViewModel : ViewModel() {
                 firstName = _firstName.value.trim(),
                 lastName = _lastName.value.trim(),
                 phoneNumber = _phoneNumber.value.trim(),
-                address = _address.value.trim(),
-                city = _city.value.trim(),
-                postalCode = _postalCode.value.trim(),
+                fullAddress = _fullAddress.value.trim(),
                 profileImageUrl = _profileImageUrl.value,
                 defaultPickupLocationName = _defaultPickupLocationName.value,
                 defaultPickupLatitude = _defaultPickupLatitude.value,
@@ -293,9 +280,7 @@ class ProfileViewModel : ViewModel() {
                 firstName = _firstName.value.trim(),
                 lastName = _lastName.value.trim(),
                 phoneNumber = _phoneNumber.value.trim(),
-                address = _address.value.trim(),
-                city = _city.value.trim(),
-                postalCode = _postalCode.value.trim(),
+                fullAddress = _fullAddress.value.trim(),
                 profileImageUrl = _profileImageUrl.value,
                 defaultPickupLocationName = _defaultPickupLocationName.value,
                 defaultPickupLatitude = _defaultPickupLatitude.value,

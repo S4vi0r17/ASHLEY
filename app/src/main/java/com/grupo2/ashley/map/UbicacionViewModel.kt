@@ -13,8 +13,15 @@ class UbicacionViewModel : ViewModel() {
     private val _direccionSeleccionada = MutableStateFlow("Sin dirección seleccionada")
     val direccionSeleccionada = _direccionSeleccionada.asStateFlow()
 
-    fun actualizarUbicacion(lat: Double, lng: Double, direccion: String) {
+    private val _nombreUbicacion = MutableStateFlow("")
+    val nombreUbicacion = _nombreUbicacion.asStateFlow()
+
+    fun actualizarUbicacion(lat: Double, lng: Double, direccion: String, nombre: String = "") {
         _ubicacionSeleccionada.value = LatLng(lat, lng)
         _direccionSeleccionada.value = direccion
+        _nombreUbicacion.value = nombre.ifEmpty { 
+            // Extraer nombre corto de la dirección (primera parte)
+            direccion.split(",").firstOrNull()?.trim() ?: "Ubicación seleccionada"
+        }
     }
 }

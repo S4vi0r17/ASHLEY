@@ -14,5 +14,7 @@ data class Product(
     val allImages: List<String> = emptyList(),
     val userId: String = "",
     val userEmail: String = "",
-    val createdAt: Long = 0L
+    val createdAt: Long = 0L,
+    val deliveryLatitude: Double = 0.0,
+    val deliveryLongitude: Double = 0.0
 )

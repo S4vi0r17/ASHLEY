@@ -14,13 +14,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,7 +58,8 @@ import java.util.Locale
 @SuppressLint("MissingPermission")
 @Composable
 fun MapScreen(
-    viewModel: UbicacionViewModel
+    viewModel: UbicacionViewModel,
+    onLocationConfirmed: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()
@@ -61,13 +68,54 @@ fun MapScreen(
     }
 
     var isPlacesReady by remember { mutableStateOf(false) }
+    var hasInitializedLocation by remember { mutableStateOf(false) }
 
-
+    // Obtener ubicación actual al iniciar
     LaunchedEffect(Unit) {
         if (!Places.isInitialized()) {
             Places.initialize(context.applicationContext, "AIzaSyD-htAcCn275_30Bvi7EuErkxd4tS8BumE")
         }
         isPlacesReady = true
+        
+        // Obtener ubicación actual automáticamente
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                location?.let {
+                    if (!hasInitializedLocation) {
+                        val currentLatLng = LatLng(it.latitude, it.longitude)
+                        
+                        // Obtener dirección de la ubicación actual
+                        val geocoder = Geocoder(context, Locale.getDefault())
+                        try {
+                            val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                            val direccion = if (!addresses.isNullOrEmpty()) {
+                                addresses[0].getAddressLine(0) ?: "Ubicación actual"
+                            } else {
+                                "Ubicación actual"
+                            }
+                            
+                            viewModel.actualizarUbicacion(
+                                it.latitude,
+                                it.longitude,
+                                direccion,
+                                nombre = ""  // Se extraerá automáticamente
+                            )
+                            
+                            cameraPositionState.move(
+                                CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
+                            )
+                            hasInitializedLocation = true
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
     }
 
     if (!isPlacesReady) {
@@ -84,7 +132,26 @@ fun MapScreen(
     var query by remember { mutableStateOf("") }
     var predictions by remember { mutableStateOf(emptyList<String>()) }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Seleccionar ubicación de entrega") },
+                navigationIcon = {
+                    IconButton(onClick = onLocationConfirmed) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
 
         OutlinedTextField(
             value = query,
@@ -148,10 +215,24 @@ fun MapScreen(
                                     placesClient.fetchPlace(fetchRequest)
                                         .addOnSuccessListener { placeResponse ->
                                             placeResponse.place.latLng?.let { latLng ->
-                                                val nombreLugar = placeResponse.place.name
-                                                    ?: "Dirección sin nombre"
+                                                // Obtener la dirección completa
+                                                val geocoder = Geocoder(context, Locale.getDefault())
+                                                val direccion = try {
+                                                    val addresses = geocoder.getFromLocation(
+                                                        latLng.latitude,
+                                                        latLng.longitude,
+                                                        1
+                                                    )
+                                                    addresses?.firstOrNull()?.getAddressLine(0) ?: query
+                                                } catch (e: Exception) {
+                                                    query
+                                                }
+                                                
                                                 viewModel.actualizarUbicacion(
-                                                    latLng.latitude, latLng.longitude, nombreLugar
+                                                    latLng.latitude,
+                                                    latLng.longitude,
+                                                    direccion,
+                                                    nombre = ""  // Se extraerá automáticamente de la dirección
                                                 )
                                                 cameraPositionState.move(
                                                     CameraUpdateFactory.newLatLngZoom(
@@ -171,10 +252,46 @@ fun MapScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             GoogleMap(
-                modifier = Modifier.fillMaxSize(), cameraPositionState = cameraPositionState
+                modifier = Modifier.fillMaxSize(), 
+                cameraPositionState = cameraPositionState,
+                onMapClick = { latLng ->
+                    // Al hacer clic en el mapa, actualizar la ubicación
+                    val geocoder = Geocoder(context, Locale.getDefault())
+                    try {
+                        val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+                        val direccion = if (!addresses.isNullOrEmpty()) {
+                            val address = addresses[0]
+                            address.getAddressLine(0) ?: "Dirección desconocida"
+                        } else {
+                            "Dirección desconocida"
+                        }
+                        
+                        viewModel.actualizarUbicacion(
+                            latLng.latitude,
+                            latLng.longitude,
+                            direccion,
+                            nombre = ""  // Se extraerá automáticamente
+                        )
+                        
+                        Toast.makeText(
+                            context,
+                            "Ubicación actualizada",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } catch (e: Exception) {
+                        viewModel.actualizarUbicacion(
+                            latLng.latitude,
+                            latLng.longitude,
+                            "Ubicación personalizada",
+                            nombre = "Ubicación personalizada"
+                        )
+                    }
+                }
             ) {
                 Marker(
-                    state = MarkerState(position = ubicacion), title = "Ubicación seleccionada"
+                    state = MarkerState(position = ubicacion), 
+                    title = "Ubicación de entrega",
+                    snippet = "Toca el mapa para cambiar la ubicación"
                 )
             }
 
@@ -219,7 +336,10 @@ fun MapScreen(
 
 
                                 viewModel.actualizarUbicacion(
-                                    it.latitude, it.longitude, direccion
+                                    it.latitude,
+                                    it.longitude,
+                                    direccion,
+                                    nombre = ""  // Se extraerá automáticamente
                                 )
 
 
@@ -249,15 +369,17 @@ fun MapScreen(
                 onClick = {
                     Toast.makeText(
                         context,
-                        "Ubicación guardada: ${ubicacion.latitude}, ${ubicacion.longitude}",
-                        Toast.LENGTH_LONG
+                        "Ubicación guardada",
+                        Toast.LENGTH_SHORT
                     ).show()
+                    onLocationConfirmed()
                 }, modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(50.dp)
             ) {
                 Text("Confirmar ubicación")
             }
+        }
         }
     }
 }

@@ -8,10 +8,9 @@ data class UserProfile(
     val firstName: String = "",
     val lastName: String = "",
     val phoneNumber: String = "",
-    val address: String = "",
-    val city: String = "",
-    val postalCode: String = "",
     val profileImageUrl: String = "",
+    // Dirección completa de Google Maps
+    val fullAddress: String = "",
     // Ubicación predeterminada para punto de recogida/entrega
     val defaultPickupLocationName: String = "",
     val defaultPickupLatitude: Double = 0.0,

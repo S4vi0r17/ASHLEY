@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,7 +42,9 @@ import com.grupo2.ashley.ui.theme.AppGradients
 @Composable
 fun CuentaScreen(
     innerPadding: PaddingValues,
-    viewModel: ProfileViewModel = viewModel()
+    viewModel: ProfileViewModel = viewModel(),
+    ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null,
+    onNavigateToMap: (() -> Unit)? = null
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
@@ -51,12 +54,29 @@ fun CuentaScreen(
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
     val phoneNumber by viewModel.phoneNumber.collectAsState()
-    val address by viewModel.address.collectAsState()
-    val city by viewModel.city.collectAsState()
-    val postalCode by viewModel.postalCode.collectAsState()
+    val fullAddress by viewModel.fullAddress.collectAsState()
+    val defaultPickupLocationName by viewModel.defaultPickupLocationName.collectAsState()
     val profileImageUrl by viewModel.profileImageUrl.collectAsState()
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
+    
+    // Sincronizar ubicación del mapa si está disponible
+    ubicacionViewModel?.let { ubicacionVM ->
+        val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
+        val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
+        val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
+        
+        LaunchedEffect(ubicacionMapa, direccionMapa, nombreUbicacion) {
+            if (direccionMapa != "Sin dirección seleccionada" && direccionMapa.isNotEmpty()) {
+                viewModel.updateLocation(
+                    address = direccionMapa,
+                    latitude = ubicacionMapa.latitude,
+                    longitude = ubicacionMapa.longitude,
+                    locationName = nombreUbicacion
+                )
+            }
+        }
+    }
 
     var isEditing by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
@@ -89,17 +109,22 @@ fun CuentaScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
             .padding(innerPadding)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header con información del usuario
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
-            )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Header con información del usuario
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
             Column(
                 modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -280,36 +305,99 @@ fun CuentaScreen(
             singleLine = true
         )
 
-        OutlinedTextField(
-            value = address,
-            onValueChange = viewModel::onAddressChange,
-            label = { Text("Dirección") },
-            leadingIcon = { Icon(Icons.Default.Home, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isEditing && !updateState.isLoading,
-            singleLine = true
+        // Sección de Dirección
+        Text(
+            text = "Dirección",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(top = 8.dp)
         )
 
-        OutlinedTextField(
-            value = city,
-            onValueChange = viewModel::onCityChange,
-            label = { Text("Ciudad") },
-            leadingIcon = { Icon(Icons.Default.LocationCity, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = isEditing && !updateState.isLoading,
-            singleLine = true
-        )
+        Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = postalCode,
-            onValueChange = viewModel::onPostalCodeChange,
-            label = { Text("Código Postal") },
-            leadingIcon = { Icon(Icons.Default.Mail, contentDescription = null) },
+        if (fullAddress.isNotEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Ubicación",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = if (defaultPickupLocationName.isNotEmpty()) {
+                                defaultPickupLocationName
+                            } else {
+                                "Tu ubicación"
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = fullAddress,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Sin ubicación",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "No has configurado una dirección",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = { onNavigateToMap?.invoke() },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            enabled = isEditing && !updateState.isLoading,
-            singleLine = true
-        )
+            enabled = isEditing && !updateState.isLoading
+        ) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(if (fullAddress.isEmpty()) "Seleccionar dirección" else "Cambiar dirección")
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -387,13 +475,14 @@ fun CuentaScreen(
             )
         ) {
             Icon(
-                imageVector = Icons.Default.Logout,
+                imageVector = Icons.AutoMirrored.Filled.Logout,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text("Cerrar Sesión", fontSize = 16.sp)
         }
+    }
     }
 
     // Diálogo de confirmación de cierre de sesión

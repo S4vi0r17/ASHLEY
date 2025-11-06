@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -27,11 +28,14 @@ import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.productdetail.ProductDetailScreen
 import com.grupo2.ashley.productdetail.ProductDetailViewModel
+import com.grupo2.ashley.productdetail.ProductMapScreen
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.ChatsScreen
 import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.utils.makePhoneCall
+import com.grupo2.ashley.utils.openMapRoute
 
 object Routes {
     const val HOME = "home"
@@ -41,8 +45,10 @@ object Routes {
     const val CUENTA = "cuenta"
     const val SELECCIONAR_UBICACION = "seleccionar_ubicacion"
     const val PRODUCT_DETAIL = "product_detail/{productId}"
+    const val PRODUCT_MAP = "product_map/{productId}"
     
     fun productDetail(productId: String) = "product_detail/$productId"
+    fun productMap(productId: String) = "product_map/$productId"
 }
 
 @Composable
@@ -133,17 +139,29 @@ fun AppNavigation(
 
         composable(Routes.CUENTA) {
             previousRouteIndex = currentRouteIndex
-            CuentaScreen(innerPadding = innerPadding)
+            CuentaScreen(
+                innerPadding = innerPadding,
+                ubicacionViewModel = ubicacionViewModel,
+                onNavigateToMap = {
+                    navController.navigate(Routes.SELECCIONAR_UBICACION)
+                }
+            )
         }
 
         composable(Routes.SELECCIONAR_UBICACION) {
-            MapScreen(viewModel = ubicacionViewModel)
+            MapScreen(
+                viewModel = ubicacionViewModel,
+                onLocationConfirmed = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(
             route = Routes.PRODUCT_DETAIL,
             arguments = listOf(navArgument("productId") { type = NavType.StringType })
         ) { backStackEntry ->
+            val context = LocalContext.current
             val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
             val product = homeViewModel.getProductById(productId)
             
@@ -158,14 +176,34 @@ fun AppNavigation(
                     sellerProfile = sellerProfile,
                     onBackClick = { navController.popBackStack() },
                     onMapClick = {
-                        // TODO: Implementar navegación al mapa con dirección del producto
+                        navController.navigate(Routes.productMap(productId))
                     },
                     onCallClick = {
-                        // TODO: Implementar llamada telefónica
+                        sellerProfile?.phoneNumber?.let { phoneNumber ->
+                            makePhoneCall(context, phoneNumber)
+                        }
                     },
                     onChatClick = {
                         // TODO: Implementar navegación al chat
                     }
+                )
+            } else {
+                // Producto no encontrado, volver atrás
+                navController.popBackStack()
+            }
+        }
+
+        composable(
+            route = Routes.PRODUCT_MAP,
+            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
+            val product = homeViewModel.getProductById(productId)
+            
+            if (product != null) {
+                ProductMapScreen(
+                    product = product,
+                    onBackClick = { navController.popBackStack() }
                 )
             } else {
                 // Producto no encontrado, volver atrás

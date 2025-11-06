@@ -250,7 +250,6 @@ class ProfileRepository {
         return profile.firstName.isNotBlank() &&
                 profile.lastName.isNotBlank() &&
                 profile.phoneNumber.isNotBlank() &&
-                profile.address.isNotBlank() &&
-                profile.city.isNotBlank()
+                profile.fullAddress.isNotBlank()
     }
 }

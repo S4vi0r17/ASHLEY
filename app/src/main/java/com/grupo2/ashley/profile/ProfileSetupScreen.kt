@@ -40,18 +40,35 @@ import com.grupo2.ashley.ui.theme.AppGradients
 fun ProfileSetupScreen(
     viewModel: ProfileViewModel = viewModel(),
     onProfileComplete: () -> Unit,
-    onSelectLocation: () -> Unit = {}
+    onSelectLocation: () -> Unit = {},
+    ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null
 ) {
     val firstName by viewModel.firstName.collectAsState()
     val lastName by viewModel.lastName.collectAsState()
     val phoneNumber by viewModel.phoneNumber.collectAsState()
-    val address by viewModel.address.collectAsState()
-    val city by viewModel.city.collectAsState()
-    val postalCode by viewModel.postalCode.collectAsState()
+    val fullAddress by viewModel.fullAddress.collectAsState()
     val profileImageUrl by viewModel.profileImageUrl.collectAsState()
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
     val defaultPickupLocationName by viewModel.defaultPickupLocationName.collectAsState()
+    
+    // Sincronizar ubicación del mapa si está disponible
+    ubicacionViewModel?.let { ubicacionVM ->
+        val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
+        val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
+        val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
+        
+        LaunchedEffect(ubicacionMapa, direccionMapa, nombreUbicacion) {
+            if (direccionMapa != "Sin dirección seleccionada" && direccionMapa.isNotEmpty()) {
+                viewModel.updateLocation(
+                    address = direccionMapa,
+                    latitude = ubicacionMapa.latitude,
+                    longitude = ubicacionMapa.longitude,
+                    locationName = nombreUbicacion
+                )
+            }
+        }
+    }
 
     var isVisible by remember { mutableStateOf(false) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -262,46 +279,73 @@ fun ProfileSetupScreen(
                     placeholder = { Text("+51 999 999 999") }
                 )
 
-                // Dirección
-                OutlinedTextField(
-                    value = address,
-                    onValueChange = viewModel::onAddressChange,
-                    label = { Text("Dirección *") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Home, contentDescription = null)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = !updateState.isLoading,
-                    placeholder = { Text("Calle, número, departamento") }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Sección de Dirección
+                Text(
+                    text = "Dirección *",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
                 )
 
-                // Ciudad
-                OutlinedTextField(
-                    value = city,
-                    onValueChange = viewModel::onCityChange,
-                    label = { Text("Ciudad *") },
-                    leadingIcon = {
-                        Icon(Icons.Default.LocationCity, contentDescription = null)
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = !updateState.isLoading
-                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-                // Código postal
-                OutlinedTextField(
-                    value = postalCode,
-                    onValueChange = viewModel::onPostalCodeChange,
-                    label = { Text("Código Postal (Opcional)") },
-                    leadingIcon = {
-                        Icon(Icons.Default.Mail, contentDescription = null)
-                    },
+                if (fullAddress.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = "Ubicación",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = if (defaultPickupLocationName.isNotEmpty()) {
+                                        defaultPickupLocationName
+                                    } else {
+                                        "Ubicación seleccionada"
+                                    },
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = fullAddress,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = onSelectLocation,
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
                     enabled = !updateState.isLoading
-                )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(if (fullAddress.isEmpty()) "Seleccionar dirección" else "Cambiar dirección")
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 

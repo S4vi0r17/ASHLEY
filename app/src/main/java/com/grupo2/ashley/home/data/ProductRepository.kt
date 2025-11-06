@@ -112,7 +112,9 @@ class ProductRepository {
                         allImages = firebaseProduct.images,
                         userId = firebaseProduct.userId,
                         userEmail = firebaseProduct.userEmail,
-                        createdAt = firebaseProduct.createdAt
+                        createdAt = firebaseProduct.createdAt,
+                        deliveryLatitude = firebaseProduct.deliveryLatitude,
+                        deliveryLongitude = firebaseProduct.deliveryLongitude
                     )
                 } catch (e: Exception) {
                     android.util.Log.e("ProductRepository", "ERROR al convertir documento ${doc.id}: ${e.message}", e)
