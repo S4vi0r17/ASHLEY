@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,6 +21,7 @@ import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.MapScreen
 import com.grupo2.ashley.map.UbicacionViewModel
+import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.ChatsScreen
 import com.grupo2.ashley.screens.CuentaScreen
@@ -103,10 +105,13 @@ fun AppNavigation(
 
         composable(Routes.VENDER) {
             previousRouteIndex = currentRouteIndex
+            val productViewModel: ProductViewModel = viewModel()
             VenderScreen(
                 navController = navController,
                 viewModel = ubicacionViewModel,
-                innerPadding = innerPadding
+                innerPadding = innerPadding,
+                productViewModel = productViewModel,
+                homeViewModel = homeViewModel
             )
         }
 

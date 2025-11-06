@@ -5,5 +5,13 @@ data class Category(
 )
 
 enum class CategoryIcon {
-    ALL, SHOES, VEHICLES, MOBILE
+    ALL,           // Todos
+    ELECTRONICS,   // Electrónica
+    FASHION,       // Moda
+    HOME,          // Hogar
+    SPORTS,        // Deportes
+    BOOKS,         // Libros
+    TOYS,          // Juguetes
+    VEHICLES,      // Vehículos
+    OTHERS         // Otros
 }

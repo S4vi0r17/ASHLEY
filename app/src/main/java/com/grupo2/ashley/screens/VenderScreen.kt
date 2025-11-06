@@ -1,62 +1,439 @@
 package com.grupo2.ashley.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.Routes
+import com.grupo2.ashley.product.ProductViewModel
+import com.grupo2.ashley.product.models.ProductCategory
+import com.grupo2.ashley.product.models.ProductCondition
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VenderScreen(
     navController: NavHostController,
     viewModel: UbicacionViewModel,
-    innerPadding: PaddingValues = PaddingValues(0.dp)
+    innerPadding: PaddingValues = PaddingValues(0.dp),
+    productViewModel: ProductViewModel = viewModel(),
+    homeViewModel: HomeViewModel
 ) {
-    val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()
-    val direccion by viewModel.direccionSeleccionada.collectAsState()
+    val title by productViewModel.title.collectAsState()
+    val brand by productViewModel.brand.collectAsState()
+    val category by productViewModel.category.collectAsState()
+    val condition by productViewModel.condition.collectAsState()
+    val price by productViewModel.price.collectAsState()
+    val description by productViewModel.description.collectAsState()
+    val selectedImages by productViewModel.selectedImages.collectAsState()
+    val deliveryLocationName by productViewModel.deliveryLocationName.collectAsState()
+    val deliveryAddress by productViewModel.deliveryAddress.collectAsState()
+    val useDefaultLocation by productViewModel.useDefaultLocation.collectAsState()
+    val uploadState by productViewModel.uploadState.collectAsState()
+
+    // Sincronizar ubicación del mapa
+    val ubicacionMapa by viewModel.ubicacionSeleccionada.collectAsState()
+    val direccionMapa by viewModel.direccionSeleccionada.collectAsState()
+
+    LaunchedEffect(ubicacionMapa, direccionMapa) {
+        if (!useDefaultLocation && direccionMapa != "Sin dirección seleccionada") {
+            productViewModel.updateDeliveryLocation(
+                latitude = ubicacionMapa.latitude,
+                longitude = ubicacionMapa.longitude,
+                address = direccionMapa,
+                locationName = "Ubicación personalizada"
+            )
+        }
+    }
+
+    var expandedCategory by remember { mutableStateOf(false) }
+    var expandedCondition by remember { mutableStateOf(false) }
+
+    // Launcher para seleccionar múltiples imágenes
+    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 5)
+    ) { uris ->
+        if (uris.isNotEmpty()) {
+            productViewModel.setSelectedImages(uris)
+        }
+    }
+
+    // Mostrar diálogo de éxito
+    LaunchedEffect(uploadState.success) {
+        if (uploadState.success) {
+            // Aquí podrías mostrar un snackbar o navegar a otra pantalla
+        }
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(innerPadding)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         Text(
-            text = "Publica algo en Vender",
-            style = MaterialTheme.typography.titleLarge
+            text = "Publicar Producto",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
+        // Sección de imágenes
         Text(
-            text = "Ubicación guardada:",
-            style = MaterialTheme.typography.titleMedium
+            text = "Fotos del producto *",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
         )
-
         Text(
-            text = "Lat: ${ubicacion.latitude}, Lng: ${ubicacion.longitude}",
-            color = Color.Gray,
-            style = MaterialTheme.typography.bodyMedium
+            text = "Puedes agregar hasta 5 imágenes",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Gray
         )
+        
+        Spacer(modifier = Modifier.height(8.dp))
 
-        Text(
-            text = "Dirección: $direccion",
-            color = Color.Gray,
-            style = MaterialTheme.typography.bodyMedium
-        )
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Botón para agregar imágenes
+            if (selectedImages.size < 5) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable {
+                                multiplePhotoPickerLauncher.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Agregar imagen",
+                            modifier = Modifier.size(48.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
 
-        Spacer(Modifier.height(20.dp))
-
-        Button(onClick = { navController.navigate(Routes.SELECCIONAR_UBICACION) }) {
-            Text("Seleccionar ubicación")
+            // Imágenes seleccionadas
+            items(selectedImages) { uri ->
+                Box(
+                    modifier = Modifier.size(120.dp)
+                ) {
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = "Imagen del producto",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    IconButton(
+                        onClick = { productViewModel.removeImage(uri) },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(32.dp)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.6f),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Eliminar imagen",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Título del producto
+        OutlinedTextField(
+            value = title,
+            onValueChange = { productViewModel.updateTitle(it) },
+            label = { Text("Título del producto *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Marca
+        OutlinedTextField(
+            value = brand,
+            onValueChange = { productViewModel.updateBrand(it) },
+            label = { Text("Marca") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Categoría
+        ExposedDropdownMenuBox(
+            expanded = expandedCategory,
+            onExpandedChange = { expandedCategory = !expandedCategory }
+        ) {
+            OutlinedTextField(
+                value = ProductCategory.categories.find { it.id == category }?.name ?: "",
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Categoría *") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = expandedCategory,
+                onDismissRequest = { expandedCategory = false }
+            ) {
+                ProductCategory.categories.forEach { cat ->
+                    DropdownMenuItem(
+                        text = { Text(cat.name) },
+                        onClick = {
+                            productViewModel.updateCategory(cat.id)
+                            expandedCategory = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Condición
+        ExposedDropdownMenuBox(
+            expanded = expandedCondition,
+            onExpandedChange = { expandedCondition = !expandedCondition }
+        ) {
+            OutlinedTextField(
+                value = condition.displayName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Condición *") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCondition) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+            ExposedDropdownMenu(
+                expanded = expandedCondition,
+                onDismissRequest = { expandedCondition = false }
+            ) {
+                ProductCondition.entries.forEach { cond ->
+                    DropdownMenuItem(
+                        text = { Text(cond.displayName) },
+                        onClick = {
+                            productViewModel.updateCondition(cond)
+                            expandedCondition = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Precio
+        OutlinedTextField(
+            value = price,
+            onValueChange = { 
+                if (it.isEmpty() || it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                    productViewModel.updatePrice(it)
+                }
+            },
+            label = { Text("Precio (S/.) *") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            prefix = { Text("S/. ") }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Descripción
+        OutlinedTextField(
+            value = description,
+            onValueChange = { productViewModel.updateDescription(it) },
+            label = { Text("Descripción") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(120.dp),
+            maxLines = 5
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Ubicación de entrega
+        Text(
+            text = "Lugar de entrega *",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = useDefaultLocation,
+                onCheckedChange = { productViewModel.toggleUseDefaultLocation() }
+            )
+            Text("Usar dirección del perfil")
+        }
+
+        if (useDefaultLocation) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Ubicación",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = deliveryLocationName.ifEmpty { "Ubicación predeterminada" },
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = deliveryAddress,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedButton(
+            onClick = { navController.navigate(Routes.SELECCIONAR_UBICACION) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Default.LocationOn,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(if (useDefaultLocation) "Cambiar ubicación" else "Seleccionar ubicación")
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Mostrar error si existe
+        if (uploadState.error != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer
+                )
+            ) {
+                Text(
+                    text = uploadState.error ?: "",
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        // Botón publicar
+        Button(
+            onClick = { productViewModel.publishProduct() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            enabled = !uploadState.isLoading
+        ) {
+            if (uploadState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(if (uploadState.isUploadingImages) "Subiendo imágenes..." else "Publicando...")
+            } else {
+                Text("Publicar Producto", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+
+    // Diálogo de éxito
+    if (uploadState.success) {
+        AlertDialog(
+            onDismissRequest = { 
+                productViewModel.resetUploadState()
+                homeViewModel.refreshProducts() // Refrescar productos en home
+            },
+            title = { Text("¡Producto publicado!") },
+            text = { Text("Tu producto ha sido publicado exitosamente.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    productViewModel.resetUploadState()
+                    homeViewModel.refreshProducts() // Refrescar productos en home
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) { inclusive = true }
+                    }
+                }) {
+                    Text("Aceptar")
+                }
+            }
+        )
     }
 }

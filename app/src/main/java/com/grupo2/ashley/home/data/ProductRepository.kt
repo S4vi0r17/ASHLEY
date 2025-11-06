@@ -1,136 +1,156 @@
 package com.grupo2.ashley.home.data
 
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.grupo2.ashley.home.models.Product
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.tasks.await
 
 class ProductRepository {
+    private val firestore = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
-    private val allProducts = listOf(
-        Product(
-            id = "1",
-            title = "Nike Air Max 270",
-            description = "Zapatillas deportivas nuevas, talla 42, color negro con detalles rojos",
-            price = 350.00,
-            location = "Breña, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400",
-            category = "shoes"
-        ), Product(
-            id = "2",
-            title = "Adidas Ultraboost",
-            description = "Zapatillas running prácticamente nuevas, muy cómodas, talla 40",
-            price = 420.00,
-            location = "Miraflores, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=400",
-            category = "shoes"
-        ), Product(
-            id = "3",
-            title = "Toyota Yaris 2018",
-            description = "Sedan automático, 45,000 km, aire acondicionado, impecable estado",
-            price = 45000.00,
-            location = "San Isidro, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400",
-            category = "vehicles"
-        ), Product(
-            id = "4",
-            title = "Honda CRV 2020",
-            description = "SUV en excelente estado, único dueño, revisiones al día",
-            price = 68000.00,
-            location = "Surco, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=400",
-            category = "vehicles"
-        ), Product(
-            id = "5",
-            title = "iPhone 13 Pro Max",
-            description = "256GB, color azul sierra, batería al 95%, con accesorios originales",
-            price = 3200.00,
-            location = "San Miguel, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1632661674596-df8be070a5c5?w=400",
-            category = "mobile"
-        ), Product(
-            id = "6",
-            title = "Samsung Galaxy S23",
-            description = "128GB, negro, como nuevo, 3 meses de uso, con caja y cargador",
-            price = 2400.00,
-            location = "Jesús María, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400",
-            category = "mobile"
-        ), Product(
-            id = "7",
-            title = "Converse All Star",
-            description = "Zapatillas clásicas negras altas, talla 39, originales",
-            price = 180.00,
-            location = "Breña, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1607522370275-f14206abe5d3?w=400",
-            category = "shoes"
-        ), Product(
-            id = "8",
-            title = "Puma RS-X",
-            description = "Zapatillas urbanas blancas con azul, talla 41, edición limitada",
-            price = 290.00,
-            location = "Lince, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400",
-            category = "shoes"
-        ), Product(
-            id = "9",
-            title = "Hyundai Tucson 2019",
-            description = "SUV full equipo, 38,000 km, transmisión automática, color plata",
-            price = 52000.00,
-            location = "La Molina, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400",
-            category = "vehicles"
-        ), Product(
-            id = "10",
-            title = "Suzuki Swift 2020",
-            description = "Hatchback mecánico, económico, 35,000 km, color rojo",
-            price = 38000.00,
-            location = "Ate, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400",
-            category = "vehicles"
-        ), Product(
-            id = "11",
-            title = "Xiaomi Redmi Note 12",
-            description = "128GB, azul, excelente cámara, batería de larga duración",
-            price = 850.00,
-            location = "Los Olivos, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400",
-            category = "mobile"
-        ), Product(
-            id = "12",
-            title = "Motorola Edge 30",
-            description = "256GB, gris, pantalla OLED, carga rápida, impecable",
-            price = 1200.00,
-            location = "San Juan de Lurigancho, Lima",
-            imageUrl = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400",
-            category = "mobile"
-        )
-    )
+    /**
+     * Obtiene todos los productos activos EXCEPTO los del usuario actual
+     * Usa índice compuesto (isActive + createdAt) para mejor rendimiento
+     */
+    suspend fun getAllProducts(): Result<List<Product>> {
+        return try {
+            val currentUserId = auth.currentUser?.uid ?: ""
+            android.util.Log.d("ProductRepository", "========== INICIO CARGA PRODUCTOS ==========")
+            android.util.Log.d("ProductRepository", "Usuario actual: $currentUserId")
+            
+            // PRIMERO: Obtener TODOS los documentos sin filtro para ver qué hay
+            android.util.Log.d("ProductRepository", "PASO 1: Obteniendo TODOS los documentos sin filtro...")
+            val allSnapshot = firestore.collection("products")
+                .get()
+                .await()
+            
+            android.util.Log.d("ProductRepository", "Total documentos en colección: ${allSnapshot.documents.size}")
+            
+            // Mostrar los datos RAW de cada documento
+            allSnapshot.documents.forEach { doc ->
+                android.util.Log.d("ProductRepository", "═══════════════════════════════════════")
+                android.util.Log.d("ProductRepository", "Documento ID: ${doc.id}")
+                android.util.Log.d("ProductRepository", "Datos RAW completos:")
+                doc.data?.forEach { (key, value) ->
+                    android.util.Log.d("ProductRepository", "  $key = $value (${value?.javaClass?.simpleName})")
+                }
+                android.util.Log.d("ProductRepository", "═══════════════════════════════════════")
+            }
+            
+            // PASO 2: Intentar consulta con filtro active
+            android.util.Log.d("ProductRepository", "PASO 2: Intentando consulta CON filtro active=true...")
+            val snapshot = try {
+                firestore.collection("products")
+                    .whereEqualTo("active", true)
+                    .orderBy("createdAt", Query.Direction.DESCENDING)
+                    .get()
+                    .await()
+            } catch (indexError: Exception) {
+                android.util.Log.e("ProductRepository", "Error con índice, usando consulta simple", indexError)
+                firestore.collection("products")
+                    .whereEqualTo("active", true)
+                    .get()
+                    .await()
+            }
 
-    private val _products = MutableStateFlow<List<Product>>(allProducts)
-    val products: Flow<List<Product>> = _products.asStateFlow()
+            android.util.Log.d("ProductRepository", "Documentos obtenidos CON filtro active: ${snapshot.documents.size}")
+            
+            if (snapshot.documents.isEmpty()) {
+                android.util.Log.w("ProductRepository", "¡No hay documentos con active=true!")
+                android.util.Log.w("ProductRepository", "Usando TODOS los documentos (${allSnapshot.documents.size}) como fallback...")
+                // Usar todos los documentos como fallback para debugging
+                return procesarYFiltrarProductos(allSnapshot, currentUserId)
+            }
 
-    fun getAllProducts(): List<Product> = allProducts
-
-    fun getProductsByCategory(categoryId: String): List<Product> {
-        return if (categoryId == "all") {
-            allProducts
-        } else {
-            allProducts.filter { it.category == categoryId }
+            // Usar documentos filtrados
+            procesarYFiltrarProductos(snapshot, currentUserId)
+        } catch (e: Exception) {
+            android.util.Log.e("ProductRepository", "ERROR FATAL al cargar productos: ${e.message}", e)
+            e.printStackTrace()
+            Result.failure(e)
         }
     }
 
-    fun searchProducts(query: String): List<Product> {
-        return allProducts.filter { product ->
-            product.title.contains(query, ignoreCase = true) || product.description.contains(
-                query,
-                ignoreCase = true
-            )
+    private fun procesarYFiltrarProductos(
+        snapshot: com.google.firebase.firestore.QuerySnapshot,
+        currentUserId: String
+    ): Result<List<Product>> {
+        return try {
+            val allProducts = snapshot.documents.mapNotNull { doc ->
+                try {
+                    android.util.Log.d("ProductRepository", "--- Procesando documento: ${doc.id} ---")
+                    
+                    // Intentar leer campos directamente primero
+                    val docData = doc.data
+                    android.util.Log.d("ProductRepository", "Datos del documento: $docData")
+                    
+                    val firebaseProduct = doc.toObject(com.grupo2.ashley.product.models.Product::class.java)
+                    
+                    if (firebaseProduct == null) {
+                        android.util.Log.e("ProductRepository", "Error: No se pudo convertir documento ${doc.id} a Product")
+                        return@mapNotNull null
+                    }
+                    
+                    android.util.Log.d("ProductRepository", "✓ Producto convertido: ${firebaseProduct.title}")
+                    android.util.Log.d("ProductRepository", "  - UserId: ${firebaseProduct.userId}")
+                    android.util.Log.d("ProductRepository", "  - IsActive: ${firebaseProduct.isActive}")
+                    android.util.Log.d("ProductRepository", "  - Imágenes: ${firebaseProduct.images.size}")
+                    
+                    Product(
+                        id = firebaseProduct.productId,
+                        title = firebaseProduct.title,
+                        description = firebaseProduct.description,
+                        price = firebaseProduct.price,
+                        location = firebaseProduct.deliveryAddress,
+                        imageUrl = firebaseProduct.images.firstOrNull(),
+                        category = firebaseProduct.category,
+                        isFavorite = false,
+                        brand = firebaseProduct.brand,
+                        condition = firebaseProduct.condition.displayName,
+                        allImages = firebaseProduct.images,
+                        userId = firebaseProduct.userId,
+                        userEmail = firebaseProduct.userEmail,
+                        createdAt = firebaseProduct.createdAt
+                    )
+                } catch (e: Exception) {
+                    android.util.Log.e("ProductRepository", "ERROR al convertir documento ${doc.id}: ${e.message}", e)
+                    null
+                }
+            }
+
+            android.util.Log.d("ProductRepository", "Total productos convertidos: ${allProducts.size}")
+            
+            // Filtrar productos del usuario actual
+            val filteredProducts = allProducts.filter { product ->
+                val isNotCurrentUser = product.userId != currentUserId
+                android.util.Log.d("ProductRepository", "Producto '${product.title}': userId=${product.userId}, isNotCurrentUser=$isNotCurrentUser")
+                isNotCurrentUser
+            }
+            
+            android.util.Log.d("ProductRepository", "Productos después de filtrar: ${filteredProducts.size}")
+            android.util.Log.d("ProductRepository", "========== FIN CARGA PRODUCTOS ==========")
+
+            // Ordenar por fecha si no se ordenó en la consulta
+            val sortedProducts = filteredProducts.sortedByDescending { it.createdAt }
+
+            Result.success(sortedProducts)
+        } catch (e: Exception) {
+            android.util.Log.e("ProductRepository", "Error en procesarYFiltrarProductos", e)
+            Result.failure(e)
         }
     }
 
-    fun filterProducts(categoryId: String, searchQuery: String): List<Product> {
-        var filtered = allProducts
+    /**
+     * Filtra productos por categoría y búsqueda
+     */
+    fun filterProducts(
+        products: List<Product>,
+        categoryId: String,
+        searchQuery: String
+    ): List<Product> {
+        var filtered = products
 
         // Filtrar por categoría
         if (categoryId != "all") {
@@ -140,16 +160,18 @@ class ProductRepository {
         // Filtrar por búsqueda
         if (searchQuery.isNotEmpty()) {
             filtered = filtered.filter {
-                it.title.contains(searchQuery, ignoreCase = true) || it.description.contains(
-                    searchQuery,
-                    ignoreCase = true
-                )
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                        it.description.contains(searchQuery, ignoreCase = true) ||
+                        it.brand.contains(searchQuery, ignoreCase = true)
             }
         }
 
         return filtered
     }
 
+    /**
+     * Alterna el estado de favorito de un producto
+     */
     fun toggleFavorite(productId: String, currentProducts: List<Product>): List<Product> {
         return currentProducts.map { product ->
             if (product.id == productId) {

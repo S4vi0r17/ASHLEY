@@ -7,10 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.PhoneAndroid
-import androidx.compose.material.icons.filled.SportsSoccer
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,9 +72,14 @@ fun CategoryItem(
                 Icon(
                     imageVector = when (category.icon) {
                         CategoryIcon.ALL -> Icons.Default.Apps
-                        CategoryIcon.SHOES -> Icons.Default.SportsSoccer
+                        CategoryIcon.ELECTRONICS -> Icons.Default.Smartphone
+                        CategoryIcon.FASHION -> Icons.Default.Checkroom
+                        CategoryIcon.HOME -> Icons.Default.Home
+                        CategoryIcon.SPORTS -> Icons.Default.SportsBasketball
+                        CategoryIcon.BOOKS -> Icons.Default.MenuBook
+                        CategoryIcon.TOYS -> Icons.Default.Toys
                         CategoryIcon.VEHICLES -> Icons.Default.DirectionsCar
-                        CategoryIcon.MOBILE -> Icons.Default.PhoneAndroid
+                        CategoryIcon.OTHERS -> Icons.Default.MoreHoriz
                     },
                     contentDescription = category.name,
                     modifier = Modifier.size(32.dp),

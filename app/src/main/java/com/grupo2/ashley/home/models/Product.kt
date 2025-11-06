@@ -8,5 +8,11 @@ data class Product(
     val location: String,
     val imageUrl: String? = null,
     val isFavorite: Boolean = false,
-    val category: String
+    val category: String,
+    val brand: String = "",
+    val condition: String = "",
+    val allImages: List<String> = emptyList(),
+    val userId: String = "",
+    val userEmail: String = "",
+    val createdAt: Long = 0L
 )
