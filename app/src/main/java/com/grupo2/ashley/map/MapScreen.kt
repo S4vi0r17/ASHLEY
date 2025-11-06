@@ -63,6 +63,8 @@ fun MapScreen(
 ) {
     val context = LocalContext.current
     val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()
+    val direccionActual by viewModel.direccionSeleccionada.collectAsState()
+    
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(ubicacion, 15f)
     }
@@ -77,44 +79,61 @@ fun MapScreen(
         }
         isPlacesReady = true
         
-        // Obtener ubicación actual automáticamente
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                location?.let {
-                    if (!hasInitializedLocation) {
-                        val currentLatLng = LatLng(it.latitude, it.longitude)
-                        
-                        // Obtener dirección de la ubicación actual
-                        val geocoder = Geocoder(context, Locale.getDefault())
-                        try {
-                            val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
-                            val direccion = if (!addresses.isNullOrEmpty()) {
-                                addresses[0].getAddressLine(0) ?: "Ubicación actual"
-                            } else {
-                                "Ubicación actual"
+        // Solo obtener ubicación GPS automáticamente si NO hay una dirección válida previamente seleccionada
+        // (evita sobrescribir cuando se viene desde edición de perfil)
+        val hasValidLocation = direccionActual.isNotEmpty() && 
+                               direccionActual != "Sin dirección seleccionada"
+        
+        if (!hasValidLocation) {
+            // Obtener ubicación actual automáticamente solo si no hay ubicación previa
+            val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+            if (ActivityCompat.checkSelfPermission(
+                    context, Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        if (!hasInitializedLocation) {
+                            val currentLatLng = LatLng(it.latitude, it.longitude)
+                            
+                            // Obtener dirección de la ubicación actual
+                            val geocoder = Geocoder(context, Locale.getDefault())
+                            try {
+                                val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                                val direccion = if (!addresses.isNullOrEmpty()) {
+                                    addresses[0].getAddressLine(0) ?: "Ubicación actual"
+                                } else {
+                                    "Ubicación actual"
+                                }
+                                
+                                viewModel.actualizarUbicacion(
+                                    it.latitude,
+                                    it.longitude,
+                                    direccion,
+                                    nombre = ""  // Se extraerá automáticamente
+                                )
+                                
+                                // Mover cámara de forma segura
+                                try {
+                                    cameraPositionState.move(
+                                        CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
+                                    )
+                                } catch (e: Exception) {
+                                    // Si CameraUpdateFactory no está inicializado, ignorar
+                                    e.printStackTrace()
+                                }
+                                hasInitializedLocation = true
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
-                            
-                            viewModel.actualizarUbicacion(
-                                it.latitude,
-                                it.longitude,
-                                direccion,
-                                nombre = ""  // Se extraerá automáticamente
-                            )
-                            
-                            cameraPositionState.move(
-                                CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
-                            )
-                            hasInitializedLocation = true
-                        } catch (e: Exception) {
-                            e.printStackTrace()
                         }
                     }
                 }
             }
+        } else {
+            // Si ya hay una ubicación válida, centrar la cámara en ella
+            // No usar CameraUpdateFactory aquí porque puede no estar inicializado aún
+            hasInitializedLocation = true
         }
     }
 

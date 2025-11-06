@@ -159,6 +159,39 @@ class ProfileViewModel : ViewModel() {
         Log.d(TAG, "Ubicación actualizada - Dirección: $address")
         Log.d(TAG, "Ubicación actualizada - Nombre: ${_defaultPickupLocationName.value}")
         Log.d(TAG, "Ubicación actualizada - Lat: $latitude, Lng: $longitude")
+        
+        // Guardar ubicación inmediatamente en Firestore
+        saveLocationToFirestore()
+    }
+    
+    /**
+     * Guarda solo la ubicación en Firestore (llamado automáticamente al actualizar ubicación)
+     */
+    private fun saveLocationToFirestore() {
+        viewModelScope.launch {
+            try {
+                val locationData = mapOf(
+                    "fullAddress" to _fullAddress.value,
+                    "defaultPickupLocationName" to _defaultPickupLocationName.value,
+                    "defaultPickupLatitude" to _defaultPickupLatitude.value,
+                    "defaultPickupLongitude" to _defaultPickupLongitude.value,
+                    "updatedAt" to System.currentTimeMillis()
+                )
+                
+                repository.updateProfileFields(locationData).fold(
+                    onSuccess = {
+                        Log.d(TAG, "✓ Ubicación guardada en Firestore exitosamente")
+                        // Recargar perfil para sincronizar
+                        loadUserProfile()
+                    },
+                    onFailure = { error ->
+                        Log.e(TAG, "✗ Error al guardar ubicación: ${error.message}")
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "✗ Error al guardar ubicación: ${e.message}")
+            }
+        }
     }
 
     fun setDefaultPickupLocation(locationName: String, latitude: Double, longitude: Double) {

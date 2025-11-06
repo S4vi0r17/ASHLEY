@@ -213,20 +213,14 @@ fun ProductMapScreen(
                     myLocationButtonEnabled = false
                 )
             ) {
-                // Marcador de destino
+                // Marcador de destino (producto)
                 Marker(
                     state = MarkerState(position = destinationLocation),
                     title = product.title,
                     snippet = product.location
                 )
                 
-                // Marcador de origen (mi ubicación)
-                currentLocation?.let { origin ->
-                    Marker(
-                        state = MarkerState(position = origin),
-                        title = "Mi ubicación"
-                    )
-                }
+                // NO agregamos marcador de "Mi ubicación" - solo se muestra el punto azul nativo del GPS
                 
                 // Dibujar la ruta con Polyline
                 if (routePoints.isNotEmpty()) {

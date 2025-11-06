@@ -71,13 +71,8 @@ fun CuentaScreen(
         
         // Actualizar cuando la dirección cambie
         LaunchedEffect(direccionMapa) {
-            android.util.Log.d("CuentaScreen", "=== LaunchedEffect ejecutado ===")
-            android.util.Log.d("CuentaScreen", "Dirección mapa: '$direccionMapa'")
-            android.util.Log.d("CuentaScreen", "Nombre ubicación: '$nombreUbicacion'")
-            
             // Actualizar SIEMPRE que haya una dirección válida
             if (direccionMapa.isNotBlank() && direccionMapa != "Sin dirección seleccionada") {
-                android.util.Log.d("CuentaScreen", "✓ Actualizando ubicación en ViewModel...")
                 viewModel.updateLocation(
                     address = direccionMapa,
                     latitude = ubicacionMapa.latitude,
@@ -85,13 +80,10 @@ fun CuentaScreen(
                     locationName = nombreUbicacion
                 )
                 locationJustUpdated = true
-                android.util.Log.d("CuentaScreen", "✓ Ubicación actualizada en memoria (pendiente de guardar)")
                 
                 // Resetear el indicador después de 2 segundos
                 kotlinx.coroutines.delay(2000)
                 locationJustUpdated = false
-            } else {
-                android.util.Log.d("CuentaScreen", "✗ Dirección no válida: '$direccionMapa'")
             }
         }
     }
@@ -431,7 +423,26 @@ fun CuentaScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedButton(
-            onClick = { onNavigateToMap?.invoke() },
+            onClick = {
+                // Cargar la ubicación actual del perfil en el UbicacionViewModel antes de navegar
+                ubicacionViewModel?.let { vm ->
+                    val currentLat = viewModel.defaultPickupLatitude.value
+                    val currentLng = viewModel.defaultPickupLongitude.value
+                    val currentAddress = viewModel.fullAddress.value
+                    val currentName = viewModel.defaultPickupLocationName.value
+                    
+                    if (currentAddress.isNotEmpty() && currentLat != 0.0 && currentLng != 0.0) {
+                        // Si ya tiene una dirección guardada, cargarla en el mapa
+                        vm.actualizarUbicacion(
+                            lat = currentLat,
+                            lng = currentLng,
+                            direccion = currentAddress,
+                            nombre = currentName
+                        )
+                    }
+                }
+                onNavigateToMap?.invoke()
+            },
             modifier = Modifier.fillMaxWidth(),
             enabled = isEditing && !updateState.isLoading
         ) {
@@ -442,35 +453,6 @@ fun CuentaScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(if (fullAddress.isEmpty()) "Seleccionar dirección" else "Cambiar dirección")
-        }
-        
-        // Mensaje informativo cuando la ubicación se actualiza
-        if (locationJustUpdated && isEditing) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "No olvides presionar 'Guardar' para confirmar los cambios",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                    )
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
