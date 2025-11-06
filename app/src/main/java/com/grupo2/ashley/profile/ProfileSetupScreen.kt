@@ -58,14 +58,25 @@ fun ProfileSetupScreen(
         val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
         val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
         
-        LaunchedEffect(ubicacionMapa, direccionMapa, nombreUbicacion) {
-            if (direccionMapa != "Sin dirección seleccionada" && direccionMapa.isNotEmpty()) {
+        // Actualizar cuando cualquier valor cambie
+        LaunchedEffect(direccionMapa) {
+            android.util.Log.d("ProfileSetupScreen", "=== LaunchedEffect ejecutado ===")
+            android.util.Log.d("ProfileSetupScreen", "Dirección mapa: '$direccionMapa'")
+            android.util.Log.d("ProfileSetupScreen", "Nombre ubicación: '$nombreUbicacion'")
+            android.util.Log.d("ProfileSetupScreen", "Lat: ${ubicacionMapa.latitude}, Lng: ${ubicacionMapa.longitude}")
+            
+            // Actualizar SIEMPRE que haya una dirección válida, sin importar el texto
+            if (direccionMapa.isNotBlank() && direccionMapa != "Sin dirección seleccionada") {
+                android.util.Log.d("ProfileSetupScreen", "✓ Actualizando ubicación en ViewModel...")
                 viewModel.updateLocation(
                     address = direccionMapa,
                     latitude = ubicacionMapa.latitude,
                     longitude = ubicacionMapa.longitude,
                     locationName = nombreUbicacion
                 )
+                android.util.Log.d("ProfileSetupScreen", "✓ Ubicación actualizada")
+            } else {
+                android.util.Log.d("ProfileSetupScreen", "✗ Dirección no válida: '$direccionMapa'")
             }
         }
     }

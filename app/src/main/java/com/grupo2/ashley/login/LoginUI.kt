@@ -81,6 +81,8 @@ class Login : ComponentActivity() {
                 val navController = rememberNavController()
                 // ViewModel compartido para el perfil
                 val profileViewModel: com.grupo2.ashley.profile.ProfileViewModel = viewModel()
+                // ViewModel compartido para la ubicación
+                val ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel = viewModel()
 
                 NavHost(navController = navController, startDestination = "main") {
                     composable("main") {
@@ -103,7 +105,8 @@ class Login : ComponentActivity() {
                             },
                             onSelectLocation = {
                                 navController.navigate("selectProfileLocation")
-                            }
+                            },
+                            ubicacionViewModel = ubicacionViewModel
                         )
                     }
                     composable("selectProfileLocation") {
@@ -114,7 +117,8 @@ class Login : ComponentActivity() {
                             },
                             onBack = {
                                 navController.popBackStack()
-                            }
+                            },
+                            ubicacionViewModel = ubicacionViewModel
                         )
                     }
                     composable("registro") {

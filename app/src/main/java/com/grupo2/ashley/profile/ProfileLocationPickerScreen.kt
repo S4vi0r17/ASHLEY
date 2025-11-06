@@ -35,7 +35,8 @@ import java.util.Locale
 fun ProfileLocationPickerScreen(
     viewModel: ProfileViewModel,
     onLocationSelected: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null
 ) {
     val context = LocalContext.current
     val currentLatitude by viewModel.defaultPickupLatitude.collectAsState()
@@ -149,11 +150,25 @@ fun ProfileLocationPickerScreen(
                 // Botón para confirmar ubicación
                 FloatingActionButton(
                     onClick = {
+                        // Actualizar ubicación en ProfileViewModel
                         viewModel.setDefaultPickupLocation(
                             selectedAddress,
                             selectedLocation.latitude,
                             selectedLocation.longitude
                         )
+                        
+                        // Actualizar ubicación en UbicacionViewModel si está disponible
+                        ubicacionViewModel?.actualizarUbicacion(
+                            lat = selectedLocation.latitude,
+                            lng = selectedLocation.longitude,
+                            direccion = selectedAddress,
+                            nombre = "" // Se auto-extraerá de la dirección
+                        )
+                        
+                        android.util.Log.d("ProfileLocationPicker", "Ubicación confirmada:")
+                        android.util.Log.d("ProfileLocationPicker", "Dirección: $selectedAddress")
+                        android.util.Log.d("ProfileLocationPicker", "Lat: ${selectedLocation.latitude}, Lng: ${selectedLocation.longitude}")
+                        
                         onLocationSelected()
                     },
                     containerColor = MaterialTheme.colorScheme.primary

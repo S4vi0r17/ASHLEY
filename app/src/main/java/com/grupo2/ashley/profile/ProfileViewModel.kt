@@ -156,6 +156,9 @@ class ProfileViewModel : ViewModel() {
             // Extraer nombre corto de la dirección (primera parte antes de la coma)
             address.split(",").firstOrNull()?.trim() ?: "Mi ubicación"
         }
+        Log.d(TAG, "Ubicación actualizada - Dirección: $address")
+        Log.d(TAG, "Ubicación actualizada - Nombre: ${_defaultPickupLocationName.value}")
+        Log.d(TAG, "Ubicación actualizada - Lat: $latitude, Lng: $longitude")
     }
 
     fun setDefaultPickupLocation(locationName: String, latitude: Double, longitude: Double) {
@@ -204,6 +207,13 @@ class ProfileViewModel : ViewModel() {
      * Valida los campos del formulario
      */
     private fun validateForm(): String? {
+        Log.d(TAG, "Validando formulario...")
+        Log.d(TAG, "Nombre: '${_firstName.value}'")
+        Log.d(TAG, "Apellido: '${_lastName.value}'")
+        Log.d(TAG, "Teléfono: '${_phoneNumber.value}'")
+        Log.d(TAG, "Dirección: '${_fullAddress.value}'")
+        Log.d(TAG, "Nombre ubicación: '${_defaultPickupLocationName.value}'")
+        
         return when {
             _firstName.value.isBlank() -> "El nombre es requerido"
             _lastName.value.isBlank() -> "El apellido es requerido"

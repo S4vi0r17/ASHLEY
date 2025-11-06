@@ -60,20 +60,38 @@ fun CuentaScreen(
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
     
+    // Estado para mostrar indicador de ubicación actualizada
+    var locationJustUpdated by remember { mutableStateOf(false) }
+    
     // Sincronizar ubicación del mapa si está disponible
     ubicacionViewModel?.let { ubicacionVM ->
         val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
         val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
         val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
         
-        LaunchedEffect(ubicacionMapa, direccionMapa, nombreUbicacion) {
-            if (direccionMapa != "Sin dirección seleccionada" && direccionMapa.isNotEmpty()) {
+        // Actualizar cuando la dirección cambie
+        LaunchedEffect(direccionMapa) {
+            android.util.Log.d("CuentaScreen", "=== LaunchedEffect ejecutado ===")
+            android.util.Log.d("CuentaScreen", "Dirección mapa: '$direccionMapa'")
+            android.util.Log.d("CuentaScreen", "Nombre ubicación: '$nombreUbicacion'")
+            
+            // Actualizar SIEMPRE que haya una dirección válida
+            if (direccionMapa.isNotBlank() && direccionMapa != "Sin dirección seleccionada") {
+                android.util.Log.d("CuentaScreen", "✓ Actualizando ubicación en ViewModel...")
                 viewModel.updateLocation(
                     address = direccionMapa,
                     latitude = ubicacionMapa.latitude,
                     longitude = ubicacionMapa.longitude,
                     locationName = nombreUbicacion
                 )
+                locationJustUpdated = true
+                android.util.Log.d("CuentaScreen", "✓ Ubicación actualizada en memoria (pendiente de guardar)")
+                
+                // Resetear el indicador después de 2 segundos
+                kotlinx.coroutines.delay(2000)
+                locationJustUpdated = false
+            } else {
+                android.util.Log.d("CuentaScreen", "✗ Dirección no válida: '$direccionMapa'")
             }
         }
     }
@@ -320,7 +338,11 @@ fun CuentaScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = if (locationJustUpdated) {
+                        MaterialTheme.colorScheme.tertiaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer
+                    }
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -331,26 +353,49 @@ fun CuentaScreen(
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = "Ubicación",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        tint = if (locationJustUpdated) {
+                            MaterialTheme.colorScheme.onTertiaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        },
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = if (defaultPickupLocationName.isNotEmpty()) {
-                                defaultPickupLocationName
-                            } else {
-                                "Tu ubicación"
-                            },
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (defaultPickupLocationName.isNotEmpty()) {
+                                    defaultPickupLocationName
+                                } else {
+                                    "Tu ubicación"
+                                },
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = if (locationJustUpdated) {
+                                    MaterialTheme.colorScheme.onTertiaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                }
+                            )
+                            if (locationJustUpdated) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "✓ Actualizado",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = fullAddress,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            color = if (locationJustUpdated) {
+                                MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                            } else {
+                                MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            }
                         )
                     }
                 }
@@ -397,6 +442,35 @@ fun CuentaScreen(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(if (fullAddress.isEmpty()) "Seleccionar dirección" else "Cambiar dirección")
+        }
+        
+        // Mensaje informativo cuando la ubicación se actualiza
+        if (locationJustUpdated && isEditing) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "No olvides presionar 'Guardar' para confirmar los cambios",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
