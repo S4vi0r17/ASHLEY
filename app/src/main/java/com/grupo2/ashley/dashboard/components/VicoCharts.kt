@@ -4,11 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -18,13 +18,9 @@ import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStartAxis
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
-import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
-import com.patrykandpatrick.vico.compose.common.fill
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
-import com.patrykandpatrick.vico.core.common.component.TextComponent
-import com.patrykandpatrick.vico.core.common.shape.Shape
 
 @Composable
 fun VicoLineChart(
@@ -65,37 +61,27 @@ fun VicoLineChart(
                     )
                 }
             } else {
-                val modelProducer = remember { CartesianChartModelProducer.build() }
+                val modelProducer = remember { CartesianChartModelProducer() }
                 
-                // Preparar datos
-                val yValues = data.map { it.second.toFloat() }
-                modelProducer.tryRunTransaction {
-                    lineSeries { series(yValues) }
+                LaunchedEffect(data) {
+                    modelProducer.runTransaction {
+                        lineSeries { series(data.map { it.second }) }
+                    }
                 }
 
                 CartesianChartHost(
                     chart = rememberCartesianChart(
-                        rememberLineCartesianLayer(
-                            lines = listOf(
-                                rememberLineComponent(
-                                    fill = fill(color),
-                                    thickness = 3.dp,
-                                    shape = Shape.rounded(allPercent = 25)
-                                )
-                            )
-                        ),
+                        rememberLineCartesianLayer(),
                         startAxis = rememberStartAxis(
                             label = rememberAxisLabelComponent(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                margins = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         ),
                         bottomAxis = rememberBottomAxis(
                             label = rememberAxisLabelComponent(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                margins = androidx.compose.foundation.layout.PaddingValues(top = 8.dp)
+                                color = MaterialTheme.colorScheme.onSurface
                             ),
-                            valueFormatter = { value, _ ->
+                            valueFormatter = { value, _, _ ->
                                 data.getOrNull(value.toInt())?.first?.takeLast(5) ?: ""
                             }
                         )
@@ -158,46 +144,34 @@ fun VicoBarChart(
                     )
                 }
             } else {
-                val modelProducer = remember { CartesianChartModelProducer.build() }
+                val modelProducer = remember { CartesianChartModelProducer() }
                 
                 // Preparar datos - tomar máximo 8 categorías
                 val sortedCategories = categories.entries
                     .sortedByDescending { it.value }
                     .take(8)
                 
-                val yValues = sortedCategories.map { it.value.toFloat() }
                 val labels = sortedCategories.map { it.key }
                 
-                modelProducer.tryRunTransaction {
-                    columnSeries { series(yValues) }
+                LaunchedEffect(categories) {
+                    modelProducer.runTransaction {
+                        columnSeries { series(sortedCategories.map { it.value }) }
+                    }
                 }
 
                 CartesianChartHost(
                     chart = rememberCartesianChart(
-                        rememberColumnCartesianLayer(
-                            columns = listOf(
-                                rememberLineComponent(
-                                    fill = fill(colors[0]),
-                                    thickness = 24.dp,
-                                    shape = Shape.rounded(
-                                        topLeftPercent = 40,
-                                        topRightPercent = 40
-                                    )
-                                )
-                            )
-                        ),
+                        rememberColumnCartesianLayer(),
                         startAxis = rememberStartAxis(
                             label = rememberAxisLabelComponent(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                margins = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         ),
                         bottomAxis = rememberBottomAxis(
                             label = rememberAxisLabelComponent(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                margins = androidx.compose.foundation.layout.PaddingValues(top = 8.dp)
+                                color = MaterialTheme.colorScheme.onSurface
                             ),
-                            valueFormatter = { value, _ ->
+                            valueFormatter = { value, _, _ ->
                                 // Truncar nombres largos
                                 labels.getOrNull(value.toInt())?.take(10) ?: ""
                             }
@@ -231,7 +205,6 @@ fun VicoBarChart(
                                 Box(
                                     modifier = Modifier
                                         .size(12.dp)
-                                        .fillMaxWidth()
                                 ) {
                                     Surface(
                                         color = colors[index % colors.size],
@@ -414,46 +387,30 @@ fun VicoMultiLineChart(
                     )
                 }
             } else {
-                val modelProducer = remember { CartesianChartModelProducer.build() }
+                val modelProducer = remember { CartesianChartModelProducer() }
                 
-                val viewsValues = viewsData.map { it.second.toFloat() }
-                val favoritesValues = favoritesData.map { it.second.toFloat() }
-                
-                modelProducer.tryRunTransaction {
-                    lineSeries {
-                        series(viewsValues)
-                        series(favoritesValues)
+                LaunchedEffect(viewsData, favoritesData) {
+                    modelProducer.runTransaction {
+                        lineSeries {
+                            series(viewsData.map { it.second })
+                            series(favoritesData.map { it.second })
+                        }
                     }
                 }
 
                 CartesianChartHost(
                     chart = rememberCartesianChart(
-                        rememberLineCartesianLayer(
-                            lines = listOf(
-                                rememberLineComponent(
-                                    fill = fill(Color(0xFF2196F3)),
-                                    thickness = 3.dp,
-                                    shape = Shape.rounded(allPercent = 25)
-                                ),
-                                rememberLineComponent(
-                                    fill = fill(Color(0xFFE91E63)),
-                                    thickness = 3.dp,
-                                    shape = Shape.rounded(allPercent = 25)
-                                )
-                            )
-                        ),
+                        rememberLineCartesianLayer(),
                         startAxis = rememberStartAxis(
                             label = rememberAxisLabelComponent(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                margins = androidx.compose.foundation.layout.PaddingValues(end = 8.dp)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         ),
                         bottomAxis = rememberBottomAxis(
                             label = rememberAxisLabelComponent(
-                                color = MaterialTheme.colorScheme.onSurface,
-                                margins = androidx.compose.foundation.layout.PaddingValues(top = 8.dp)
+                                color = MaterialTheme.colorScheme.onSurface
                             ),
-                            valueFormatter = { value, _ ->
+                            valueFormatter = { value, _, _ ->
                                 viewsData.getOrNull(value.toInt())?.first?.takeLast(5) ?: ""
                             }
                         )
