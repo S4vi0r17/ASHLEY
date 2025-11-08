@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.grupo2.ashley.home.components.*
 import com.grupo2.ashley.map.UbicacionViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
@@ -71,93 +73,99 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        Box(modifier = Modifier.weight(1f)) {
-            when {
-                isLoading -> {
-                    // Mostrar indicador de carga
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+        PullToRefreshBox(
+            isRefreshing = isLoading,
+            onRefresh = { viewModel.refreshProducts() },
+            modifier = Modifier.weight(1f)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                when {
+                    isLoading && products.isEmpty() -> {
+                        // Mostrar indicador de carga solo si no hay productos cargados aún
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator()
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text("Cargando productos...")
-                        }
-                    }
-                }
-                error != null -> {
-                    // Mostrar mensaje de error
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(32.dp)
-                        ) {
-                            Text(
-                                text = error ?: "Error desconocido",
-                                color = MaterialTheme.colorScheme.error,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { viewModel.refreshProducts() }) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Reintentar")
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                CircularProgressIndicator()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("Cargando productos...")
                             }
                         }
                     }
-                }
-                products.isEmpty() -> {
-                    // Mostrar mensaje cuando no hay productos
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(32.dp)
+                    error != null -> {
+                        // Mostrar mensaje de error
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = if (searchQuery.isNotEmpty() || selectedCategory != "all") {
-                                    "No se encontraron productos"
-                                } else {
-                                    "Aún no hay productos publicados"
-                                },
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "¡Sé el primero en publicar algo!",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(32.dp)
+                            ) {
+                                Text(
+                                    text = error ?: "Error desconocido",
+                                    color = MaterialTheme.colorScheme.error,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Button(onClick = { viewModel.refreshProducts() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Reintentar")
+                                }
+                            }
                         }
                     }
-                }
-                else -> {
-                    // Mostrar grid de productos
-                    ProductsGrid(
-                        products = products,
-                        onFavoriteClick = { viewModel.toggleFavorite(it) },
-                        onProductClick = onProductClick,
-                        modifier = Modifier.fillMaxSize(),
-                        bottomPadding = innerPadding.calculateBottomPadding() + 16.dp
-                    )
-                }
+                    products.isEmpty() -> {
+                        // Mostrar mensaje cuando no hay productos
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(32.dp)
+                            ) {
+                                Text(
+                                    text = if (searchQuery.isNotEmpty() || selectedCategory != "all") {
+                                        "No se encontraron productos"
+                                    } else {
+                                        "Aún no hay productos publicados"
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "¡Sé el primero en publicar algo!",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        // Mostrar grid de productos
+                        ProductsGrid(
+                            products = products,
+                            onFavoriteClick = { viewModel.toggleFavorite(it) },
+                            onProductClick = onProductClick,
+                            modifier = Modifier.fillMaxSize(),
+                            bottomPadding = innerPadding.calculateBottomPadding() + 16.dp
+                        )
+                    }
             }
+        }
         }
     }
 }

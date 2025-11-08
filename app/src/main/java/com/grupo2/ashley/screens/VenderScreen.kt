@@ -95,7 +95,7 @@ fun VenderScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding)
+            .padding(top = innerPadding.calculateTopPadding())
     ) {
         Column(
             modifier = Modifier
@@ -468,7 +468,8 @@ fun VenderScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Espaciado final para que el último elemento no quede tapado por la barra de navegación
+        Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding()))
     }
     }
 

@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -37,6 +38,7 @@ import java.util.*
 fun DashboardScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
+    bottomPadding: Dp = 0.dp,
     viewModel: DashboardViewModel = viewModel()
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
@@ -101,7 +103,8 @@ fun DashboardScreen(
                 else -> {
                     DashboardContent(
                         stats = dashboardState.stats,
-                        scrollState = scrollState
+                        scrollState = scrollState,
+                        bottomPadding = bottomPadding
                     )
                 }
             }
@@ -175,7 +178,8 @@ private fun ErrorView(error: String, onRetry: () -> Unit) {
 @Composable
 private fun DashboardContent(
     stats: com.grupo2.ashley.dashboard.models.UserStats,
-    scrollState: androidx.compose.foundation.ScrollState
+    scrollState: androidx.compose.foundation.ScrollState,
+    bottomPadding: Dp = 0.dp
 ) {
     val currencyFormat = remember { NumberFormat.getCurrencyInstance(Locale("es", "PE")) }
 
@@ -389,8 +393,8 @@ private fun DashboardContent(
             }
         }
 
-        // Espacio al final
-        Spacer(modifier = Modifier.height(16.dp))
+        // Espaciado final para que el último elemento no quede tapado por la barra de navegación
+        Spacer(modifier = Modifier.height(16.dp + bottomPadding))
     }
 }
 

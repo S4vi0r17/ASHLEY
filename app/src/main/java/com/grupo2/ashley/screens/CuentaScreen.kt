@@ -119,7 +119,7 @@ fun CuentaScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(innerPadding)
+            .padding(top = innerPadding.calculateTopPadding())
     ) {
         Column(
             modifier = Modifier
@@ -600,6 +600,9 @@ fun CuentaScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Cerrar Sesión", fontSize = 16.sp)
         }
+
+        // Espaciado final para que el último elemento no quede tapado por la barra de navegación
+        Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding()))
     }
     }
 

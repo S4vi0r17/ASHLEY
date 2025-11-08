@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,6 +41,7 @@ fun ProductDetailScreen(
     onMapClick: () -> Unit,
     onCallClick: () -> Unit,
     onChatClick: () -> Unit,
+    bottomPadding: Dp = 0.dp,
     viewModel: ProductDetailViewModel = viewModel()
 ) {
     val scrollState = rememberScrollState()
@@ -332,7 +334,8 @@ fun ProductDetailScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                // Espaciado final para que el último elemento no quede tapado por la barra de navegación
+                Spacer(modifier = Modifier.height(32.dp + bottomPadding))
             }
         }
     }
