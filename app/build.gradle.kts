@@ -83,4 +83,9 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation("com.google.android.gms:play-services-auth:20.4.1")
     implementation("io.coil-kt:coil-compose:2.5.0")
+    
+    // Vico Charts
+    implementation(libs.vico.compose)
+    implementation(libs.vico.compose.m3)
+    implementation(libs.vico.core)
 }

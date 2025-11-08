@@ -21,7 +21,11 @@ data class Product(
     @PropertyName("active")
     val isActive: Boolean = true,
     val createdAt: Long = System.currentTimeMillis(),
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    // Campos para tracking y estadísticas
+    val views: Int = 0,
+    val favorites: Int = 0,
+    val messagesReceived: Int = 0
 )
 
 enum class ProductCondition(val displayName: String) {

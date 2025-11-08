@@ -21,6 +21,7 @@ fragmentV = "1.8.8"
 viewmodel-composeV = "2.8.4"
 navigation = "2.8.3"
 lifecycleViewmodelKtx = "2.9.4"
+vicoV = "2.0.0-alpha.28"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -53,6 +54,9 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 navigation = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vicoV" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vicoV" }
+vico-core = { group = "com.patrykandpatrick.vico", name = "core", version.ref = "vicoV" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

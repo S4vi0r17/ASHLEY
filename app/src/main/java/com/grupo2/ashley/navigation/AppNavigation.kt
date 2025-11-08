@@ -29,6 +29,7 @@ import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.productdetail.ProductDetailScreen
 import com.grupo2.ashley.productdetail.ProductDetailViewModel
 import com.grupo2.ashley.productdetail.ProductMapScreen
+import com.grupo2.ashley.dashboard.DashboardScreen
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.ChatsScreen
 import com.grupo2.ashley.screens.CuentaScreen
@@ -46,6 +47,7 @@ object Routes {
     const val SELECCIONAR_UBICACION = "seleccionar_ubicacion"
     const val PRODUCT_DETAIL = "product_detail/{productId}"
     const val PRODUCT_MAP = "product_map/{productId}"
+    const val DASHBOARD = "dashboard"
     
     fun productDetail(productId: String) = "product_detail/$productId"
     fun productMap(productId: String) = "product_map/$productId"
@@ -144,6 +146,9 @@ fun AppNavigation(
                 ubicacionViewModel = ubicacionViewModel,
                 onNavigateToMap = {
                     navController.navigate(Routes.SELECCIONAR_UBICACION)
+                },
+                onNavigateToDashboard = {
+                    navController.navigate(Routes.DASHBOARD)
                 }
             )
         }
@@ -209,6 +214,12 @@ fun AppNavigation(
                 // Producto no encontrado, volver atrás
                 navController.popBackStack()
             }
+        }
+
+        composable(Routes.DASHBOARD) {
+            DashboardScreen(
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }
