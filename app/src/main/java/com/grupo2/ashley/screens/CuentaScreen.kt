@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -137,7 +138,7 @@ fun CuentaScreen(
             ) {
             Column(
                 modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.Start
             ) {
                 Box(
                     modifier = Modifier
@@ -212,12 +213,14 @@ fun CuentaScreen(
                     },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Start
                 )
                 Text(
                     text = currentUser?.email ?: "",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Start
                 )
             }
         }
@@ -461,7 +464,8 @@ fun CuentaScreen(
         if (isEditing) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedButton(
                     onClick = {
@@ -469,7 +473,9 @@ fun CuentaScreen(
                         viewModel.loadUserProfile()
                         viewModel.clearError()
                     },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp),
                     enabled = !updateState.isLoading
                 ) {
                     Text("Cancelar")
@@ -485,16 +491,22 @@ fun CuentaScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(40.dp),
-                    gradient = AppGradients.SecondaryGradient
+                    gradient = AppGradients.SecondaryGradient,
+                    contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
                 ) {
-                    if (updateState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    } else {
-                        Text("Guardar", color = MaterialTheme.colorScheme.onPrimary)
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ){
+                        if (updateState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Text("Guardar", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp)
+                        }
                     }
                 }
             }
@@ -504,19 +516,30 @@ fun CuentaScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp),
-                gradient = AppGradients.SecondaryGradient
+                gradient = AppGradients.SecondaryGradient,
+                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "Editar Perfil",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Editar Perfil",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             }
         }
 

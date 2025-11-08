@@ -22,6 +22,7 @@ import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.AppNavigation
 import com.grupo2.ashley.navigation.Routes
+import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 
 class MainActivity : ComponentActivity() {
@@ -44,8 +45,8 @@ fun AshleyApp() {
     val navController = rememberNavController()
     val homeViewModel: HomeViewModel = viewModel()
     val ubicacionViewModel: UbicacionViewModel = viewModel()
+    val profileViewModel: ProfileViewModel = viewModel()
 
-    // Define rutas e íconos
     val navigationItems = listOf(
         Triple("Inicio", Icons.Default.Home, Routes.HOME),
         Triple("Chats", Icons.AutoMirrored.Filled.Message, Routes.CHATS),
@@ -62,7 +63,8 @@ fun AshleyApp() {
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             // Solo mostrar la barra de navegación si no estamos en la pantalla de seleccionar ubicación
-            if (currentDestination != Routes.SELECCIONAR_UBICACION) {
+            if (currentDestination != Routes.SELECCIONAR_UBICACION &&
+                !currentDestination.orEmpty().startsWith("chat/")) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 3.dp
@@ -120,6 +122,7 @@ fun AshleyApp() {
             navController = navController,
             homeViewModel = homeViewModel,
             ubicacionViewModel = ubicacionViewModel,
+            profileViewModel = profileViewModel,
             innerPadding = innerPadding,
             navigationItems = navigationItems
         )
