@@ -44,7 +44,7 @@ fun ProductDetailScreen(
     bottomPadding: Dp = 0.dp,
     viewModel: ProductDetailViewModel = viewModel()
 ) {
-    val scrollState = rememberScrollState()
+
     val images = if (product.allImages.isNotEmpty()) product.allImages else listOfNotNull(product.imageUrl)
     val pagerState = rememberPagerState(pageCount = { images.size })
     
@@ -92,8 +92,13 @@ fun ProductDetailScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(scrollState)
+                .padding(
+                    top = paddingValues.calculateTopPadding(),
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 50.dp
+                )
+                .verticalScroll(rememberScrollState())
         ) {
             // Carousel de imágenes
             Box(

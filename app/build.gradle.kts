@@ -63,6 +63,8 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation("androidx.navigation:navigation-compose:2.9.4")
+    implementation(libs.androidx.compose.runtime)
+    implementation(libs.androidx.compose.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -83,6 +85,9 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation("com.google.android.gms:play-services-auth:20.4.1")
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    implementation("com.google.firebase:firebase-database-ktx:21.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     
     // Vico Charts
     implementation(libs.vico.compose)

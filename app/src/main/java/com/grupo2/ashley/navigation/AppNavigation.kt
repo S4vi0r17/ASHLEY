@@ -26,6 +26,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import com.google.firebase.auth.FirebaseAuth
 import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.MapScreen
@@ -36,12 +37,16 @@ import com.grupo2.ashley.productdetail.ProductDetailViewModel
 import com.grupo2.ashley.productdetail.ProductMapScreen
 import com.grupo2.ashley.dashboard.DashboardScreen
 import com.grupo2.ashley.screens.AnunciosScreen
-import com.grupo2.ashley.screens.ChatsScreen
 import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.utils.makePhoneCall
-import com.grupo2.ashley.utils.openMapRoute
+import com.grupo2.ashley.chat.ChatListScreen
+import com.grupo2.ashley.chat.ChatListViewModel
+import com.grupo2.ashley.chat.ChatRealtimeScreen
+import com.grupo2.ashley.chat.ChatRealtimeViewModel
+import com.grupo2.ashley.chat.data.ChatRealtimeRepository
+import com.grupo2.ashley.profile.ProfileViewModel
 
 object Routes {
     const val HOME = "home"
@@ -118,6 +123,7 @@ fun AppNavigation(
     navController: NavHostController,
     homeViewModel: HomeViewModel,
     ubicacionViewModel: UbicacionViewModel,
+    profileViewModel: ProfileViewModel,
     innerPadding: PaddingValues,
     navigationItems: List<Triple<String, Any, String>>
 ) {
@@ -190,7 +196,28 @@ fun AppNavigation(
             }
         ) {
             previousRouteIndex = currentRouteIndex
-            ChatsScreen(innerPadding = innerPadding)
+            val chatListViewModel: ChatListViewModel = viewModel()
+
+            ChatListScreen(
+                navController = navController,
+                viewModel = chatListViewModel,
+                currentUserId = profileViewModel.userProfile.value?.userId
+            )
+        }
+
+        composable(
+            route = "chat/{conversationId}",
+            arguments = listOf(navArgument("conversationId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
+
+            val chatViewModel: ChatRealtimeViewModel = viewModel()
+
+            ChatRealtimeScreen(
+                viewModel = chatViewModel,
+                conversationId = conversationId,
+                currentUserId = profileViewModel.userProfile.value?.userId
+            )
         }
 
         composable(
@@ -316,6 +343,7 @@ fun AppNavigation(
 
             if (product != null) {
                 val productDetailViewModel: ProductDetailViewModel = viewModel()
+                productDetailViewModel.setProduct(product)
 
                 // Llamar a setProduct solo una vez cuando se carga la pantalla
                 LaunchedEffect(productId) {
@@ -337,12 +365,22 @@ fun AppNavigation(
                         }
                     },
                     onChatClick = {
+
+                        val currentUserId = profileViewModel.userProfile.value?.userId
+                        val sellerId = sellerProfile?.userId
+
+                        if (currentUserId != null && sellerId != null) {
+                            val chatRepo = ChatRealtimeRepository()
+                            chatRepo.createOrGetConversation(currentUserId, sellerId) { conversationId ->
+                                navController.navigate("chat/$conversationId")
+                            }
+                        }
+                    }
                         // TODO: Implementar navegación al chat
                     },
                     bottomPadding = innerPadding.calculateBottomPadding()
                 )
             } else {
-                // Producto no encontrado, volver atrás
                 navController.popBackStack()
             }
         }
@@ -357,7 +395,7 @@ fun AppNavigation(
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
             val product = homeViewModel.getProductById(productId)
-            
+
             if (product != null) {
                 ProductMapScreen(
                     product = product,
