@@ -375,8 +375,6 @@ fun AppNavigation(
                                 navController.navigate("chat/$conversationId")
                             }
                         }
-                    }
-                        // TODO: Implementar navegación al chat
                     },
                     bottomPadding = innerPadding.calculateBottomPadding()
                 )
