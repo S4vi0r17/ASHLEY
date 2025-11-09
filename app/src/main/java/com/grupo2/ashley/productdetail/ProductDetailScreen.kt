@@ -21,8 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.grupo2.ashley.home.models.Product
 import com.grupo2.ashley.profile.models.UserProfile
@@ -38,11 +40,16 @@ fun ProductDetailScreen(
     onBackClick: () -> Unit,
     onMapClick: () -> Unit,
     onCallClick: () -> Unit,
-    onChatClick: () -> Unit
+    onChatClick: () -> Unit,
+    bottomPadding: Dp = 0.dp,
+    viewModel: ProductDetailViewModel = viewModel()
 ) {
 
     val images = if (product.allImages.isNotEmpty()) product.allImages else listOfNotNull(product.imageUrl)
     val pagerState = rememberPagerState(pageCount = { images.size })
+    
+    val isFavorite by viewModel.isFavorite.collectAsState()
+    val isTogglingFavorite by viewModel.isTogglingFavorite.collectAsState()
 
     Scaffold(
         topBar = {
@@ -54,6 +61,26 @@ fun ProductDetailScreen(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
                         )
+                    }
+                },
+                actions = {
+                    // Botón de favorito
+                    IconButton(
+                        onClick = { viewModel.toggleFavorite() },
+                        enabled = !isTogglingFavorite
+                    ) {
+                        if (isTogglingFavorite) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                                tint = if (isFavorite) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -312,7 +339,8 @@ fun ProductDetailScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                // Espaciado final para que el último elemento no quede tapado por la barra de navegación
+                Spacer(modifier = Modifier.height(32.dp + bottomPadding))
             }
         }
     }

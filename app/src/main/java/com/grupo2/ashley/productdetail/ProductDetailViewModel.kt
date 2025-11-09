@@ -3,16 +3,20 @@ package com.grupo2.ashley.productdetail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grupo2.ashley.favorites.FavoritesRepository
 import com.grupo2.ashley.home.models.Product
 import com.grupo2.ashley.profile.data.ProfileRepository
 import com.grupo2.ashley.profile.models.UserProfile
+import com.grupo2.ashley.tracking.ProductTrackingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ProductDetailViewModel(
-    private val profileRepository: ProfileRepository = ProfileRepository()
+    private val profileRepository: ProfileRepository = ProfileRepository(),
+    private val trackingRepository: ProductTrackingRepository = ProductTrackingRepository(),
+    private val favoritesRepository: FavoritesRepository = FavoritesRepository()
 ) : ViewModel() {
 
     private val _product = MutableStateFlow<Product?>(null)
@@ -27,9 +31,17 @@ class ProductDetailViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite.asStateFlow()
+
+    private val _isTogglingFavorite = MutableStateFlow(false)
+    val isTogglingFavorite: StateFlow<Boolean> = _isTogglingFavorite.asStateFlow()
+
     fun setProduct(product: Product) {
         _product.value = product
         loadSellerProfile(product.userId)
+        checkIfFavorite(product.id)
+        trackProductView(product.id)
     }
 
     private fun loadSellerProfile(userId: String) {
@@ -59,6 +71,56 @@ class ProductDetailViewModel(
                 _error.value = errorMsg
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    private fun trackProductView(productId: String) {
+        viewModelScope.launch {
+            try {
+                trackingRepository.trackProductView(productId)
+                Log.d("ProductDetailViewModel", "Vista registrada para producto: $productId")
+            } catch (e: Exception) {
+                Log.e("ProductDetailViewModel", "Error al registrar vista: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun checkIfFavorite(productId: String) {
+        viewModelScope.launch {
+            try {
+                val result = favoritesRepository.isFavorite(productId)
+                result.onSuccess { isFav ->
+                    _isFavorite.value = isFav
+                }
+            } catch (e: Exception) {
+                Log.e("ProductDetailViewModel", "Error al verificar favorito: ${e.message}", e)
+            }
+        }
+    }
+
+    fun toggleFavorite() {
+        val currentProduct = _product.value ?: return
+        
+        viewModelScope.launch {
+            _isTogglingFavorite.value = true
+            try {
+                val result = favoritesRepository.toggleFavorite(
+                    productId = currentProduct.id,
+                    productTitle = currentProduct.title,
+                    productImage = currentProduct.imageUrl ?: "",
+                    productPrice = currentProduct.price
+                )
+                
+                result.onSuccess { newState ->
+                    _isFavorite.value = newState
+                    Log.d("ProductDetailViewModel", "Favorito actualizado: $newState")
+                }
+            } catch (e: Exception) {
+                Log.e("ProductDetailViewModel", "Error al alternar favorito: ${e.message}", e)
+                _error.value = "Error al actualizar favorito"
+            } finally {
+                _isTogglingFavorite.value = false
             }
         }
     }

@@ -4,9 +4,14 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +35,7 @@ import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.productdetail.ProductDetailScreen
 import com.grupo2.ashley.productdetail.ProductDetailViewModel
 import com.grupo2.ashley.productdetail.ProductMapScreen
+import com.grupo2.ashley.dashboard.DashboardScreen
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
@@ -51,9 +57,65 @@ object Routes {
     const val SELECCIONAR_UBICACION = "seleccionar_ubicacion"
     const val PRODUCT_DETAIL = "product_detail/{productId}"
     const val PRODUCT_MAP = "product_map/{productId}"
+    const val DASHBOARD = "dashboard"
 
     fun productDetail(productId: String) = "product_detail/$productId"
     fun productMap(productId: String) = "product_map/$productId"
+}
+
+// Funciones de animación para diferentes tipos de navegación
+private object NavigationAnimations {
+    private const val DURATION = 400
+    private const val FAST_DURATION = 300
+
+    // Animación horizontal para navegación entre tabs del bottom bar
+    fun horizontalSlideEnter(goingForward: Boolean): EnterTransition {
+        return slideInHorizontally(
+            animationSpec = tween(DURATION),
+            initialOffsetX = { fullWidth -> if (goingForward) fullWidth else -fullWidth }
+        ) + fadeIn(animationSpec = tween(DURATION))
+    }
+
+    fun horizontalSlideExit(goingForward: Boolean): ExitTransition {
+        return slideOutHorizontally(
+            animationSpec = tween(DURATION),
+            targetOffsetX = { fullWidth -> if (goingForward) -fullWidth else fullWidth }
+        ) + fadeOut(animationSpec = tween(DURATION))
+    }
+
+    // Animación vertical para pantallas de detalle/modales (de abajo hacia arriba)
+    fun verticalSlideEnter(): EnterTransition {
+        return slideInVertically(
+            animationSpec = tween(FAST_DURATION),
+            initialOffsetY = { fullHeight -> fullHeight }
+        ) + fadeIn(animationSpec = tween(FAST_DURATION))
+    }
+
+    fun verticalSlideExit(): ExitTransition {
+        return slideOutVertically(
+            animationSpec = tween(FAST_DURATION),
+            targetOffsetY = { fullHeight -> fullHeight }
+        ) + fadeOut(animationSpec = tween(FAST_DURATION))
+    }
+
+    // Animación para pantallas que se apilan (como detalles sobre otras pantallas)
+    fun scaleEnter(): EnterTransition {
+        return slideInVertically(
+            animationSpec = tween(FAST_DURATION),
+            initialOffsetY = { fullHeight -> fullHeight / 4 }
+        ) + fadeIn(animationSpec = tween(FAST_DURATION))
+    }
+
+    fun scaleExit(): ExitTransition {
+        return slideOutVertically(
+            animationSpec = tween(FAST_DURATION),
+            targetOffsetY = { fullHeight -> fullHeight / 4 }
+        ) + fadeOut(animationSpec = tween(FAST_DURATION))
+    }
+
+    // Sin animación para ciertas pantallas
+    fun noAnimation(): EnterTransition = EnterTransition.None
+    fun noAnimationExit(): ExitTransition = ExitTransition.None
 }
 
 @Composable
@@ -75,40 +137,30 @@ fun AppNavigation(
     NavHost(
         navController = navController,
         startDestination = Routes.HOME,
-        modifier = Modifier,
-        enterTransition = {
-            val initialIndex =
-                navigationItems.indexOfFirst { it.third == initialState.destination.route }
-                    .takeIf { it >= 0 } ?: 0
-            val targetIndex =
-                navigationItems.indexOfFirst { it.third == targetState.destination.route }
-                    .takeIf { it >= 0 } ?: 0
-            val goingForward = targetIndex > initialIndex
-
-            slideInHorizontally(
-                animationSpec = tween(AnimationConstants.FLUID_DURATION),
-                initialOffsetX = { fullWidth -> if (goingForward) fullWidth else -fullWidth }
-            ) + fadeIn(
-                animationSpec = tween(AnimationConstants.FLUID_DURATION)
-            )
-        },
-        exitTransition = {
-            val initialIndex =
-                navigationItems.indexOfFirst { it.third == initialState.destination.route }
-                    .takeIf { it >= 0 } ?: 0
-            val targetIndex =
-                navigationItems.indexOfFirst { it.third == targetState.destination.route }
-                    .takeIf { it >= 0 } ?: 0
-            val goingForward = targetIndex > initialIndex
-
-            slideOutHorizontally(
-                animationSpec = tween(AnimationConstants.FLUID_DURATION),
-                targetOffsetX = { fullWidth -> if (goingForward) -fullWidth else fullWidth }
-            ) + fadeOut(
-                animationSpec = tween(AnimationConstants.FLUID_DURATION)
-            )
-        }) {
-        composable(Routes.HOME) {
+        modifier = Modifier
+    ) {
+        composable(
+            route = Routes.HOME,
+            enterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.HOME }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            exitTransition = {
+                val initialIndex = navigationItems.indexOfFirst { it.third == Routes.HOME }
+                val targetIndex = navigationItems.indexOfFirst { it.third == targetState.destination.route }
+                val goingForward = targetIndex > initialIndex
+                NavigationAnimations.horizontalSlideExit(goingForward)
+            },
+            popEnterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.HOME }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            popExitTransition = {
+                NavigationAnimations.horizontalSlideExit(false)
+            }
+        ) {
             previousRouteIndex = currentRouteIndex
             HomeScreen(
                 viewModel = homeViewModel,
@@ -121,7 +173,28 @@ fun AppNavigation(
             )
         }
 
-        composable(Routes.CHATS) {
+        composable(
+            route = Routes.CHATS,
+            enterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.CHATS }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            exitTransition = {
+                val initialIndex = navigationItems.indexOfFirst { it.third == Routes.CHATS }
+                val targetIndex = navigationItems.indexOfFirst { it.third == targetState.destination.route }
+                val goingForward = targetIndex > initialIndex
+                NavigationAnimations.horizontalSlideExit(goingForward)
+            },
+            popEnterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.CHATS }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            popExitTransition = {
+                NavigationAnimations.horizontalSlideExit(false)
+            }
+        ) {
             previousRouteIndex = currentRouteIndex
             val chatListViewModel: ChatListViewModel = viewModel()
 
@@ -147,7 +220,28 @@ fun AppNavigation(
             )
         }
 
-        composable(Routes.VENDER) {
+        composable(
+            route = Routes.VENDER,
+            enterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.VENDER }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            exitTransition = {
+                val initialIndex = navigationItems.indexOfFirst { it.third == Routes.VENDER }
+                val targetIndex = navigationItems.indexOfFirst { it.third == targetState.destination.route }
+                val goingForward = targetIndex > initialIndex
+                NavigationAnimations.horizontalSlideExit(goingForward)
+            },
+            popEnterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.VENDER }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            popExitTransition = {
+                NavigationAnimations.horizontalSlideExit(false)
+            }
+        ) {
             previousRouteIndex = currentRouteIndex
             val productViewModel: ProductViewModel = viewModel()
             VenderScreen(
@@ -159,23 +253,74 @@ fun AppNavigation(
             )
         }
 
-        composable(Routes.ANUNCIOS) {
+        composable(
+            route = Routes.ANUNCIOS,
+            enterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.ANUNCIOS }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            exitTransition = {
+                val initialIndex = navigationItems.indexOfFirst { it.third == Routes.ANUNCIOS }
+                val targetIndex = navigationItems.indexOfFirst { it.third == targetState.destination.route }
+                val goingForward = targetIndex > initialIndex
+                NavigationAnimations.horizontalSlideExit(goingForward)
+            },
+            popEnterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.ANUNCIOS }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            popExitTransition = {
+                NavigationAnimations.horizontalSlideExit(false)
+            }
+        ) {
             previousRouteIndex = currentRouteIndex
             AnunciosScreen(innerPadding = innerPadding)
         }
 
-        composable(Routes.CUENTA) {
+        composable(
+            route = Routes.CUENTA,
+            enterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.CUENTA }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            exitTransition = {
+                val initialIndex = navigationItems.indexOfFirst { it.third == Routes.CUENTA }
+                val targetIndex = navigationItems.indexOfFirst { it.third == targetState.destination.route }
+                val goingForward = targetIndex > initialIndex
+                NavigationAnimations.horizontalSlideExit(goingForward)
+            },
+            popEnterTransition = {
+                val targetIndex = navigationItems.indexOfFirst { it.third == Routes.CUENTA }
+                val goingForward = targetIndex > previousRouteIndex
+                NavigationAnimations.horizontalSlideEnter(goingForward)
+            },
+            popExitTransition = {
+                NavigationAnimations.horizontalSlideExit(false)
+            }
+        ) {
             previousRouteIndex = currentRouteIndex
             CuentaScreen(
                 innerPadding = innerPadding,
                 ubicacionViewModel = ubicacionViewModel,
                 onNavigateToMap = {
                     navController.navigate(Routes.SELECCIONAR_UBICACION)
+                },
+                onNavigateToDashboard = {
+                    navController.navigate(Routes.DASHBOARD)
                 }
             )
         }
 
-        composable(Routes.SELECCIONAR_UBICACION) {
+        composable(
+            route = Routes.SELECCIONAR_UBICACION,
+            enterTransition = { NavigationAnimations.verticalSlideEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.verticalSlideExit() }
+        ) {
             MapScreen(
                 viewModel = ubicacionViewModel,
                 onLocationConfirmed = {
@@ -186,7 +331,11 @@ fun AppNavigation(
 
         composable(
             route = Routes.PRODUCT_DETAIL,
-            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+            arguments = listOf(navArgument("productId") { type = NavType.StringType }),
+            enterTransition = { NavigationAnimations.verticalSlideEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.verticalSlideExit() }
         ) { backStackEntry ->
             val context = LocalContext.current
             val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
@@ -195,6 +344,11 @@ fun AppNavigation(
             if (product != null) {
                 val productDetailViewModel: ProductDetailViewModel = viewModel()
                 productDetailViewModel.setProduct(product)
+
+                // Llamar a setProduct solo una vez cuando se carga la pantalla
+                LaunchedEffect(productId) {
+                    productDetailViewModel.setProduct(product)
+                }
 
                 val sellerProfile by productDetailViewModel.sellerProfile.collectAsState()
 
@@ -222,6 +376,9 @@ fun AppNavigation(
                             }
                         }
                     }
+                        // TODO: Implementar navegación al chat
+                    },
+                    bottomPadding = innerPadding.calculateBottomPadding()
                 )
             } else {
                 navController.popBackStack()
@@ -230,7 +387,11 @@ fun AppNavigation(
 
         composable(
             route = Routes.PRODUCT_MAP,
-            arguments = listOf(navArgument("productId") { type = NavType.StringType })
+            arguments = listOf(navArgument("productId") { type = NavType.StringType }),
+            enterTransition = { NavigationAnimations.scaleEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.scaleExit() }
         ) { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
             val product = homeViewModel.getProductById(productId)
@@ -244,6 +405,19 @@ fun AppNavigation(
                 // Producto no encontrado, volver atrás
                 navController.popBackStack()
             }
+        }
+
+        composable(
+            route = Routes.DASHBOARD,
+            enterTransition = { NavigationAnimations.verticalSlideEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.verticalSlideExit() }
+        ) {
+            DashboardScreen(
+                onBackClick = { navController.popBackStack() },
+                bottomPadding = innerPadding.calculateBottomPadding()
+            )
         }
     }
 }

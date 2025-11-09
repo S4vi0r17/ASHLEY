@@ -45,7 +45,8 @@ fun CuentaScreen(
     innerPadding: PaddingValues,
     viewModel: ProfileViewModel = viewModel(),
     ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null,
-    onNavigateToMap: (() -> Unit)? = null
+    onNavigateToMap: (() -> Unit)? = null,
+    onNavigateToDashboard: (() -> Unit)? = null
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
@@ -119,7 +120,7 @@ fun CuentaScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(innerPadding)
+            .padding(top = innerPadding.calculateTopPadding())
     ) {
         Column(
             modifier = Modifier
@@ -222,6 +223,67 @@ fun CuentaScreen(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     textAlign = TextAlign.Start
                 )
+            }
+        }
+
+        // Botón para ir al Dashboard
+        if (onNavigateToDashboard != null && !isEditing) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToDashboard() },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.secondary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.BarChart,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSecondary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Mi Dashboard",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = "Ver mis estadísticas y métricas",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
             }
         }
 
@@ -561,6 +623,9 @@ fun CuentaScreen(
             Spacer(modifier = Modifier.width(8.dp))
             Text("Cerrar Sesión", fontSize = 16.sp)
         }
+
+        // Espaciado final para que el último elemento no quede tapado por la barra de navegación
+        Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding()))
     }
     }
 

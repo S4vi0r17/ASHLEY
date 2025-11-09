@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.3"
+agp = "8.13.0"
 firebaseBom = "34.3.0"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
@@ -23,6 +23,7 @@ navigation = "2.8.3"
 lifecycleViewmodelKtx = "2.9.4"
 runtime = "1.9.4"
 material3 = "1.4.0"
+vicoV = "2.0.0-alpha.28"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +58,9 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vicoV" }
+vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vicoV" }
+vico-core = { group = "com.patrykandpatrick.vico", name = "core", version.ref = "vicoV" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
