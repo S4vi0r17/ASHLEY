@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -26,7 +26,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
-import com.google.firebase.auth.FirebaseAuth
 import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.MapScreen
@@ -39,7 +38,6 @@ import com.grupo2.ashley.dashboard.DashboardScreen
 import com.grupo2.ashley.screens.AnunciosScreen
 import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
-import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.utils.makePhoneCall
 import com.grupo2.ashley.chat.ChatListScreen
 import com.grupo2.ashley.chat.ChatListViewModel
@@ -130,9 +128,12 @@ fun AppNavigation(
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination?.route
 
-    var previousRouteIndex by remember { mutableStateOf(0) }
+    var previousRouteIndex by remember { mutableIntStateOf(0) }
     val currentRouteIndex =
         navigationItems.indexOfFirst { it.third == currentDestination }.takeIf { it >= 0 } ?: 0
+
+    val userProfile by profileViewModel.userProfile.collectAsState()
+    val currentUserId = userProfile?.userId
 
     NavHost(
         navController = navController,
@@ -201,7 +202,7 @@ fun AppNavigation(
             ChatListScreen(
                 navController = navController,
                 viewModel = chatListViewModel,
-                currentUserId = profileViewModel.userProfile.value?.userId
+                currentUserId = currentUserId
             )
         }
 
@@ -216,7 +217,7 @@ fun AppNavigation(
             ChatRealtimeScreen(
                 viewModel = chatViewModel,
                 conversationId = conversationId,
-                currentUserId = profileViewModel.userProfile.value?.userId
+                currentUserId = currentUserId
             )
         }
 
@@ -365,8 +366,6 @@ fun AppNavigation(
                         }
                     },
                     onChatClick = {
-
-                        val currentUserId = profileViewModel.userProfile.value?.userId
                         val sellerId = sellerProfile?.userId
 
                         if (currentUserId != null && sellerId != null) {
