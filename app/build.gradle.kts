@@ -88,7 +88,10 @@ dependencies {
 
     implementation("com.google.firebase:firebase-database-ktx:21.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
-    
+
+    // Gemini AI para mejorar mensajes
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+
     // Vico Charts
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)

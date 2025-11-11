@@ -10,7 +10,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,7 +41,9 @@ fun ChatInputBar(
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
     onPickImage: () -> Unit,
+    onImproveWithAI: () -> Unit = {},
     isSending: Boolean = false,
+    isImprovingText: Boolean = false
 ) {
     Surface(
         tonalElevation = 2.dp,
@@ -90,7 +95,48 @@ fun ChatInputBar(
                 textStyle = MaterialTheme.typography.bodyLarge
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+
+            // ✨ Botón de IA para mejorar texto
+            if (text.isNotBlank()) {
+                // Animación de rotación cuando está mejorando
+                val rotation = animateFloatAsState(
+                    targetValue = if (isImprovingText) 360f else 0f,
+                    animationSpec = tween(durationMillis = 1000),
+                    label = "ai_rotation"
+                )
+
+                IconButton(
+                    onClick = onImproveWithAI,
+                    enabled = !isImprovingText && !isSending,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            color = if (isImprovingText)
+                                MaterialTheme.colorScheme.secondaryContainer
+                            else
+                                MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = CircleShape
+                        )
+                ) {
+                    if (isImprovingText) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "Mejorar con IA",
+                            tint = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+            }
 
             // 🚀 Botón de envío
             IconButton(

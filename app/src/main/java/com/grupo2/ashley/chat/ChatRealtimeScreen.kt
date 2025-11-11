@@ -23,6 +23,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -30,10 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.grupo2.ashley.chat.ai.GeminiAIService
 import com.grupo2.ashley.chat.components.ChatInputBar
 import com.grupo2.ashley.chat.components.MessageBubble
 import com.grupo2.ashley.chat.components.ProductChatHeader
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,8 +50,11 @@ fun ChatRealtimeScreen(
     val isSending by viewModel.isSending.collectAsState()
     val productInfo by viewModel.productInfo.collectAsState()
     var text by remember { mutableStateOf("") }
+    var isImprovingText by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val geminiService = remember { GeminiAIService() }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -147,7 +153,42 @@ fun ChatRealtimeScreen(
                     }
                 },
                 onPickImage = { imagePickerLauncher.launch("image/*") }, // 🖼️ Aquí se abre la galería
-                isSending = isSending
+                onImproveWithAI = {
+                    if (!geminiService.isConfigured()) {
+                        // Mostrar mensaje de que necesita configurar la API key
+                        android.widget.Toast.makeText(
+                            context,
+                            "Por favor configura la API key de Gemini AI en GeminiAIService.kt",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        return@ChatInputBar
+                    }
+
+                    isImprovingText = true
+                    scope.launch {
+                        try {
+                            val result = geminiService.improveMessage(text)
+                            result.onSuccess { improvedText ->
+                                text = improvedText
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "¡Texto mejorado con IA! ✨",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }.onFailure { error ->
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "Error: ${error.message}",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } finally {
+                            isImprovingText = false
+                        }
+                    }
+                },
+                isSending = isSending,
+                isImprovingText = isImprovingText
             )
         }
     }
