@@ -1,25 +1,27 @@
 package com.grupo2.ashley.chat.ai
 
 import android.util.Log
+import com.google.ai.client.generativeai.GenerativeModel
+import com.google.ai.client.generativeai.type.generationConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONArray
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
 
 class GeminiAIService {
 
     // For security reasons, it's recommended to move the API key to a more secure location,
     // such as a local.properties file and access it via BuildConfig.
-    // API key de Gemini AI
     private val apiKey = "AIzaSyA0rD3HaFD4g4Z6ahHQlDge0eTy_zeTCVU"
 
-    // URL de la API REST de Gemini
-    private val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$apiKey"
+    private val generativeModel = GenerativeModel(
+        modelName = "gemini-2.0-flash",
+        apiKey = apiKey,
+        generationConfig = generationConfig {
+            temperature = 0.7f
+            topK = 40
+            topP = 0.95f
+            maxOutputTokens = 200
+        }
+    )
 
     /**
      * Mejora el texto del usuario usando IA de Gemini
@@ -51,70 +53,14 @@ class GeminiAIService {
                     Devuelve SOLO el mensaje mejorado, sin explicaciones adicionales, sin comillas, sin formato especial.
                 """.trimIndent()
 
-                // Crear la conexión HTTP
-                val url = URL(apiUrl)
-                val connection = url.openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"
-                connection.setRequestProperty("Content-Type", "application/json")
-                connection.doOutput = true
+                val response = generativeModel.generateContent(prompt)
 
-                // Crear el JSON request
-                val requestBody = JSONObject().apply {
-                    put("contents", JSONArray().apply {
-                        put(JSONObject().apply {
-                            put("parts", JSONArray().apply {
-                                put(JSONObject().apply {
-                                    put("text", prompt)
-                                })
-                            })
-                        })
-                    })
-                    put("generationConfig", JSONObject().apply {
-                        put("temperature", 0.7)
-                        put("topK", 40)
-                        put("topP", 0.95)
-                        put("maxOutputTokens", 200)
-                    })
-                }
+                val improvedText = response.text?.trim()
 
-                // Enviar request
-                OutputStreamWriter(connection.outputStream).use { writer ->
-                    writer.write(requestBody.toString())
-                    writer.flush()
-                }
-
-                // Leer respuesta
-                val responseCode = connection.responseCode
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    val response = BufferedReader(InputStreamReader(connection.inputStream)).use { reader ->
-                        reader.readText()
-                    }
-
-                    // Parsear respuesta JSON
-                    val jsonResponse = JSONObject(response)
-                    val candidates = jsonResponse.getJSONArray("candidates")
-                    if (candidates.length() > 0) {
-                        val content = candidates.getJSONObject(0).getJSONObject("content")
-                        val parts = content.getJSONArray("parts")
-                        if (parts.length() > 0) {
-                            val improvedText = parts.getJSONObject(0).getString("text").trim()
-
-                            // Validar que no esté vacío y tenga sentido
-                            if (improvedText.isBlank() || improvedText.length > originalText.length * 3) {
-                                Result.success(originalText)
-                            } else {
-                                Result.success(improvedText)
-                            }
-                        } else {
-                            Result.success(originalText)
-                        }
-                    } else {
-                        Result.success(originalText)
-                    }
+                if (improvedText.isNullOrBlank() || improvedText.length > originalText.length * 3) {
+                    Result.success(originalText)
                 } else {
-                    val errorStream = BufferedReader(InputStreamReader(connection.errorStream)).use { it.readText() }
-                    Log.e("GeminiAI", "Error HTTP $responseCode: $errorStream")
-                    Result.failure(Exception("Error HTTP $responseCode"))
+                    Result.success(improvedText)
                 }
             } catch (e: Exception) {
                 Log.e("GeminiAI", "Error mejorando mensaje: ${e.message}", e)
