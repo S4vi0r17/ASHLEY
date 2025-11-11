@@ -332,19 +332,19 @@ docs/                              # Documentación
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/EderGBeneP.png" width="100px;" alt="Eder Benites"/><br />
+      <img src="https://github.com/S4vi0r17.png" width="100px;" alt="Eder Benites"/><br />
       <sub><b>Eder Gustavo Benites Pardavé</b></sub><br />
       <sub>22200007</sub><br />
       <a href="https://github.com/EderGBeneP">GitHub</a>
     </td>
     <td align="center">
-      <img src="https://github.com/S4vi0r17.png" width="100px;" alt="Gabriel Cuba"/><br />
+      <img src="https://i.ibb.co/ymML3trk/IMG-20251107-221618007-HDR.jpg" width="100px;" alt="Gabriel Cuba"/><br />
       <sub><b>Gabriel Isaac Cuba García</b></sub><br />
       <sub>22200014</sub><br />
       <a href="https://github.com/S4vi0r17">GitHub</a>
     </td>
     <td align="center">
-      <img src="https://github.com/DiegoFloresTello.png" width="100px;" alt="Diego Flores"/><br />
+      <img src="https://i.ibb.co/b5WSCsJP/download.jpg" width="100px;" alt="Diego Flores"/><br />
       <sub><b>Diego Andrés Flores Tello</b></sub><br />
       <sub>22200018</sub><br />
       <a href="https://github.com/DiegoFloresTello">GitHub</a>
