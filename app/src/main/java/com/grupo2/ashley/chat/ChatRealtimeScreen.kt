@@ -29,8 +29,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.grupo2.ashley.chat.components.ChatInputBar
 import com.grupo2.ashley.chat.components.MessageBubble
+import com.grupo2.ashley.chat.components.ProductChatHeader
 import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,10 +40,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 fun ChatRealtimeScreen(
     viewModel: ChatRealtimeViewModel,
     conversationId: String,
-    currentUserId: String?
+    currentUserId: String?,
+    navController: NavController? = null
 ) {
     val messages by viewModel.messages.collectAsState()
     val isSending by viewModel.isSending.collectAsState()
+    val productInfo by viewModel.productInfo.collectAsState()
     var text by remember { mutableStateOf("") }
 
     val context = LocalContext.current
@@ -70,6 +74,13 @@ fun ChatRealtimeScreen(
         viewModel.startListening(conversationId)
     }
 
+    // Marcar mensajes como leídos cuando se abre el chat
+    LaunchedEffect(messages) {
+        if (messages.isNotEmpty() && currentUserId != null) {
+            viewModel.markMessagesAsRead(currentUserId)
+        }
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             viewModel.stopListening()
@@ -93,6 +104,17 @@ fun ChatRealtimeScreen(
                 .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.surface)
         ) {
+            // Mostrar información del producto si existe
+            productInfo?.let { product ->
+                ProductChatHeader(
+                    productInfo = product,
+                    onProductClick = {
+                        // Navegar a los detalles del producto
+                        navController?.navigate("productDetail/${product.productId}")
+                    }
+                )
+            }
+
             val displayedMessages = messages.reversed()
 
             LazyColumn(

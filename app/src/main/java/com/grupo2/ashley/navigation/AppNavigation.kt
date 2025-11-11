@@ -217,7 +217,8 @@ fun AppNavigation(
             ChatRealtimeScreen(
                 viewModel = chatViewModel,
                 conversationId = conversationId,
-                currentUserId = currentUserId
+                currentUserId = currentUserId,
+                navController = navController
             )
         }
 

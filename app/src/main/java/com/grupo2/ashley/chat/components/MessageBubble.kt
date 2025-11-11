@@ -3,24 +3,33 @@ package com.grupo2.ashley.chat.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.models.Message
+import com.grupo2.ashley.chat.models.MessageStatus
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -91,12 +100,52 @@ fun MessageBubble(
         }
 
         Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = formatTimestamp(message.timestamp),
-            fontSize = 11.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+
+        // Timestamp con checks de confirmación (solo para mensajes propios)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 8.dp)
-        )
+        ) {
+            Text(
+                text = formatTimestamp(message.timestamp),
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (isOwnMessage) {
+                Spacer(modifier = Modifier.width(4.dp))
+
+                when (message.status) {
+                    MessageStatus.SENT -> {
+                        // Un solo check gris (✓)
+                        Icon(
+                            imageVector = Icons.Default.Done,
+                            contentDescription = "Enviado",
+                            modifier = Modifier.size(14.dp),
+                            tint = Color.Gray
+                        )
+                    }
+                    MessageStatus.DELIVERED -> {
+                        // Doble check gris (✓✓)
+                        Icon(
+                            imageVector = Icons.Default.DoneAll,
+                            contentDescription = "Entregado",
+                            modifier = Modifier.size(14.dp),
+                            tint = Color.Gray
+                        )
+                    }
+                    MessageStatus.READ -> {
+                        // Doble check azul (✓✓)
+                        Icon(
+                            imageVector = Icons.Default.DoneAll,
+                            contentDescription = "Leído",
+                            modifier = Modifier.size(14.dp),
+                            tint = Color(0xFF4FC3F7) // Azul similar a WhatsApp
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.database.ValueEventListener
 import com.grupo2.ashley.chat.data.ChatRealtimeRepository
 import com.grupo2.ashley.chat.models.Message
+import com.grupo2.ashley.chat.models.ProductInfo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,9 @@ class ChatRealtimeViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val _productInfo = MutableStateFlow<ProductInfo?>(null)
+    val productInfo: StateFlow<ProductInfo?> = _productInfo.asStateFlow()
+
     private var listener: ValueEventListener? = null
     private var currentConversationId: String? = null
 
@@ -32,6 +36,23 @@ class ChatRealtimeViewModel(
         currentConversationId = conversationId
         listener = repo.addMessagesListener(conversationId) { list ->
             _messages.value = list
+        }
+
+        // Cargar información del producto
+        loadProductInfo(conversationId)
+    }
+
+    private fun loadProductInfo(conversationId: String) {
+        viewModelScope.launch {
+            val product = repo.getProductInfoForConversation(conversationId)
+            _productInfo.value = product
+        }
+    }
+
+    fun markMessagesAsRead(currentUserId: String) {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            repo.markMessagesAsRead(conversationId, currentUserId)
         }
     }
 
