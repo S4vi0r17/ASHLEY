@@ -13,11 +13,13 @@ import java.net.URL
 
 class GeminiAIService {
 
+    // For security reasons, it's recommended to move the API key to a more secure location,
+    // such as a local.properties file and access it via BuildConfig.
     // API key de Gemini AI
     private val apiKey = "AIzaSyA0rD3HaFD4g4Z6ahHQlDge0eTy_zeTCVU"
 
     // URL de la API REST de Gemini
-    private val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey"
+    private val apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=$apiKey"
 
     /**
      * Mejora el texto del usuario usando IA de Gemini
