@@ -10,6 +10,18 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.grupo2.ashley.chat.data.ChatListRepository
+import com.grupo2.ashley.chat.models.ConversationWithUser
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+data class ChatListUiState(
+    val conversations: List<ConversationWithUser> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
+)
 
 @HiltViewModel
 class ChatListViewModel @Inject constructor(
@@ -17,8 +29,8 @@ class ChatListViewModel @Inject constructor(
     private val userRepository: ChatUserRepository
 ): ViewModel() {
 
-    private val _conversations = MutableStateFlow<List<Conversation>>(emptyList())
-    val conversations: StateFlow<List<Conversation>> = _conversations.asStateFlow()
+    private val _uiState = MutableStateFlow(ChatListUiState())
+    val uiState: StateFlow<ChatListUiState> = _uiState.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()

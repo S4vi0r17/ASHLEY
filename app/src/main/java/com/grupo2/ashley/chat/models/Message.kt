@@ -6,6 +6,12 @@ data class Message(
     val text: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val imageUrl: String? = null,
-    var status: MessageStatus = MessageStatus.SENT,
-    var isDeleted: Boolean = false
+    val status: MessageStatus = MessageStatus.SENT,
+    val readAt: Long? = null
 )
+
+enum class MessageStatus {
+    SENT,       // Enviado (✓)
+    DELIVERED,  // Entregado (✓✓)
+    READ        // Leído (✓✓ azul)
+}

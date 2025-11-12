@@ -10,6 +10,10 @@ import com.grupo2.ashley.chat.models.MessageStatus
 import com.grupo2.ashley.chat.models.ParticipantInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import com.grupo2.ashley.chat.models.ProductInfo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,6 +38,10 @@ class ChatRealtimeViewModel @Inject constructor(
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
 
+    private val _productInfo = MutableStateFlow<ProductInfo?>(null)
+    val productInfo: StateFlow<ProductInfo?> = _productInfo.asStateFlow()
+
+    private var listener: ValueEventListener? = null
     private var currentConversationId: String? = null
     private var currentOffset = 0
     private val pageSize = 50
@@ -54,6 +62,23 @@ class ChatRealtimeViewModel @Inject constructor(
                 .collectLatest { messageList ->
                     _messages.value = messageList
                 }
+        }
+
+        // Cargar información del producto
+        loadProductInfo(conversationId)
+    }
+
+    private fun loadProductInfo(conversationId: String) {
+        viewModelScope.launch {
+            val product = repo.getProductInfoForConversation(conversationId)
+            _productInfo.value = product
+        }
+    }
+
+    fun markMessagesAsRead(currentUserId: String) {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            repo.markMessagesAsRead(conversationId, currentUserId)
         }
     }
 

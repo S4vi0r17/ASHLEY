@@ -18,6 +18,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,6 +33,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.components.ChatInputBar
 import com.grupo2.ashley.chat.components.MessageBubble
+import androidx.navigation.NavController
+import com.grupo2.ashley.chat.ai.GeminiAIService
+import com.grupo2.ashley.chat.components.ChatInputBar
+import com.grupo2.ashley.chat.components.MessageBubble
+import com.grupo2.ashley.chat.components.ProductChatHeader
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,12 +49,15 @@ fun ChatRealtimeScreen(
     onNavigateBack: () -> Unit = {},
     onNavigateToParticipantInfo: () -> Unit = {},
     viewModel: ChatRealtimeViewModel = hiltViewModel()
+    navController: NavController? = null
 ) {
     val messages by viewModel.messages.collectAsState()
     val participantInfo by viewModel.participantInfo.collectAsState()
     val isSending by viewModel.isSending.collectAsState()
     val error by viewModel.error.collectAsState()
+    val productInfo by viewModel.productInfo.collectAsState()
     var text by remember { mutableStateOf("") }
+    var isImprovingText by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -61,6 +72,8 @@ fun ChatRealtimeScreen(
             viewModel.clearError()
         }
     }
+    val scope = rememberCoroutineScope()
+    val geminiService = remember { GeminiAIService() }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -86,6 +99,19 @@ fun ChatRealtimeScreen(
         viewModel.startListening(conversationId)
         viewModel.loadParticipantInfo(conversationId, currentUserId)
         viewModel.markAsRead(currentUserId)
+    }
+
+    // Marcar mensajes como leídos cuando se abre el chat
+    LaunchedEffect(messages) {
+        if (messages.isNotEmpty() && currentUserId != null) {
+            viewModel.markMessagesAsRead(currentUserId)
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.stopListening()
+        }
     }
 
     Scaffold(
@@ -163,6 +189,16 @@ fun ChatRealtimeScreen(
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
+            // Mostrar información del producto si existe
+            productInfo?.let { product ->
+                ProductChatHeader(
+                    productInfo = product,
+                    onProductClick = {
+                        // Navegar a los detalles del producto
+                        navController?.navigate("productDetail/${product.productId}")
+                    }
+                )
+            }
 
             val displayedMessages = messages.reversed()
 
@@ -202,7 +238,42 @@ fun ChatRealtimeScreen(
                     }
                 },
                 onPickImage = { imagePickerLauncher.launch("image/*") }, // 🖼️ Aquí se abre la galería
-                isSending = isSending
+                onImproveWithAI = {
+                    if (!geminiService.isConfigured()) {
+                        // Mostrar mensaje de que necesita configurar la API key
+                        android.widget.Toast.makeText(
+                            context,
+                            "Por favor configura la API key de Gemini AI en GeminiAIService.kt",
+                            android.widget.Toast.LENGTH_LONG
+                        ).show()
+                        return@ChatInputBar
+                    }
+
+                    isImprovingText = true
+                    scope.launch {
+                        try {
+                            val result = geminiService.improveMessage(text)
+                            result.onSuccess { improvedText ->
+                                text = improvedText
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "¡Texto mejorado con IA! ✨",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }.onFailure { error ->
+                                android.widget.Toast.makeText(
+                                    context,
+                                    "Error: ${error.message}",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } finally {
+                            isImprovingText = false
+                        }
+                    }
+                },
+                isSending = isSending,
+                isImprovingText = isImprovingText
             )
         }
     }
