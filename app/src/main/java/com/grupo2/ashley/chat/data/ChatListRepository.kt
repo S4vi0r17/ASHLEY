@@ -84,6 +84,8 @@ class ChatListRepository(
      */
     fun removeConversationsListener(listener: ValueEventListener) {
         db.child("conversations").removeEventListener(listener)
+    }
+
     suspend fun getUserConversationsWithUserData(
         userId: String?
     ): List<ConversationWithUser> {

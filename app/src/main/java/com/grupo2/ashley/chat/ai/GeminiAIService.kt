@@ -57,7 +57,7 @@ class GeminiAIService {
 
                 val improvedText = response.text?.trim()
 
-                if (improvedText.isNullOrBlank() || improvedText.length > originalText.length * 3) {
+                return@withContext if (improvedText.isNullOrBlank() || improvedText.length > originalText.length * 3) {
                     Result.success(originalText)
                 } else {
                     Result.success(improvedText)

@@ -20,6 +20,7 @@ interface ChatRepository {
     suspend fun createOrGetConversation(userId1: String, userId2: String): Result<String>
     suspend fun markConversationAsRead(conversationId: String)
     suspend fun updateTypingStatus(conversationId: String, userId: String, isTyping: Boolean)
+    suspend fun getProductInfoForConversation(conversationId: String): com.grupo2.ashley.chat.models.ProductInfo?
 
     // Sync
     suspend fun syncOfflineMessages()

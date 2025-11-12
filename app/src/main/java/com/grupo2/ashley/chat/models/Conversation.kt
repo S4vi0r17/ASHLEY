@@ -5,7 +5,7 @@ data class Conversation(
     val participants: List<String> = emptyList(),
     val lastMessage: LastMessage? = null,
     // Runtime-only field for participant information (not stored in Firebase)
-    val participantsInfo: Map<String, ParticipantInfo> = emptyMap()
+    val participantsInfo: Map<String, ParticipantInfo> = emptyMap(),
     val productId: String? = null
 )
 
@@ -24,7 +24,7 @@ data class ParticipantInfo(
     val name: String = "",
     val photoUrl: String? = null,
     val email: String = "",
-    val phoneNumber: String = ""
+    val phoneNumber: String = "",
     val senderId: String = ""
 )
 

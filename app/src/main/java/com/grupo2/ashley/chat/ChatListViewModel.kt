@@ -55,26 +55,38 @@ class ChatListViewModel @Inject constructor(
                     Log.e("ChatListVM", "Error observing conversations", e)
                     _error.value = "Error al cargar conversaciones"
                     _isLoading.value = false
+                    _uiState.value = ChatListUiState(error = "Error al cargar conversaciones")
                 }
                 .collectLatest { conversationList ->
                     // Load participant info for each conversation
                     val enrichedConversations = conversationList.map { conversation ->
                         val participantIds = conversation.participants.filter { it != userId }
-                        if (participantIds.isNotEmpty()) {
-                            val userProfiles = userRepository.getUserProfiles(participantIds)
-                            // Convert UserProfile to ParticipantInfo
-                            val participantsInfo = userProfiles.mapValues { (_, profile) ->
-                                com.grupo2.ashley.chat.models.ParticipantInfo(
-                                    name = "${profile.firstName} ${profile.lastName}".trim(),
-                                    photoUrl = profile.profileImageUrl.takeIf { it.isNotEmpty() }
-                                )
+                        val otherUserId = participantIds.firstOrNull() ?: ""
+
+                        val userProfile = if (otherUserId.isNotEmpty()) {
+                            try {
+                                userRepository.getUserProfiles(listOf(otherUserId))[otherUserId]
+                            } catch (e: Exception) {
+                                Log.e("ChatListVM", "Error loading user profile", e)
+                                null
                             }
-                            conversation.copy(participantsInfo = participantsInfo)
-                        } else {
-                            conversation
-                        }
+                        } else null
+
+                        // Convertir a ConversationWithUser
+                        ConversationWithUser(
+                            conversationId = conversation.id,
+                            otherUserId = otherUserId,
+                            otherUserName = if (userProfile != null) {
+                                "${userProfile.firstName} ${userProfile.lastName}".trim().ifEmpty { "Usuario" }
+                            } else "Usuario",
+                            otherUserImageUrl = userProfile?.profileImageUrl ?: "",
+                            lastMessage = conversation.lastMessage,
+                            isOnline = false,
+                            unreadCount = 0,
+                            productInfo = null
+                        )
                     }
-                    _conversations.value = enrichedConversations
+                    _uiState.value = ChatListUiState(conversations = enrichedConversations)
                     _isLoading.value = false
                 }
         }

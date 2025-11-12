@@ -667,4 +667,14 @@ class ChatRepositoryImpl @Inject constructor(
             Log.e(TAG, "Failed to update Firebase conversation last message", e)
         }
     }
+
+    override suspend fun getProductInfoForConversation(conversationId: String): ProductInfo? {
+        return try {
+            // Por ahora retorna null - puede implementarse si se necesita
+            null
+        } catch (e: Exception) {
+            Log.e(TAG, "Error loading product info", e)
+            null
+        }
+    }
 }

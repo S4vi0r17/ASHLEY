@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,15 +31,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
-import com.grupo2.ashley.chat.components.ChatInputBar
-import com.grupo2.ashley.chat.components.MessageBubble
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.ai.GeminiAIService
 import com.grupo2.ashley.chat.components.ChatInputBar
 import com.grupo2.ashley.chat.components.MessageBubble
 import com.grupo2.ashley.chat.components.ProductChatHeader
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +46,7 @@ fun ChatRealtimeScreen(
     currentUserId: String?,
     onNavigateBack: () -> Unit = {},
     onNavigateToParticipantInfo: () -> Unit = {},
-    viewModel: ChatRealtimeViewModel = hiltViewModel()
+    viewModel: ChatRealtimeViewModel = hiltViewModel(),
     navController: NavController? = null
 ) {
     val messages by viewModel.messages.collectAsState()

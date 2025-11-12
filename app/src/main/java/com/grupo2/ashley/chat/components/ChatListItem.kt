@@ -7,51 +7,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.grupo2.ashley.chat.models.Conversation
-import com.grupo2.ashley.chat.components.formatTimestamp
 import com.grupo2.ashley.chat.models.ConversationWithUser
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun ChatListItem(
     conversation: ConversationWithUser,
     onClick: () -> Unit
 ) {
-    val otherUserId = conversation.participants.firstOrNull { it != currentUserId } ?: "unknown"
-    val participantInfo = conversation.participantsInfo[otherUserId]
-    val displayName = participantInfo?.name ?: otherUserId
+    val displayName = conversation.otherUserName
 
     Surface(
         modifier = Modifier
@@ -67,9 +40,9 @@ fun ChatListItem(
         ) {
             // Profile picture or generic avatar
             Box {
-                if (!participantInfo?.photoUrl.isNullOrEmpty()) {
+                if (conversation.otherUserImageUrl.isNotEmpty()) {
                     AsyncImage(
-                        model = participantInfo?.photoUrl,
+                        model = conversation.otherUserImageUrl,
                         contentDescription = "Profile picture",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -112,7 +85,7 @@ fun ChatListItem(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = conversation.lastMessage?.timestamp?.let { formatTimestamp(it) } ?: "",
+                        text = conversation.lastMessage?.timestamp?.let { formatConversationTimestamp(it) } ?: "",
                         style = MaterialTheme.typography.labelMedium,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -130,12 +103,12 @@ fun ChatListItem(
                         fontSize = 14.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        color = if ((conversation.lastMessage?.unreadCount ?: 0) > 0) {
+                        color = if (conversation.unreadCount > 0) {
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         },
-                        fontWeight = if ((conversation.lastMessage?.unreadCount ?: 0) > 0) {
+                        fontWeight = if (conversation.unreadCount > 0) {
                             FontWeight.Medium
                         } else {
                             FontWeight.Normal
@@ -143,7 +116,7 @@ fun ChatListItem(
                         modifier = Modifier.weight(1f)
                     )
 
-                    if ((conversation.lastMessage?.unreadCount ?: 0) > 0) {
+                    if (conversation.unreadCount > 0) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
@@ -155,7 +128,7 @@ fun ChatListItem(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "${conversation.lastMessage?.unreadCount}",
+                                text = "${conversation.unreadCount}",
                                 color = MaterialTheme.colorScheme.onPrimary,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontSize = 11.sp,

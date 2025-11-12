@@ -41,7 +41,6 @@ class ChatRealtimeViewModel @Inject constructor(
     private val _productInfo = MutableStateFlow<ProductInfo?>(null)
     val productInfo: StateFlow<ProductInfo?> = _productInfo.asStateFlow()
 
-    private var listener: ValueEventListener? = null
     private var currentConversationId: String? = null
     private var currentOffset = 0
     private val pageSize = 50
@@ -70,16 +69,25 @@ class ChatRealtimeViewModel @Inject constructor(
 
     private fun loadProductInfo(conversationId: String) {
         viewModelScope.launch {
-            val product = repo.getProductInfoForConversation(conversationId)
-            _productInfo.value = product
+            try {
+                val product = chatRepository.getProductInfoForConversation(conversationId)
+                _productInfo.value = product
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error loading product info", e)
+            }
         }
     }
 
     fun markMessagesAsRead(currentUserId: String) {
         val conversationId = currentConversationId ?: return
         viewModelScope.launch {
-            repo.markMessagesAsRead(conversationId, currentUserId)
+            chatRepository.markMessagesAsRead(conversationId, currentUserId)
         }
+    }
+
+    fun stopListening() {
+        // Clear active conversation when leaving the chat
+        (chatRepository as? com.grupo2.ashley.chat.data.ChatRepositoryImpl)?.setActiveConversation(null)
     }
 
     override fun onCleared() {
