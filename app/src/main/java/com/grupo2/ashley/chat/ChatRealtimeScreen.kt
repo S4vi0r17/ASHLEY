@@ -54,6 +54,7 @@ fun ChatRealtimeScreen(
     val isSending by viewModel.isSending.collectAsState()
     val error by viewModel.error.collectAsState()
     val productInfo by viewModel.productInfo.collectAsState()
+    val isOtherUserTyping by viewModel.isOtherUserTyping.collectAsState()
     var text by remember { mutableStateOf("") }
     var isImprovingText by remember { mutableStateOf(false) }
 
@@ -222,9 +223,59 @@ fun ChatRealtimeScreen(
                 }
             }
 
+            // Indicador "escribiendo..."
+            androidx.compose.animation.AnimatedVisibility(
+                visible = isOtherUserTyping,
+                enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.slideInVertically(),
+                exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.slideOutVertically()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        text = "escribiendo",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    // Puntos animados
+                    repeat(3) { index ->
+                        var visible by remember { mutableStateOf(false) }
+                        LaunchedEffect(Unit) {
+                            kotlinx.coroutines.delay((index * 200).toLong())
+                            while (true) {
+                                visible = true
+                                kotlinx.coroutines.delay(200)
+                                visible = false
+                                kotlinx.coroutines.delay(400)
+                            }
+                        }
+                        androidx.compose.animation.AnimatedVisibility(
+                            visible = visible,
+                            enter = androidx.compose.animation.fadeIn(),
+                            exit = androidx.compose.animation.fadeOut()
+                        ) {
+                            Text(
+                                text = ".",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
             ChatInputBar(
                 text = text,
-                onTextChange = { text = it },
+                onTextChange = { newText ->
+                    text = newText
+                    viewModel.onTextChanged(newText)
+                },
                 onSend = {
                     if (text.isNotBlank()) {
                         viewModel.sendMessage(

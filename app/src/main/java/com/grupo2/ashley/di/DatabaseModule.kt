@@ -24,6 +24,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "ashley_chat_database"
         )
+            .addMigrations(AppDatabase.MIGRATION_2_3)
             .fallbackToDestructiveMigration() // Recreate database on schema changes (OK for MVP)
             .build()
     }

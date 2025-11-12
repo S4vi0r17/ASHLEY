@@ -41,9 +41,15 @@ class ChatRealtimeViewModel @Inject constructor(
     private val _productInfo = MutableStateFlow<ProductInfo?>(null)
     val productInfo: StateFlow<ProductInfo?> = _productInfo.asStateFlow()
 
+    private val _isOtherUserTyping = MutableStateFlow(false)
+    val isOtherUserTyping: StateFlow<Boolean> = _isOtherUserTyping.asStateFlow()
+
     private var currentConversationId: String? = null
+    private var currentUserId: String? = null
+    private var otherUserId: String? = null
     private var currentOffset = 0
     private val pageSize = 50
+    private var typingJob: kotlinx.coroutines.Job? = null
 
     fun startListening(conversationId: String) {
         currentConversationId = conversationId
@@ -175,6 +181,8 @@ class ChatRealtimeViewModel @Inject constructor(
 
     fun loadParticipantInfo(conversationId: String, currentUserId: String?) {
         if (currentUserId == null) return
+        this.currentUserId = currentUserId
+
         viewModelScope.launch {
             try {
                 // Get conversation to find the other participant
@@ -183,10 +191,12 @@ class ChatRealtimeViewModel @Inject constructor(
                     .find { it.id == conversationId }
 
                 if (conversation != null) {
-                    val otherUserId = conversation.participants.firstOrNull { it != currentUserId }
-                    if (otherUserId != null) {
-                        val userProfiles = userRepository.getUserProfiles(listOf(otherUserId))
-                        val profile = userProfiles[otherUserId]
+                    val otherUserIdFound = conversation.participants.firstOrNull { it != currentUserId }
+                    otherUserId = otherUserIdFound
+
+                    if (otherUserIdFound != null) {
+                        val userProfiles = userRepository.getUserProfiles(listOf(otherUserIdFound))
+                        val profile = userProfiles[otherUserIdFound]
                         if (profile != null) {
                             _participantInfo.value = ParticipantInfo(
                                 name = "${profile.firstName} ${profile.lastName}".trim(),
@@ -195,10 +205,48 @@ class ChatRealtimeViewModel @Inject constructor(
                                 phoneNumber = profile.phoneNumber
                             )
                         }
+
+                        // Observar estado de typing del otro usuario
+                        observeOtherUserTyping(conversationId, otherUserIdFound)
                     }
                 }
             } catch (e: Exception) {
                 Log.e("ChatVM", "Error loading participant info", e)
+            }
+        }
+    }
+
+    private fun observeOtherUserTyping(conversationId: String, otherUserId: String) {
+        viewModelScope.launch {
+            chatRepository.observeTypingStatus(conversationId, otherUserId)
+                .collectLatest { isTyping ->
+                    _isOtherUserTyping.value = isTyping
+                }
+        }
+    }
+
+    fun onTextChanged(text: String) {
+        val conversationId = currentConversationId ?: return
+        val userId = currentUserId ?: return
+
+        // Cancelar el job anterior
+        typingJob?.cancel()
+
+        // Si hay texto, marcar como escribiendo
+        if (text.isNotEmpty()) {
+            viewModelScope.launch {
+                chatRepository.updateTypingStatus(conversationId, userId, true)
+            }
+
+            // Después de 3 segundos de inactividad, quitar el estado de escribiendo
+            typingJob = viewModelScope.launch {
+                kotlinx.coroutines.delay(3000)
+                chatRepository.updateTypingStatus(conversationId, userId, false)
+            }
+        } else {
+            // Si el texto está vacío, quitar el estado inmediatamente
+            viewModelScope.launch {
+                chatRepository.updateTypingStatus(conversationId, userId, false)
             }
         }
     }

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -41,6 +42,7 @@ fun ChatInputBar(
     onTextChange: (String) -> Unit,
     onSend: () -> Unit,
     onPickImage: () -> Unit,
+    onPickVideo: () -> Unit = {},
     onImproveWithAI: () -> Unit = {},
     isSending: Boolean = false,
     isImprovingText: Boolean = false
@@ -70,6 +72,25 @@ fun ChatInputBar(
                     imageVector = Icons.Default.Image,
                     contentDescription = "Seleccionar imagen",
                     tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.width(6.dp))
+
+            // 🎥 Botón para elegir video
+            IconButton(
+                onClick = { if (!isSending) onPickVideo() },
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = CircleShape
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.VideoLibrary,
+                    contentDescription = "Seleccionar video",
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             }
 

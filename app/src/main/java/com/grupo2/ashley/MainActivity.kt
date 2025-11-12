@@ -14,10 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.libraries.places.api.Places
+import com.grupo2.ashley.chat.UnreadMessagesViewModel
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.AppNavigation
@@ -48,6 +50,9 @@ fun AshleyApp() {
     val homeViewModel: HomeViewModel = viewModel()
     val ubicacionViewModel: UbicacionViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val unreadMessagesViewModel: UnreadMessagesViewModel = hiltViewModel()
+
+    val unreadCount by unreadMessagesViewModel.unreadCount.collectAsState()
 
     val navigationItems = listOf(
         Triple("Inicio", Icons.Default.Home, Routes.HOME),
@@ -60,6 +65,13 @@ fun AshleyApp() {
     // Estado actual de la ruta
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination?.route
+
+    // Refrescar contador cuando se navega a chats
+    LaunchedEffect(currentDestination) {
+        if (currentDestination == Routes.CHATS) {
+            unreadMessagesViewModel.refreshUnreadCount()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -86,14 +98,30 @@ fun AshleyApp() {
                                 }
                             },
                             icon = {
-                                Icon(
-                                    icon,
-                                    contentDescription = label,
-                                    tint = if (currentDestination == route)
-                                        MaterialTheme.colorScheme.primary
-                                    else
-                                        MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                BadgedBox(
+                                    badge = {
+                                        // Solo mostrar badge en el ícono de Chats
+                                        if (route == Routes.CHATS && unreadCount > 0) {
+                                            Badge(
+                                                containerColor = MaterialTheme.colorScheme.error
+                                            ) {
+                                                Text(
+                                                    text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                                    style = MaterialTheme.typography.labelSmall
+                                                )
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        icon,
+                                        contentDescription = label,
+                                        tint = if (currentDestination == route)
+                                            MaterialTheme.colorScheme.primary
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             },
                             label = {
                                 Text(

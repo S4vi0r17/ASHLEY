@@ -13,6 +13,7 @@ import com.grupo2.ashley.core.network.ConnectivityObserver
 import com.grupo2.ashley.core.utils.ImageCompressor
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import java.util.UUID
 import javax.inject.Inject
@@ -101,7 +102,7 @@ class ChatRepositoryImpl @Inject constructor(
 
                     val updatedMessage = message.copy(
                         imageUrl = finalImageUrl,
-                        status = MessageStatus.DELIVERED
+                        status = MessageStatus.SENT  // Cambiado a SENT, será DELIVERED cuando el receptor lo reciba
                     )
 
                     // Upload to Firebase
@@ -214,21 +215,26 @@ class ChatRepositoryImpl @Inject constructor(
                 }
 
                 // Mark messages as read in local database
+                val readTimestamp = System.currentTimeMillis()
                 messageDao.markConversationMessagesAsRead(
                     conversationId = conversationId,
                     currentUserId = currentUserId,
-                    status = MessageStatus.READ
+                    status = MessageStatus.READ,
+                    readAt = readTimestamp
                 )
 
                 // Update Firebase if online
                 if (connectivityObserver.isConnected()) {
                     unreadMessageIds.forEach { messageId ->
+                        val updates = mapOf(
+                            "status" to MessageStatus.READ.name,
+                            "readAt" to readTimestamp
+                        )
                         firebaseDb.child("conversations")
                             .child(conversationId)
                             .child("messages")
                             .child(messageId)
-                            .child("status")
-                            .setValue(MessageStatus.READ.name)
+                            .updateChildren(updates)
                             .addOnSuccessListener {
                                 Log.d(TAG, "Marked message $messageId as read in Firebase")
                             }
@@ -447,6 +453,19 @@ class ChatRepositoryImpl @Inject constructor(
 
                                 if (isNewMessage && isFromOtherUser && isConversationNotActive) {
                                     newMessagesForNotification.add(Pair(message, message.senderId!!))
+                                }
+
+                                // 📬 Marcar como DELIVERED si somos el receptor y el mensaje no está leído
+                                if (isFromOtherUser && message.status == MessageStatus.SENT) {
+                                    // Actualizar a DELIVERED en Firebase
+                                    messagesRef.child(message.id).child("status")
+                                        .setValue(MessageStatus.DELIVERED.name)
+                                        .addOnSuccessListener {
+                                            Log.d(TAG, "Message ${message.id} marked as DELIVERED")
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.e(TAG, "Failed to mark message as DELIVERED", e)
+                                        }
                                 }
                             }
                         }
@@ -675,6 +694,64 @@ class ChatRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error loading product info", e)
             null
+        }
+    }
+
+    override fun observeTypingStatus(conversationId: String, otherUserId: String): Flow<Boolean> {
+        return callbackFlow {
+            val typingRef = firebaseDb.child("conversations")
+                .child(conversationId)
+                .child("typing")
+                .child(otherUserId)
+
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val typingTimestamp = snapshot.getValue(Long::class.java)
+                    // Considerar que está escribiendo si el timestamp es reciente (últimos 5 segundos)
+                    val isTyping = if (typingTimestamp != null) {
+                        val currentTime = System.currentTimeMillis()
+                        (currentTime - typingTimestamp) < 5000
+                    } else {
+                        false
+                    }
+                    trySend(isTyping)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e(TAG, "Error observing typing status", error.toException())
+                    trySend(false)
+                }
+            }
+
+            typingRef.addValueEventListener(listener)
+
+            awaitClose {
+                typingRef.removeEventListener(listener)
+            }
+        }
+    }
+
+    override suspend fun getTotalUnreadCount(currentUserId: String): Int {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Obtener todas las conversaciones del usuario
+                val conversations = conversationDao.getUserConversationsSync(currentUserId)
+
+                // Contar mensajes sin leer en cada conversación
+                var totalUnread = 0
+                conversations.forEach { conversation ->
+                    val unreadCount = messageDao.getUnreadMessageCount(
+                        conversationId = conversation.id,
+                        currentUserId = currentUserId
+                    )
+                    totalUnread += unreadCount
+                }
+
+                totalUnread
+            } catch (e: Exception) {
+                Log.e(TAG, "Error getting total unread count", e)
+                0
+            }
         }
     }
 }

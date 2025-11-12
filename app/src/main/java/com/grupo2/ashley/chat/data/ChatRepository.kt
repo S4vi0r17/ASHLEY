@@ -21,6 +21,8 @@ interface ChatRepository {
     suspend fun markConversationAsRead(conversationId: String)
     suspend fun updateTypingStatus(conversationId: String, userId: String, isTyping: Boolean)
     suspend fun getProductInfoForConversation(conversationId: String): com.grupo2.ashley.chat.models.ProductInfo?
+    fun observeTypingStatus(conversationId: String, otherUserId: String): Flow<Boolean>
+    suspend fun getTotalUnreadCount(currentUserId: String): Int
 
     // Sync
     suspend fun syncOfflineMessages()
