@@ -4,7 +4,8 @@
       "Bash(tree:*)",
       "Bash(./gradlew build:*)",
       "Bash(./gradlew :app:compileDebugKotlin:*)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

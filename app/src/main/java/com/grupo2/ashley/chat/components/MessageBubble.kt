@@ -30,6 +30,9 @@ fun MessageBubble(
     onDelete: (() -> Unit)? = null,
     onRetry: (() -> Unit)? = null
 ) {
+    // Debug log
+    android.util.Log.d("MessageBubble", "Message ${message.id}: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}, mediaType=${message.mediaType}")
+
     var showMenu by remember { mutableStateOf(false) }
     val backgroundColor = if (isOwnMessage)
         MaterialTheme.colorScheme.primaryContainer
@@ -93,9 +96,10 @@ fun MessageBubble(
                         }
                     } else {
                         // Si el mensaje tiene imagen
-                        if (!message.imageUrl.isNullOrEmpty()) {
+                        val imageUrl = message.imageUrl
+                        if (!imageUrl.isNullOrEmpty()) {
                             AsyncImage(
-                                model = message.imageUrl,
+                                model = imageUrl,
                                 contentDescription = "Imagen del mensaje",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
@@ -110,9 +114,10 @@ fun MessageBubble(
                         }
 
                         // Si el mensaje tiene video
-                        if (!message.videoUrl.isNullOrEmpty()) {
+                        val videoUrl = message.videoUrl
+                        if (!videoUrl.isNullOrEmpty()) {
                             VideoPlayer(
-                                videoUrl = message.videoUrl,
+                                videoUrl = videoUrl,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .fillMaxWidth()

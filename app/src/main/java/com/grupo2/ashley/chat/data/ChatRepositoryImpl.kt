@@ -120,6 +120,8 @@ class ChatRepositoryImpl @Inject constructor(
                         status = MessageStatus.SENT  // Cambiado a SENT, será DELIVERED cuando el receptor lo reciba
                     )
 
+                    Log.d(TAG, "Sending message with imageUrl=$finalImageUrl, videoUrl=$finalVideoUrl, mediaType=$mediaType")
+
                     // Upload to Firebase
                     syncMessageToFirebase(conversationId, updatedMessage)
 
@@ -447,6 +449,8 @@ class ChatRepositoryImpl @Inject constructor(
                             if (message.id.isEmpty()) {
                                 message.id = child.key ?: ""
                             }
+
+                            Log.d(TAG, "Synced message ${message.id}: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}, mediaType=${message.mediaType}")
 
                             // Check both 'deleted' and 'isDeleted' fields for backwards compatibility
                             val isDeleted = child.child("isDeleted").getValue(Boolean::class.java) ?: false
