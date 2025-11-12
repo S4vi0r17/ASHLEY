@@ -72,7 +72,8 @@ class ChatRepositoryImpl @Inject constructor(
         conversationId: String,
         senderId: String,
         text: String,
-        imageBytes: ByteArray?
+        imageBytes: ByteArray?,
+        videoBytes: ByteArray?
     ): Result<Message> = withContext(Dispatchers.IO) {
         try {
             val messageId = UUID.randomUUID().toString()
@@ -85,6 +86,8 @@ class ChatRepositoryImpl @Inject constructor(
                 text = text,
                 timestamp = timestamp,
                 imageUrl = null,
+                videoUrl = null,
+                mediaType = null,
                 status = MessageStatus.PENDING
             )
 
@@ -100,8 +103,20 @@ class ChatRepositoryImpl @Inject constructor(
                         uploadImageCompressed(imageBytes)
                     } else null
 
+                    val finalVideoUrl = if (videoBytes != null) {
+                        uploadVideo(videoBytes)
+                    } else null
+
+                    val mediaType = when {
+                        finalImageUrl != null -> "image"
+                        finalVideoUrl != null -> "video"
+                        else -> null
+                    }
+
                     val updatedMessage = message.copy(
                         imageUrl = finalImageUrl,
+                        videoUrl = finalVideoUrl,
+                        mediaType = mediaType,
                         status = MessageStatus.SENT  // Cambiado a SENT, será DELIVERED cuando el receptor lo reciba
                     )
 
@@ -617,6 +632,33 @@ class ChatRepositoryImpl @Inject constructor(
                 }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to process image", e)
+            cont.resume(null)
+        }
+    }
+
+    private suspend fun uploadVideo(videoBytes: ByteArray): String? = suspendCoroutine { cont ->
+        try {
+            Log.d(TAG, "Uploading video: ${videoBytes.size} bytes")
+
+            val fileName = "chat_videos/${UUID.randomUUID()}.mp4"
+            val videoRef = storage.child(fileName)
+
+            videoRef.putBytes(videoBytes)
+                .addOnSuccessListener {
+                    videoRef.downloadUrl.addOnSuccessListener { uri ->
+                        Log.d(TAG, "Video uploaded successfully")
+                        cont.resume(uri.toString())
+                    }.addOnFailureListener {
+                        Log.e(TAG, "Failed to get video download URL", it)
+                        cont.resume(null)
+                    }
+                }
+                .addOnFailureListener {
+                    Log.e(TAG, "Failed to upload video", it)
+                    cont.resume(null)
+                }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to process video", e)
             cont.resume(null)
         }
     }

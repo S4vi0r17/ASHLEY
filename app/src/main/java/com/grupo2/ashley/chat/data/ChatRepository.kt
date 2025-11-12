@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 interface ChatRepository {
     // Messages
     fun observeMessages(conversationId: String): Flow<List<Message>>
-    suspend fun sendMessage(conversationId: String, senderId: String, text: String, imageBytes: ByteArray? = null): Result<Message>
+    suspend fun sendMessage(conversationId: String, senderId: String, text: String, imageBytes: ByteArray? = null, videoBytes: ByteArray? = null): Result<Message>
     suspend fun loadMoreMessages(conversationId: String, offset: Int, limit: Int): List<Message>
     suspend fun updateMessageStatus(messageId: String, status: MessageStatus)
     suspend fun deleteMessage(messageId: String, conversationId: String)

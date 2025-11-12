@@ -13,7 +13,7 @@ import com.grupo2.ashley.chat.database.entities.MessageEntity
 
 @Database(
     entities = [MessageEntity::class, ConversationEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -26,6 +26,14 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_2_3 = object : Migration(2, 3) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE messages ADD COLUMN readAt INTEGER")
+            }
+        }
+
+        // Migration from version 3 to 4: Add video support columns
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE messages ADD COLUMN videoUrl TEXT")
+                database.execSQL("ALTER TABLE messages ADD COLUMN mediaType TEXT")
             }
         }
     }

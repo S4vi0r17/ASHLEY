@@ -109,6 +109,21 @@ fun MessageBubble(
                             }
                         }
 
+                        // Si el mensaje tiene video
+                        if (!message.videoUrl.isNullOrEmpty()) {
+                            VideoPlayer(
+                                videoUrl = message.videoUrl,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                            )
+
+                            if (message.text.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                            }
+                        }
+
                         // Texto del mensaje
                         if (message.text.isNotBlank()) {
                             Text(

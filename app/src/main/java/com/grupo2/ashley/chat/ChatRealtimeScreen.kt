@@ -88,7 +88,29 @@ fun ChatRealtimeScreen(
                 viewModel.sendMessage(
                     senderId = currentUserId,
                     text = "",
-                    imageBytes = bytes
+                    imageBytes = bytes,
+                    videoBytes = null
+                )
+            }
+        }
+    }
+
+    val videoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            // Abrimos el stream de bytes del video seleccionado
+            val inputStream = context.contentResolver.openInputStream(uri)
+            val bytes = inputStream?.readBytes()
+            inputStream?.close()
+
+            // Enviar el video al ViewModel
+            if (bytes != null) {
+                viewModel.sendMessage(
+                    senderId = currentUserId,
+                    text = "",
+                    imageBytes = null,
+                    videoBytes = bytes
                 )
             }
         }
@@ -281,12 +303,14 @@ fun ChatRealtimeScreen(
                         viewModel.sendMessage(
                             senderId = currentUserId,
                             text = text,
-                            imageBytes = null // luego agregaremos envío de imágenes
+                            imageBytes = null,
+                            videoBytes = null
                         )
                         text = ""
                     }
                 },
                 onPickImage = { imagePickerLauncher.launch("image/*") }, // 🖼️ Aquí se abre la galería
+                onPickVideo = { videoPickerLauncher.launch("video/*") }, // 🎥 Aquí se abre la galería de videos
                 onImproveWithAI = {
                     if (!geminiService.isConfigured()) {
                         // Mostrar mensaje de que necesita configurar la API key

@@ -6,6 +6,8 @@ data class Message(
     val text: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val imageUrl: String? = null,
+    val videoUrl: String? = null,
+    val mediaType: String? = null, // "image" o "video"
     val status: MessageStatus = MessageStatus.SENT,
     val readAt: Long? = null,
     val isDeleted: Boolean = false

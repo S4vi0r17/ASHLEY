@@ -122,11 +122,12 @@ class ChatRealtimeViewModel @Inject constructor(
     fun sendMessage(
         senderId: String?,
         text: String = "",
-        imageBytes: ByteArray? = null
+        imageBytes: ByteArray? = null,
+        videoBytes: ByteArray? = null
     ) {
         val conversationId = currentConversationId ?: return
         if (senderId == null) return
-        if (text.isBlank() && imageBytes == null) return
+        if (text.isBlank() && imageBytes == null && videoBytes == null) return
 
         viewModelScope.launch {
             _isSending.value = true
@@ -136,7 +137,8 @@ class ChatRealtimeViewModel @Inject constructor(
                 conversationId = conversationId,
                 senderId = senderId,
                 text = text.trim(),
-                imageBytes = imageBytes
+                imageBytes = imageBytes,
+                videoBytes = videoBytes
             )
 
             _isSending.value = false
