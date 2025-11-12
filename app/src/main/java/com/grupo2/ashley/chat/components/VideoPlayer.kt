@@ -4,6 +4,7 @@ import android.net.Uri
 import android.widget.MediaController
 import android.widget.VideoView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -23,7 +24,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 @Composable
 fun VideoPlayer(
     videoUrl: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     var isLoading by remember { mutableStateOf(true) }
@@ -31,17 +33,22 @@ fun VideoPlayer(
 
     Box(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable {
+                onClick?.invoke()
+            },
         contentAlignment = Alignment.Center
     ) {
         AndroidView(
             modifier = Modifier.fillMaxSize(),
             factory = { ctx ->
                 VideoView(ctx).apply {
-                    // Configurar MediaController para controles de reproducción
-                    val mediaController = MediaController(ctx)
-                    mediaController.setAnchorView(this)
-                    setMediaController(mediaController)
+                    // Solo configurar MediaController si NO hay onClick (modo mini-player)
+                    if (onClick == null) {
+                        val mediaController = MediaController(ctx)
+                        mediaController.setAnchorView(this)
+                        setMediaController(mediaController)
+                    }
 
                     // Configurar el video
                     setVideoURI(Uri.parse(videoUrl))
@@ -54,13 +61,16 @@ fun VideoPlayer(
                     }
 
                     // Listener para cuando comienza a reproducirse
-                    setOnClickListener {
-                        if (isPlaying) {
-                            pause()
-                            showPlayButton = true
-                        } else {
-                            start()
-                            showPlayButton = false
+                    // Solo si NO hay onClick callback
+                    if (onClick == null) {
+                        setOnClickListener {
+                            if (isPlaying) {
+                                pause()
+                                showPlayButton = true
+                            } else {
+                                start()
+                                showPlayButton = false
+                            }
                         }
                     }
 

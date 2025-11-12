@@ -44,6 +44,15 @@ class ChatRealtimeViewModel @Inject constructor(
     private val _isOtherUserTyping = MutableStateFlow(false)
     val isOtherUserTyping: StateFlow<Boolean> = _isOtherUserTyping.asStateFlow()
 
+    private val _pendingImageBytes = MutableStateFlow<ByteArray?>(null)
+    val pendingImageBytes: StateFlow<ByteArray?> = _pendingImageBytes.asStateFlow()
+
+    private val _pendingVideoBytes = MutableStateFlow<ByteArray?>(null)
+    val pendingVideoBytes: StateFlow<ByteArray?> = _pendingVideoBytes.asStateFlow()
+
+    private val _pendingVideoThumbnail = MutableStateFlow<ByteArray?>(null)
+    val pendingVideoThumbnail: StateFlow<ByteArray?> = _pendingVideoThumbnail.asStateFlow()
+
     private var currentConversationId: String? = null
     private var currentUserId: String? = null
     private var otherUserId: String? = null
@@ -129,6 +138,8 @@ class ChatRealtimeViewModel @Inject constructor(
         if (senderId == null) return
         if (text.isBlank() && imageBytes == null && videoBytes == null) return
 
+        Log.d("ChatVM", "sendMessage called: conversationId=$conversationId, hasImage=${imageBytes != null}, hasVideo=${videoBytes != null}")
+
         viewModelScope.launch {
             _isSending.value = true
             _error.value = null
@@ -142,6 +153,10 @@ class ChatRealtimeViewModel @Inject constructor(
             )
 
             _isSending.value = false
+
+            result.onSuccess { message ->
+                Log.d("ChatVM", "Message sent successfully: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}")
+            }
 
             result.onFailure { e ->
                 _error.value = "Error al enviar mensaje"
@@ -255,5 +270,23 @@ class ChatRealtimeViewModel @Inject constructor(
 
     fun clearError() {
         _error.value = null
+    }
+
+    fun setPendingImage(bytes: ByteArray) {
+        _pendingImageBytes.value = bytes
+        _pendingVideoBytes.value = null // Clear video if image is selected
+        _pendingVideoThumbnail.value = null
+    }
+
+    fun setPendingVideo(bytes: ByteArray, thumbnail: ByteArray?) {
+        _pendingVideoBytes.value = bytes
+        _pendingVideoThumbnail.value = thumbnail
+        _pendingImageBytes.value = null // Clear image if video is selected
+    }
+
+    fun clearPendingMedia() {
+        _pendingImageBytes.value = null
+        _pendingVideoBytes.value = null
+        _pendingVideoThumbnail.value = null
     }
 }

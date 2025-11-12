@@ -76,6 +76,8 @@ class ChatRepositoryImpl @Inject constructor(
         videoBytes: ByteArray?
     ): Result<Message> = withContext(Dispatchers.IO) {
         try {
+            Log.d(TAG, "📤 sendMessage: conversationId=$conversationId, hasImage=${imageBytes != null}, hasVideo=${videoBytes != null}, imageSize=${imageBytes?.size}, videoSize=${videoBytes?.size}")
+
             val messageId = UUID.randomUUID().toString()
             val timestamp = System.currentTimeMillis()
 
@@ -95,16 +97,24 @@ class ChatRepositoryImpl @Inject constructor(
             val entity = MessageEntity.fromMessage(message, conversationId, isSynced = false)
                 .copy(localOnly = true)
             messageDao.insertMessage(entity)
+            Log.d(TAG, "💾 Message saved to local DB: $messageId")
 
             // If online, upload and sync
             if (connectivityObserver.isConnected()) {
+                Log.d(TAG, "🌐 Device is online, uploading media...")
                 try {
                     val finalImageUrl = if (imageBytes != null) {
-                        uploadImageCompressed(imageBytes)
+                        Log.d(TAG, "📸 Uploading image...")
+                        val url = uploadImageCompressed(imageBytes)
+                        Log.d(TAG, "✅ Image uploaded: $url")
+                        url
                     } else null
 
                     val finalVideoUrl = if (videoBytes != null) {
-                        uploadVideo(videoBytes)
+                        Log.d(TAG, "🎥 Uploading video...")
+                        val url = uploadVideo(videoBytes)
+                        Log.d(TAG, "✅ Video uploaded: $url")
+                        url
                     } else null
 
                     val mediaType = when {
@@ -117,31 +127,41 @@ class ChatRepositoryImpl @Inject constructor(
                         imageUrl = finalImageUrl,
                         videoUrl = finalVideoUrl,
                         mediaType = mediaType,
-                        status = MessageStatus.SENT  // Cambiado a SENT, será DELIVERED cuando el receptor lo reciba
+                        status = MessageStatus.SENT
                     )
 
-                    Log.d(TAG, "Sending message with imageUrl=$finalImageUrl, videoUrl=$finalVideoUrl, mediaType=$mediaType")
+                    Log.d(TAG, "📨 Updating message: imageUrl=$finalImageUrl, videoUrl=$finalVideoUrl, mediaType=$mediaType")
 
-                    // Upload to Firebase
+                    // Update local database IMMEDIATELY to show in UI
+                    messageDao.insertMessage(
+                        MessageEntity.fromMessage(updatedMessage, conversationId, isSynced = false)
+                            .copy(localOnly = false)
+                    )
+                    Log.d(TAG, "💾 Local DB updated with URLs - should appear in UI now")
+
+                    // Force a small delay to ensure Room processes the update
+                    delay(100)
+
+                    // Then sync to Firebase
                     syncMessageToFirebase(conversationId, updatedMessage)
 
-                    // Update local database
-                    messageDao.insertMessage(
-                        MessageEntity.fromMessage(updatedMessage, conversationId, isSynced = true)
-                    )
+                    // Mark as synced
+                    messageDao.markAsSynced(messageId)
+                    Log.d(TAG, "✅ Message synced to Firebase")
 
                     Result.success(updatedMessage)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to send message online", e)
+                    Log.e(TAG, "❌ Failed to send message online", e)
                     messageDao.updateMessageStatus(messageId, MessageStatus.FAILED)
                     Result.failure(e)
                 }
             } else {
+                Log.w(TAG, "⚠️ Device offline, queuing for later sync")
                 // Queue for later sync
                 Result.success(message)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to send message", e)
+            Log.e(TAG, "❌ Failed to send message", e)
             Result.failure(e)
         }
     }
@@ -438,7 +458,7 @@ class ChatRepositoryImpl @Inject constructor(
                     val currentUserId = auth.currentUser?.uid
                     val newMessagesForNotification = mutableListOf<Pair<Message, String>>()
 
-                    // Get existing message IDs to detect new messages
+                    // Get existing message IDs and their data to detect changes
                     val existingMessageIds = messageDao.getMessageIds(conversationId).toSet()
 
                     // Collect all messages from Firebase
@@ -450,7 +470,12 @@ class ChatRepositoryImpl @Inject constructor(
                                 message.id = child.key ?: ""
                             }
 
-                            Log.d(TAG, "Synced message ${message.id}: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}, mediaType=${message.mediaType}")
+                            Log.d(TAG, "🔄 Synced message from Firebase:")
+                            Log.d(TAG, "   - ID: ${message.id}")
+                            Log.d(TAG, "   - Text: ${message.text}")
+                            Log.d(TAG, "   - ImageURL: ${message.imageUrl}")
+                            Log.d(TAG, "   - VideoURL: ${message.videoUrl}")
+                            Log.d(TAG, "   - MediaType: ${message.mediaType}")
 
                             // Check both 'deleted' and 'isDeleted' fields for backwards compatibility
                             val isDeleted = child.child("isDeleted").getValue(Boolean::class.java) ?: false
@@ -460,10 +485,18 @@ class ChatRepositoryImpl @Inject constructor(
                                 // 🚫 El mensaje fue eliminado: borrar localmente
                                 messageDao.deleteMessage(message.id)
                             } else {
-                                // ✅ Mensaje válido: sincronizar
-                                firebaseMessages.add(
-                                    MessageEntity.fromMessage(message, conversationId, isSynced = true)
-                                )
+                                // ✅ Mensaje válido: sincronizar SOLO si tiene URLs de media o si es nuevo
+                                // Esto evita sobrescribir mensajes locales que están siendo procesados
+                                val shouldUpdate = message.imageUrl != null ||
+                                                   message.videoUrl != null ||
+                                                   !existingMessageIds.contains(message.id) ||
+                                                   message.senderId != currentUserId
+
+                                if (shouldUpdate) {
+                                    firebaseMessages.add(
+                                        MessageEntity.fromMessage(message, conversationId, isSynced = true)
+                                    )
+                                }
 
                                 // Check if this is a new message for notification
                                 val isNewMessage = !existingMessageIds.contains(message.id)
@@ -494,6 +527,7 @@ class ChatRepositoryImpl @Inject constructor(
                     // Room will replace existing messages with the updated data (including isDeleted flag)
                     if (firebaseMessages.isNotEmpty()) {
                         messageDao.insertMessages(firebaseMessages)
+                        Log.d(TAG, "✅ Inserted/Updated ${firebaseMessages.size} messages from Firebase")
                     }
 
                     // Update conversation's last message to reflect any deletions
@@ -616,53 +650,58 @@ class ChatRepositoryImpl @Inject constructor(
         try {
             // Compress image first
             val compressedBytes = imageCompressor.compress(imageBytes)
-            Log.d(TAG, "Compressed image: ${imageBytes.size} -> ${compressedBytes.size} bytes")
+            Log.d(TAG, "📸 Compressed image: ${imageBytes.size} -> ${compressedBytes.size} bytes")
 
             val fileName = "chat_images/${UUID.randomUUID()}.jpg"
             val imageRef = storage.child(fileName)
+            Log.d(TAG, "📸 Uploading to: $fileName")
 
             imageRef.putBytes(compressedBytes)
                 .addOnSuccessListener {
+                    Log.d(TAG, "📸 Upload successful, getting download URL...")
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
+                        Log.d(TAG, "✅ Image URL obtained: $uri")
                         cont.resume(uri.toString())
                     }.addOnFailureListener {
-                        Log.e(TAG, "Failed to get download URL", it)
+                        Log.e(TAG, "❌ Failed to get download URL", it)
                         cont.resume(null)
                     }
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "Failed to upload image", it)
+                    Log.e(TAG, "❌ Failed to upload image", it)
                     cont.resume(null)
                 }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to process image", e)
+            Log.e(TAG, "❌ Failed to process image", e)
             cont.resume(null)
         }
     }
 
     private suspend fun uploadVideo(videoBytes: ByteArray): String? = suspendCoroutine { cont ->
         try {
-            Log.d(TAG, "Uploading video: ${videoBytes.size} bytes")
+            Log.d(TAG, "🎥 Uploading video: ${videoBytes.size} bytes")
 
             val fileName = "chat_videos/${UUID.randomUUID()}.mp4"
             val videoRef = storage.child(fileName)
+            Log.d(TAG, "🎥 Uploading to: $fileName")
 
             videoRef.putBytes(videoBytes)
                 .addOnSuccessListener {
+                    Log.d(TAG, "🎥 Upload successful, getting download URL...")
                     videoRef.downloadUrl.addOnSuccessListener { uri ->
-                        Log.d(TAG, "Video uploaded successfully")
+                        Log.d(TAG, "✅ Video URL obtained: $uri")
                         cont.resume(uri.toString())
                     }.addOnFailureListener {
-                        Log.e(TAG, "Failed to get video download URL", it)
+                        Log.e(TAG, "❌ Failed to get video download URL", it)
                         cont.resume(null)
                     }
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "Failed to upload video", it)
+                    Log.e(TAG, "❌ Failed to upload video", it)
                     cont.resume(null)
                 }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to process video", e)
+            Log.e(TAG, "❌ Failed to process video", e)
             cont.resume(null)
         }
     }

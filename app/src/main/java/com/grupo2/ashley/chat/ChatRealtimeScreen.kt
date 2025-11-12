@@ -1,5 +1,8 @@
 package com.grupo2.ashley.chat
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -35,9 +38,80 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.ai.GeminiAIService
 import com.grupo2.ashley.chat.components.ChatInputBar
+import com.grupo2.ashley.chat.components.FullScreenMediaViewer
 import com.grupo2.ashley.chat.components.MessageBubble
 import com.grupo2.ashley.chat.components.ProductChatHeader
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
+import kotlin.math.min
+
+// Función para comprimir imágenes
+private fun compressImage(bytes: ByteArray, maxWidth: Int = 1024, maxHeight: Int = 1024, quality: Int = 80): ByteArray {
+    val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+    // Calcular nuevo tamaño manteniendo la proporción
+    val width = originalBitmap.width
+    val height = originalBitmap.height
+    val ratio = min(maxWidth.toFloat() / width, maxHeight.toFloat() / height)
+
+    val newWidth = (width * ratio).toInt()
+    val newHeight = (height * ratio).toInt()
+
+    // Redimensionar
+    val resizedBitmap = Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+
+    // Comprimir
+    val outputStream = ByteArrayOutputStream()
+    resizedBitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream)
+    val compressedBytes = outputStream.toByteArray()
+
+    // Liberar recursos
+    originalBitmap.recycle()
+    resizedBitmap.recycle()
+    outputStream.close()
+
+    android.util.Log.d("ChatScreen", "Image compressed: ${bytes.size} -> ${compressedBytes.size} bytes")
+    return compressedBytes
+}
+
+// Función para extraer fotograma de video
+private fun extractVideoFrame(context: android.content.Context, uri: android.net.Uri): ByteArray? {
+    val retriever = MediaMetadataRetriever()
+    try {
+        retriever.setDataSource(context, uri)
+        // Extraer frame en el segundo 0
+        val bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+
+        if (bitmap != null) {
+            // Redimensionar para preview
+            val maxWidth = 400
+            val maxHeight = 400
+            val width = bitmap.width
+            val height = bitmap.height
+            val ratio = min(maxWidth.toFloat() / width, maxHeight.toFloat() / height)
+            val newWidth = (width * ratio).toInt()
+            val newHeight = (height * ratio).toInt()
+
+            val resizedBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+
+            val outputStream = ByteArrayOutputStream()
+            resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
+            val bytes = outputStream.toByteArray()
+
+            bitmap.recycle()
+            resizedBitmap.recycle()
+            outputStream.close()
+
+            android.util.Log.d("ChatScreen", "Video frame extracted: ${bytes.size} bytes")
+            return bytes
+        }
+    } catch (e: Exception) {
+        android.util.Log.e("ChatScreen", "Error extracting video frame", e)
+    } finally {
+        retriever.release()
+    }
+    return null
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,8 +129,15 @@ fun ChatRealtimeScreen(
     val error by viewModel.error.collectAsState()
     val productInfo by viewModel.productInfo.collectAsState()
     val isOtherUserTyping by viewModel.isOtherUserTyping.collectAsState()
+    val pendingImageBytes by viewModel.pendingImageBytes.collectAsState()
+    val pendingVideoBytes by viewModel.pendingVideoBytes.collectAsState()
+    val pendingVideoThumbnail by viewModel.pendingVideoThumbnail.collectAsState()
     var text by remember { mutableStateOf("") }
     var isImprovingText by remember { mutableStateOf(false) }
+
+    // Estados para pantalla completa de media
+    var fullScreenImageUrl by remember { mutableStateOf<String?>(null) }
+    var fullScreenVideoUrl by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -78,19 +159,28 @@ fun ChatRealtimeScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
+            android.util.Log.d("ChatScreen", "Image selected: $uri")
             // Abrimos el stream de bytes de la imagen seleccionada
             val inputStream = context.contentResolver.openInputStream(uri)
             val bytes = inputStream?.readBytes()
             inputStream?.close()
 
-            // Enviar la imagen al ViewModel
+            // Comprimir y guardar la imagen como pendiente para preview
             if (bytes != null) {
-                viewModel.sendMessage(
-                    senderId = currentUserId,
-                    text = "",
-                    imageBytes = bytes,
-                    videoBytes = null
-                )
+                try {
+                    val compressedBytes = compressImage(bytes)
+                    android.util.Log.d("ChatScreen", "Image compressed and set as pending preview: ${compressedBytes.size} bytes")
+                    viewModel.setPendingImage(compressedBytes)
+                } catch (e: Exception) {
+                    android.util.Log.e("ChatScreen", "Error compressing image", e)
+                    android.widget.Toast.makeText(
+                        context,
+                        "Error al procesar la imagen",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                android.util.Log.e("ChatScreen", "Failed to read image bytes")
             }
         }
     }
@@ -99,19 +189,29 @@ fun ChatRealtimeScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
+            android.util.Log.d("ChatScreen", "Video selected: $uri")
             // Abrimos el stream de bytes del video seleccionado
             val inputStream = context.contentResolver.openInputStream(uri)
             val bytes = inputStream?.readBytes()
             inputStream?.close()
 
-            // Enviar el video al ViewModel
+            // Guardar el video como pendiente para preview
             if (bytes != null) {
-                viewModel.sendMessage(
-                    senderId = currentUserId,
-                    text = "",
-                    imageBytes = null,
-                    videoBytes = bytes
-                )
+                try {
+                    // Extraer fotograma del video para el preview
+                    val thumbnail = extractVideoFrame(context, uri)
+                    android.util.Log.d("ChatScreen", "Video set as pending preview: ${bytes.size} bytes, thumbnail: ${thumbnail?.size} bytes")
+                    viewModel.setPendingVideo(bytes, thumbnail)
+                } catch (e: Exception) {
+                    android.util.Log.e("ChatScreen", "Error processing video", e)
+                    android.widget.Toast.makeText(
+                        context,
+                        "Error al procesar el video",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                android.util.Log.e("ChatScreen", "Failed to read video bytes")
             }
         }
     }
@@ -240,7 +340,13 @@ fun ChatRealtimeScreen(
                         } else null,
                         onRetry = if (msg.status == com.grupo2.ashley.chat.models.MessageStatus.FAILED) {
                             { viewModel.retryMessage(msg.id) }
-                        } else null
+                        } else null,
+                        onImageClick = { imageUrl ->
+                            fullScreenImageUrl = imageUrl
+                        },
+                        onVideoClick = { videoUrl ->
+                            fullScreenVideoUrl = videoUrl
+                        }
                     )
                 }
             }
@@ -299,18 +405,23 @@ fun ChatRealtimeScreen(
                     viewModel.onTextChanged(newText)
                 },
                 onSend = {
-                    if (text.isNotBlank()) {
+                    if (text.isNotBlank() || pendingImageBytes != null || pendingVideoBytes != null) {
                         viewModel.sendMessage(
                             senderId = currentUserId,
                             text = text,
-                            imageBytes = null,
-                            videoBytes = null
+                            imageBytes = pendingImageBytes,
+                            videoBytes = pendingVideoBytes
                         )
                         text = ""
+                        viewModel.clearPendingMedia()
                     }
                 },
                 onPickImage = { imagePickerLauncher.launch("image/*") }, // 🖼️ Aquí se abre la galería
                 onPickVideo = { videoPickerLauncher.launch("video/*") }, // 🎥 Aquí se abre la galería de videos
+                pendingImageBytes = pendingImageBytes,
+                pendingVideoBytes = pendingVideoBytes,
+                pendingVideoThumbnail = pendingVideoThumbnail,
+                onClearPendingMedia = { viewModel.clearPendingMedia() },
                 onImproveWithAI = {
                     if (!geminiService.isConfigured()) {
                         // Mostrar mensaje de que necesita configurar la API key
@@ -349,5 +460,21 @@ fun ChatRealtimeScreen(
                 isImprovingText = isImprovingText
             )
         }
+    }
+
+    // Mostrar pantalla completa de imagen si está definida
+    if (fullScreenImageUrl != null) {
+        FullScreenMediaViewer(
+            imageUrl = fullScreenImageUrl,
+            onDismiss = { fullScreenImageUrl = null }
+        )
+    }
+
+    // Mostrar pantalla completa de video si está definido
+    if (fullScreenVideoUrl != null) {
+        FullScreenMediaViewer(
+            videoUrl = fullScreenVideoUrl,
+            onDismiss = { fullScreenVideoUrl = null }
+        )
     }
 }

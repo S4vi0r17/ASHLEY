@@ -1,9 +1,13 @@
 package com.grupo2.ashley.chat.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -14,9 +18,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,8 +40,12 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import android.graphics.BitmapFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,19 +57,147 @@ fun ChatInputBar(
     onPickVideo: () -> Unit = {},
     onImproveWithAI: () -> Unit = {},
     isSending: Boolean = false,
-    isImprovingText: Boolean = false
+    isImprovingText: Boolean = false,
+    pendingImageBytes: ByteArray? = null,
+    pendingVideoBytes: ByteArray? = null,
+    pendingVideoThumbnail: ByteArray? = null,
+    onClearPendingMedia: () -> Unit = {}
 ) {
     Surface(
         tonalElevation = 2.dp,
         shadowElevation = 2.dp,
         color = MaterialTheme.colorScheme.surface
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
+            // Preview de imagen o video
+            if (pendingImageBytes != null || pendingVideoBytes != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+                        // Mostrar preview de imagen
+                        if (pendingImageBytes != null) {
+                            val bitmap = BitmapFactory.decodeByteArray(
+                                pendingImageBytes,
+                                0,
+                                pendingImageBytes.size
+                            )
+                            Image(
+                                bitmap = bitmap.asImageBitmap(),
+                                contentDescription = "Vista previa de imagen",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                            )
+                        }
+
+                        // Mostrar preview de video
+                        if (pendingVideoBytes != null) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                // Si hay thumbnail, mostrar el fotograma del video
+                                if (pendingVideoThumbnail != null) {
+                                    val bitmap = BitmapFactory.decodeByteArray(
+                                        pendingVideoThumbnail,
+                                        0,
+                                        pendingVideoThumbnail.size
+                                    )
+                                    Image(
+                                        bitmap = bitmap.asImageBitmap(),
+                                        contentDescription = "Vista previa de video",
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                            .clip(RoundedCornerShape(12.dp))
+                                    )
+                                    // Icono de play encima del thumbnail
+                                    Icon(
+                                        imageVector = Icons.Default.PlayCircleOutline,
+                                        contentDescription = "Play",
+                                        modifier = Modifier.size(64.dp),
+                                        tint = Color.White.copy(alpha = 0.9f)
+                                    )
+                                } else {
+                                    // Fallback si no se pudo extraer el thumbnail
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                            .background(
+                                                MaterialTheme.colorScheme.surfaceVariant,
+                                                RoundedCornerShape(12.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Column(
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.PlayCircleOutline,
+                                                contentDescription = "Video seleccionado",
+                                                modifier = Modifier.size(64.dp),
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            Text(
+                                                text = "Video seleccionado",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Botón para cerrar el preview
+                        IconButton(
+                            onClick = onClearPendingMedia,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
+                                .size(32.dp)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                    shape = CircleShape
+                                )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Cancelar",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
             // 🖼️ Botón para elegir imagen
             IconButton(
                 onClick = { if (!isSending) onPickImage() },
@@ -160,15 +300,16 @@ fun ChatInputBar(
             }
 
             // 🚀 Botón de envío
+            val canSend = (text.isNotBlank() || pendingImageBytes != null || pendingVideoBytes != null) && !isSending
             IconButton(
                 onClick = onSend,
-                enabled = text.isNotBlank() && !isSending,
+                enabled = canSend,
                 modifier = Modifier
                     .size(48.dp)
                     .background(
                         color = when {
                             isSending -> MaterialTheme.colorScheme.surfaceVariant
-                            text.isNotBlank() -> MaterialTheme.colorScheme.primary
+                            canSend -> MaterialTheme.colorScheme.primary
                             else -> MaterialTheme.colorScheme.surfaceVariant
                         },
                         shape = CircleShape
@@ -184,12 +325,13 @@ fun ChatInputBar(
                     Icon(
                         imageVector = Icons.Default.Send,
                         contentDescription = "Enviar",
-                        tint = if (text.isNotBlank())
+                        tint = if (canSend)
                             MaterialTheme.colorScheme.onPrimary
                         else
                             MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+            }
             }
         }
     }
