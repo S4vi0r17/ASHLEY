@@ -43,6 +43,47 @@ class ChatListRepository(
         })
     }
 
+    /**
+     * Adds a real-time listener for user conversations
+     * @param userId The user ID to filter conversations
+     * @param onChange Callback invoked when conversations change
+     * @return ValueEventListener that can be used to remove the listener later
+     */
+    fun addConversationsListener(
+        userId: String?,
+        onChange: (List<Conversation>) -> Unit
+    ): ValueEventListener {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Conversation>()
+
+                for (child in snapshot.children) {
+                    val conv = child.getValue(Conversation::class.java)
+                    if (conv != null && userId != null && conv.participants.contains(userId)) {
+                        list.add(conv.copy(id = child.key ?: ""))
+                    }
+                }
+
+                val sortedList = list.sortedByDescending { it.lastMessage?.timestamp ?: 0L }
+                onChange(sortedList)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ChatListRepo", "Error en listener de conversaciones: ${error.message}")
+                onChange(emptyList())
+            }
+        }
+
+        db.child("conversations").addValueEventListener(listener)
+        return listener
+    }
+
+    /**
+     * Removes a conversations listener
+     * @param listener The ValueEventListener to remove
+     */
+    fun removeConversationsListener(listener: ValueEventListener) {
+        db.child("conversations").removeEventListener(listener)
     suspend fun getUserConversationsWithUserData(
         userId: String?
     ): List<ConversationWithUser> {

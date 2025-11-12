@@ -42,7 +42,9 @@ import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class RecuperarUI : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

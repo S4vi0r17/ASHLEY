@@ -40,9 +40,8 @@ import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.utils.makePhoneCall
 import com.grupo2.ashley.chat.ChatListScreen
-import com.grupo2.ashley.chat.ChatListViewModel
 import com.grupo2.ashley.chat.ChatRealtimeScreen
-import com.grupo2.ashley.chat.ChatRealtimeViewModel
+import com.grupo2.ashley.chat.ParticipantInfoScreen
 import com.grupo2.ashley.chat.data.ChatRealtimeRepository
 import com.grupo2.ashley.profile.ProfileViewModel
 
@@ -197,11 +196,8 @@ fun AppNavigation(
             }
         ) {
             previousRouteIndex = currentRouteIndex
-            val chatListViewModel: ChatListViewModel = viewModel()
-
             ChatListScreen(
                 navController = navController,
-                viewModel = chatListViewModel,
                 currentUserId = currentUserId
             )
         }
@@ -212,13 +208,26 @@ fun AppNavigation(
         ) { backStackEntry ->
             val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
 
-            val chatViewModel: ChatRealtimeViewModel = viewModel()
-
             ChatRealtimeScreen(
-                viewModel = chatViewModel,
                 conversationId = conversationId,
                 currentUserId = currentUserId,
-                navController = navController
+                onNavigateBack = { navController.navigateUp() },
+                onNavigateToParticipantInfo = {
+                    navController.navigate("participant_info/$conversationId")
+                }
+            )
+        }
+
+        composable(
+            route = "participant_info/{conversationId}",
+            arguments = listOf(navArgument("conversationId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val conversationId = backStackEntry.arguments?.getString("conversationId") ?: ""
+
+            ParticipantInfoScreen(
+                conversationId = conversationId,
+                currentUserId = currentUserId,
+                onNavigateBack = { navController.navigateUp() }
             )
         }
 
