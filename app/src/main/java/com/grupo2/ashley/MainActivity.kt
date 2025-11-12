@@ -24,7 +24,9 @@ import com.grupo2.ashley.navigation.AppNavigation
 import com.grupo2.ashley.navigation.Routes
 import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

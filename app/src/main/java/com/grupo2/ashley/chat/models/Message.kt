@@ -5,5 +5,7 @@ data class Message(
     val senderId: String? = "",
     val text: String = "",
     val timestamp: Long = System.currentTimeMillis(),
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    var status: MessageStatus = MessageStatus.SENT,
+    var isDeleted: Boolean = false
 )
