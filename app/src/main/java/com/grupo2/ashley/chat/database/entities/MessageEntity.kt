@@ -14,10 +14,13 @@ data class MessageEntity(
     val text: String,
     val timestamp: Long,
     val imageUrl: String? = null,
+    val videoUrl: String? = null,
+    val mediaType: String? = null,
     val status: MessageStatus = MessageStatus.SENT,
     val isSynced: Boolean = false, // True when synced to Firebase
     val localOnly: Boolean = false, // True for messages waiting to be sent
-    val isDeleted: Boolean = false // True when message has been deleted
+    val isDeleted: Boolean = false, // True when message has been deleted
+    val readAt: Long? = null // Timestamp when message was read
 ) {
     fun toMessage(): Message {
         return Message(
@@ -26,8 +29,11 @@ data class MessageEntity(
             text = text,
             timestamp = timestamp,
             imageUrl = imageUrl,
+            videoUrl = videoUrl,
+            mediaType = mediaType,
             status = status,
-            isDeleted = isDeleted
+            isDeleted = isDeleted,
+            readAt = readAt
         )
     }
 
@@ -40,10 +46,13 @@ data class MessageEntity(
                 text = message.text,
                 timestamp = message.timestamp,
                 imageUrl = message.imageUrl,
+                videoUrl = message.videoUrl,
+                mediaType = message.mediaType,
                 status = message.status,
                 isSynced = isSynced,
                 localOnly = false,
-                isDeleted = message.isDeleted
+                isDeleted = message.isDeleted,
+                readAt = message.readAt
             )
         }
     }

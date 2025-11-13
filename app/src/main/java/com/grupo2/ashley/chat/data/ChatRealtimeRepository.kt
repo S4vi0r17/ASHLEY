@@ -6,13 +6,19 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.grupo2.ashley.chat.models.Conversation
 import com.grupo2.ashley.chat.models.Message
+import com.grupo2.ashley.chat.models.MessageStatus
+import com.grupo2.ashley.chat.models.ProductInfo
+import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class ChatRealtimeRepository(
-    private val db: DatabaseReference = FirebaseDatabase.getInstance().reference
+    private val db: DatabaseReference = FirebaseDatabase.getInstance().reference,
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 ) {
 
     private val storage: StorageReference = FirebaseStorage.getInstance().reference
@@ -134,6 +140,64 @@ class ChatRealtimeRepository(
             }
         }.addOnFailureListener {
             Log.e("ChatRepo", "Error verificando conversación: ${it.message}")
+        }
+    }
+
+    // Obtener información del producto asociado a una conversación
+    suspend fun getProductInfoForConversation(conversationId: String): ProductInfo? {
+        return try {
+            val conversationSnapshot = db.child("conversations")
+                .child(conversationId)
+                .get()
+                .await()
+
+            val conversation = conversationSnapshot.getValue(Conversation::class.java)
+            val productId = conversation?.productId
+
+            if (!productId.isNullOrEmpty()) {
+                val productDoc = firestore.collection("products")
+                    .document(productId)
+                    .get()
+                    .await()
+
+                if (productDoc.exists()) {
+                    ProductInfo(
+                        productId = productDoc.id,
+                        title = productDoc.getString("title") ?: "",
+                        price = productDoc.getDouble("price") ?: 0.0,
+                        imageUrl = (productDoc.get("images") as? List<*>)?.firstOrNull() as? String ?: "",
+                        condition = productDoc.getString("condition") ?: "",
+                        sellerId = productDoc.getString("userId") ?: ""
+                    )
+                } else null
+            } else null
+        } catch (e: Exception) {
+            Log.e("ChatRepo", "Error obteniendo producto: ${e.message}")
+            null
+        }
+    }
+
+    // Marcar mensajes como leídos
+    suspend fun markMessagesAsRead(conversationId: String, currentUserId: String) {
+        try {
+            val messagesRef = db.child("conversations")
+                .child(conversationId)
+                .child("messages")
+
+            val snapshot = messagesRef.get().await()
+
+            for (child in snapshot.children) {
+                val message = child.getValue(Message::class.java)
+                if (message != null && message.senderId != currentUserId) {
+                    // Solo marcar como leído si no lo está ya
+                    if (message.status != MessageStatus.READ) {
+                        child.ref.child("status").setValue(MessageStatus.READ.name)
+                        child.ref.child("readAt").setValue(System.currentTimeMillis())
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("ChatRepo", "Error marcando mensajes como leídos: ${e.message}")
         }
     }
 }

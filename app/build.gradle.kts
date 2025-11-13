@@ -93,6 +93,8 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+    // Gemini AI para mejorar mensajes
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
 
     // Vico Charts
     implementation(libs.vico.compose)

@@ -12,6 +12,9 @@ interface ConversationDao {
     @Query("SELECT * FROM conversations WHERE participantsJson LIKE '%' || :userId || '%' ORDER BY lastMessageTimestamp DESC")
     fun getUserConversations(userId: String): Flow<List<ConversationEntity>>
 
+    @Query("SELECT * FROM conversations WHERE participantsJson LIKE '%' || :userId || '%' ORDER BY lastMessageTimestamp DESC")
+    suspend fun getUserConversationsSync(userId: String): List<ConversationEntity>
+
     @Query("SELECT * FROM conversations WHERE id = :conversationId")
     suspend fun getConversationById(conversationId: String): ConversationEntity?
 

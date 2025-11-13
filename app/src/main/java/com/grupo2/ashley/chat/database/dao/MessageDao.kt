@@ -37,8 +37,8 @@ interface MessageDao {
     @Query("UPDATE messages SET isDeleted = 1 WHERE id = :messageId")
     suspend fun markAsDeleted(messageId: String)
 
-    @Query("UPDATE messages SET status = :status WHERE conversationId = :conversationId AND senderId != :currentUserId AND status != :status AND isDeleted = 0")
-    suspend fun markConversationMessagesAsRead(conversationId: String, currentUserId: String, status: MessageStatus)
+    @Query("UPDATE messages SET status = :status, readAt = :readAt WHERE conversationId = :conversationId AND senderId != :currentUserId AND status != :status AND isDeleted = 0")
+    suspend fun markConversationMessagesAsRead(conversationId: String, currentUserId: String, status: MessageStatus, readAt: Long)
 
     @Query("SELECT id FROM messages WHERE conversationId = :conversationId AND senderId != :currentUserId AND status != :readStatus AND isDeleted = 0")
     suspend fun getUnreadMessageIds(conversationId: String, currentUserId: String, readStatus: MessageStatus): List<String>
@@ -54,4 +54,7 @@ interface MessageDao {
 
     @Query("SELECT id FROM messages WHERE conversationId = :conversationId AND isDeleted = 0")
     suspend fun getMessageIds(conversationId: String): List<String>
+
+    @Query("SELECT COUNT(*) FROM messages WHERE conversationId = :conversationId AND senderId != :currentUserId AND status != 'READ' AND isDeleted = 0")
+    suspend fun getUnreadMessageCount(conversationId: String, currentUserId: String): Int
 }

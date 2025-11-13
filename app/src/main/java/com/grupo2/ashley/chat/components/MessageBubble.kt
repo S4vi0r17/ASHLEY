@@ -2,6 +2,7 @@ package com.grupo2.ashley.chat.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,8 +29,13 @@ fun MessageBubble(
     message: Message,
     isOwnMessage: Boolean,
     onDelete: (() -> Unit)? = null,
-    onRetry: (() -> Unit)? = null
+    onRetry: (() -> Unit)? = null,
+    onImageClick: ((String) -> Unit)? = null,
+    onVideoClick: ((String) -> Unit)? = null
 ) {
+    // Debug log
+    android.util.Log.d("MessageBubble", "Message ${message.id}: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}, mediaType=${message.mediaType}")
+
     var showMenu by remember { mutableStateOf(false) }
     val backgroundColor = if (isOwnMessage)
         MaterialTheme.colorScheme.primaryContainer
@@ -93,15 +99,39 @@ fun MessageBubble(
                         }
                     } else {
                         // Si el mensaje tiene imagen
-                        if (!message.imageUrl.isNullOrEmpty()) {
-                            AsyncImage(
-                                model = message.imageUrl,
-                                contentDescription = "Imagen del mensaje",
-                                contentScale = ContentScale.Crop,
+                        val imageUrl = message.imageUrl
+                        if (!imageUrl.isNullOrEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { onImageClick?.invoke(imageUrl) }
+                            ) {
+                                AsyncImage(
+                                    model = imageUrl,
+                                    contentDescription = "Imagen del mensaje",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 120.dp, max = 260.dp)
+                                )
+                            }
+
+                            if (message.text.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(6.dp))
+                            }
+                        }
+
+                        // Si el mensaje tiene video
+                        val videoUrl = message.videoUrl
+                        if (!videoUrl.isNullOrEmpty()) {
+                            VideoPlayer(
+                                videoUrl = videoUrl,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .fillMaxWidth()
-                                    .heightIn(min = 120.dp, max = 260.dp)
+                                    .height(200.dp),
+                                onClick = { onVideoClick?.invoke(videoUrl) }
                             )
 
                             if (message.text.isNotBlank()) {
@@ -216,9 +246,4 @@ fun MessageBubble(
             }
         }
     }
-}
-
-fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-    return sdf.format(Date(timestamp))
 }

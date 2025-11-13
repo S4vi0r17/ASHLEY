@@ -10,6 +10,10 @@ import com.grupo2.ashley.chat.models.MessageStatus
 import com.grupo2.ashley.chat.models.ParticipantInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import com.grupo2.ashley.chat.models.ProductInfo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,9 +38,27 @@ class ChatRealtimeViewModel @Inject constructor(
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore: StateFlow<Boolean> = _isLoadingMore
 
+    private val _productInfo = MutableStateFlow<ProductInfo?>(null)
+    val productInfo: StateFlow<ProductInfo?> = _productInfo.asStateFlow()
+
+    private val _isOtherUserTyping = MutableStateFlow(false)
+    val isOtherUserTyping: StateFlow<Boolean> = _isOtherUserTyping.asStateFlow()
+
+    private val _pendingImageBytes = MutableStateFlow<ByteArray?>(null)
+    val pendingImageBytes: StateFlow<ByteArray?> = _pendingImageBytes.asStateFlow()
+
+    private val _pendingVideoBytes = MutableStateFlow<ByteArray?>(null)
+    val pendingVideoBytes: StateFlow<ByteArray?> = _pendingVideoBytes.asStateFlow()
+
+    private val _pendingVideoThumbnail = MutableStateFlow<ByteArray?>(null)
+    val pendingVideoThumbnail: StateFlow<ByteArray?> = _pendingVideoThumbnail.asStateFlow()
+
     private var currentConversationId: String? = null
+    private var currentUserId: String? = null
+    private var otherUserId: String? = null
     private var currentOffset = 0
     private val pageSize = 50
+    private var typingJob: kotlinx.coroutines.Job? = null
 
     fun startListening(conversationId: String) {
         currentConversationId = conversationId
@@ -55,6 +77,32 @@ class ChatRealtimeViewModel @Inject constructor(
                     _messages.value = messageList
                 }
         }
+
+        // Cargar información del producto
+        loadProductInfo(conversationId)
+    }
+
+    private fun loadProductInfo(conversationId: String) {
+        viewModelScope.launch {
+            try {
+                val product = chatRepository.getProductInfoForConversation(conversationId)
+                _productInfo.value = product
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error loading product info", e)
+            }
+        }
+    }
+
+    fun markMessagesAsRead(currentUserId: String) {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            chatRepository.markMessagesAsRead(conversationId, currentUserId)
+        }
+    }
+
+    fun stopListening() {
+        // Clear active conversation when leaving the chat
+        (chatRepository as? com.grupo2.ashley.chat.data.ChatRepositoryImpl)?.setActiveConversation(null)
     }
 
     override fun onCleared() {
@@ -83,11 +131,14 @@ class ChatRealtimeViewModel @Inject constructor(
     fun sendMessage(
         senderId: String?,
         text: String = "",
-        imageBytes: ByteArray? = null
+        imageBytes: ByteArray? = null,
+        videoBytes: ByteArray? = null
     ) {
         val conversationId = currentConversationId ?: return
         if (senderId == null) return
-        if (text.isBlank() && imageBytes == null) return
+        if (text.isBlank() && imageBytes == null && videoBytes == null) return
+
+        Log.d("ChatVM", "sendMessage called: conversationId=$conversationId, hasImage=${imageBytes != null}, hasVideo=${videoBytes != null}")
 
         viewModelScope.launch {
             _isSending.value = true
@@ -97,10 +148,15 @@ class ChatRealtimeViewModel @Inject constructor(
                 conversationId = conversationId,
                 senderId = senderId,
                 text = text.trim(),
-                imageBytes = imageBytes
+                imageBytes = imageBytes,
+                videoBytes = videoBytes
             )
 
             _isSending.value = false
+
+            result.onSuccess { message ->
+                Log.d("ChatVM", "Message sent successfully: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}")
+            }
 
             result.onFailure { e ->
                 _error.value = "Error al enviar mensaje"
@@ -142,6 +198,8 @@ class ChatRealtimeViewModel @Inject constructor(
 
     fun loadParticipantInfo(conversationId: String, currentUserId: String?) {
         if (currentUserId == null) return
+        this.currentUserId = currentUserId
+
         viewModelScope.launch {
             try {
                 // Get conversation to find the other participant
@@ -150,10 +208,12 @@ class ChatRealtimeViewModel @Inject constructor(
                     .find { it.id == conversationId }
 
                 if (conversation != null) {
-                    val otherUserId = conversation.participants.firstOrNull { it != currentUserId }
-                    if (otherUserId != null) {
-                        val userProfiles = userRepository.getUserProfiles(listOf(otherUserId))
-                        val profile = userProfiles[otherUserId]
+                    val otherUserIdFound = conversation.participants.firstOrNull { it != currentUserId }
+                    otherUserId = otherUserIdFound
+
+                    if (otherUserIdFound != null) {
+                        val userProfiles = userRepository.getUserProfiles(listOf(otherUserIdFound))
+                        val profile = userProfiles[otherUserIdFound]
                         if (profile != null) {
                             _participantInfo.value = ParticipantInfo(
                                 name = "${profile.firstName} ${profile.lastName}".trim(),
@@ -162,6 +222,9 @@ class ChatRealtimeViewModel @Inject constructor(
                                 phoneNumber = profile.phoneNumber
                             )
                         }
+
+                        // Observar estado de typing del otro usuario
+                        observeOtherUserTyping(conversationId, otherUserIdFound)
                     }
                 }
             } catch (e: Exception) {
@@ -170,7 +233,60 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    private fun observeOtherUserTyping(conversationId: String, otherUserId: String) {
+        viewModelScope.launch {
+            chatRepository.observeTypingStatus(conversationId, otherUserId)
+                .collectLatest { isTyping ->
+                    _isOtherUserTyping.value = isTyping
+                }
+        }
+    }
+
+    fun onTextChanged(text: String) {
+        val conversationId = currentConversationId ?: return
+        val userId = currentUserId ?: return
+
+        // Cancelar el job anterior
+        typingJob?.cancel()
+
+        // Si hay texto, marcar como escribiendo
+        if (text.isNotEmpty()) {
+            viewModelScope.launch {
+                chatRepository.updateTypingStatus(conversationId, userId, true)
+            }
+
+            // Después de 3 segundos de inactividad, quitar el estado de escribiendo
+            typingJob = viewModelScope.launch {
+                kotlinx.coroutines.delay(3000)
+                chatRepository.updateTypingStatus(conversationId, userId, false)
+            }
+        } else {
+            // Si el texto está vacío, quitar el estado inmediatamente
+            viewModelScope.launch {
+                chatRepository.updateTypingStatus(conversationId, userId, false)
+            }
+        }
+    }
+
     fun clearError() {
         _error.value = null
+    }
+
+    fun setPendingImage(bytes: ByteArray) {
+        _pendingImageBytes.value = bytes
+        _pendingVideoBytes.value = null // Clear video if image is selected
+        _pendingVideoThumbnail.value = null
+    }
+
+    fun setPendingVideo(bytes: ByteArray, thumbnail: ByteArray?) {
+        _pendingVideoBytes.value = bytes
+        _pendingVideoThumbnail.value = thumbnail
+        _pendingImageBytes.value = null // Clear image if video is selected
+    }
+
+    fun clearPendingMedia() {
+        _pendingImageBytes.value = null
+        _pendingVideoBytes.value = null
+        _pendingVideoThumbnail.value = null
     }
 }

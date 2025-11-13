@@ -28,10 +28,11 @@ fun ChatListScreen(
     currentUserId: String?,
     viewModel: ChatListViewModel = hiltViewModel()
 ) {
-    val conversations by viewModel.conversations.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val conversations = uiState.conversations
 
     // Request notification permission
     RequestNotificationPermission { isGranted ->
@@ -129,12 +130,11 @@ fun ChatListScreen(
                         .padding(padding),
                     contentPadding = PaddingValues(vertical = 8.dp)
                 ) {
-                    items(conversations, key = { it.id }) { conv ->
+                    items(conversations, key = { it.conversationId }) { conv ->
                         ChatListItem(
                             conversation = conv,
-                            currentUserId = currentUserId,
                             onClick = {
-                                navController.navigate("chat/${conv.id}")
+                                navController.navigate("chat/${conv.conversationId}")
                             }
                         )
                         if (conv != conversations.last()) {
