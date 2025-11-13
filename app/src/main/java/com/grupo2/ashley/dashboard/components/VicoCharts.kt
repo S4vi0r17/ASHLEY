@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
@@ -21,6 +22,7 @@ import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.grupo2.ashley.R
 
 @Composable
 fun VicoLineChart(
@@ -55,7 +57,7 @@ fun VicoLineChart(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay datos disponibles",
+                        text = stringResource(R.string.no_hay_datos),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -138,7 +140,7 @@ fun VicoBarChart(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay datos de categorías",
+                        text = stringResource(R.string.no_hay_dcategorias),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -271,7 +273,7 @@ fun VicoPieChart(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay datos disponibles",
+                        text = stringResource(R.string.no_hay_datos),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
@@ -365,11 +367,11 @@ fun VicoMultiLineChart(
             ) {
                 LegendItem(
                     color = Color(0xFF2196F3),
-                    label = "Vistas"
+                    label = stringResource(R.string.vistas)
                 )
                 LegendItem(
                     color = Color(0xFFE91E63),
-                    label = "Favoritos"
+                    label = stringResource(R.string.favoritos)
                 )
             }
 
@@ -381,7 +383,7 @@ fun VicoMultiLineChart(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay datos para mostrar",
+                        text = stringResource(R.string.no_hay_datos),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )

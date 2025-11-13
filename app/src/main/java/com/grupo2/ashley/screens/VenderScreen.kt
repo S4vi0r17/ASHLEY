@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,6 +36,7 @@ import com.grupo2.ashley.navigation.Routes
 import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.product.models.ProductCategory
 import com.grupo2.ashley.product.models.ProductCondition
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -105,7 +107,7 @@ fun VenderScreen(
                 .padding(top = 16.dp, bottom = 16.dp)
         ) {
             Text(
-                text = "Publicar Producto",
+                text = stringResource(R.string.publicar_producto),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -114,12 +116,12 @@ fun VenderScreen(
 
         // Sección de imágenes
         Text(
-            text = "Fotos del producto *",
+            text = stringResource(R.string.fotos_producto),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
         Text(
-            text = "Puedes agregar hasta 5 imágenes",
+            text = stringResource(R.string.limite_fotos),
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray
         )
@@ -150,7 +152,7 @@ fun VenderScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Agregar imagen",
+                            contentDescription = stringResource(R.string.agregar_imagen),
                             modifier = Modifier.size(48.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -165,7 +167,7 @@ fun VenderScreen(
                 ) {
                     AsyncImage(
                         model = uri,
-                        contentDescription = "Imagen del producto",
+                        contentDescription = stringResource(R.string.imagen_producto),
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(8.dp)),
@@ -183,7 +185,7 @@ fun VenderScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Eliminar imagen",
+                            contentDescription = stringResource(R.string.eliminar_imagen),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )
@@ -198,7 +200,7 @@ fun VenderScreen(
         OutlinedTextField(
             value = title,
             onValueChange = { productViewModel.updateTitle(it) },
-            label = { Text("Título del producto *") },
+            label = { Text(stringResource(R.string.titulo_producto)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -209,7 +211,7 @@ fun VenderScreen(
         OutlinedTextField(
             value = brand,
             onValueChange = { productViewModel.updateBrand(it) },
-            label = { Text("Marca") },
+            label = { Text(stringResource(R.string.marca)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -217,68 +219,80 @@ fun VenderScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Categoría
-        ExposedDropdownMenuBox(
-            expanded = expandedCategory,
-            onExpandedChange = { expandedCategory = !expandedCategory }
-        ) {
-            OutlinedTextField(
-                value = ProductCategory.categories.find { it.id == category }?.name ?: "",
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Categoría *") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
+            ExposedDropdownMenuBox(
                 expanded = expandedCategory,
-                onDismissRequest = { expandedCategory = false }
+                onExpandedChange = { expandedCategory = !expandedCategory }
             ) {
-                ProductCategory.categories.forEach { cat ->
-                    DropdownMenuItem(
-                        text = { Text(cat.name) },
-                        onClick = {
-                            productViewModel.updateCategory(cat.id)
-                            expandedCategory = false
-                        }
-                    )
+                OutlinedTextField(
+                    value = ProductCategory.categories
+                        .find { it.id == category }
+                        ?.let { stringResource(it.labelResId) }
+                        ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.categoria)) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCategory)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedCategory,
+                    onDismissRequest = { expandedCategory = false }
+                ) {
+                    ProductCategory.categories.forEach { cat ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(cat.labelResId)) },
+                            onClick = {
+                                productViewModel.updateCategory(cat.id)
+                                expandedCategory = false
+                            }
+                        )
+                    }
                 }
             }
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Condición
-        ExposedDropdownMenuBox(
-            expanded = expandedCondition,
-            onExpandedChange = { expandedCondition = !expandedCondition }
-        ) {
-            OutlinedTextField(
-                value = condition.displayName,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Condición *") },
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCondition) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .menuAnchor()
-            )
-            ExposedDropdownMenu(
+            ExposedDropdownMenuBox(
                 expanded = expandedCondition,
-                onDismissRequest = { expandedCondition = false }
+                onExpandedChange = { expandedCondition = !expandedCondition }
             ) {
-                ProductCondition.entries.forEach { cond ->
-                    DropdownMenuItem(
-                        text = { Text(cond.displayName) },
-                        onClick = {
-                            productViewModel.updateCondition(cond)
-                            expandedCondition = false
-                        }
-                    )
+                OutlinedTextField(
+                    value = stringResource(condition.labelResId),
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text(stringResource(R.string.condicion)) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCondition)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedCondition,
+                    onDismissRequest = { expandedCondition = false }
+                ) {
+                    ProductCondition.entries.forEach { cond ->
+                        DropdownMenuItem(
+                            text = { Text(stringResource(cond.labelResId)) },
+                            onClick = {
+                                productViewModel.updateCondition(cond)
+                                expandedCondition = false
+                            }
+                        )
+                    }
                 }
             }
-        }
+
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -290,7 +304,7 @@ fun VenderScreen(
                     productViewModel.updatePrice(it)
                 }
             },
-            label = { Text("Precio (S/.) *") },
+            label = { Text(stringResource(R.string.precio)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             prefix = { Text("S/. ") }
@@ -302,7 +316,7 @@ fun VenderScreen(
         OutlinedTextField(
             value = description,
             onValueChange = { productViewModel.updateDescription(it) },
-            label = { Text("Descripción") },
+            label = { Text(stringResource(R.string.descripcion)) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
@@ -313,7 +327,7 @@ fun VenderScreen(
 
         // Ubicación de entrega
         Text(
-            text = "Lugar de entrega *",
+            text = stringResource(R.string.lugar_entrega),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold
         )
@@ -328,7 +342,7 @@ fun VenderScreen(
                 checked = useDefaultLocation,
                 onCheckedChange = { productViewModel.toggleUseDefaultLocation() }
             )
-            Text("Usar dirección del perfil")
+            Text(stringResource(R.string.usar_direccion_perfil))
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -350,7 +364,7 @@ fun VenderScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Ubicación",
+                        contentDescription = stringResource(R.string.ubicacion),
                         tint = if (useDefaultLocation) 
                             MaterialTheme.colorScheme.onPrimaryContainer 
                         else 
@@ -363,9 +377,9 @@ fun VenderScreen(
                             text = if (deliveryLocationName.isNotEmpty()) {
                                 deliveryLocationName
                             } else if (useDefaultLocation) {
-                                "Dirección del perfil"
+                                stringResource(R.string.direccion_perfil)
                             } else {
-                                "Ubicación personalizada"
+                                stringResource(R.string.ubicacion_personalizada)
                             },
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleSmall,
@@ -401,12 +415,12 @@ fun VenderScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Sin ubicación",
+                        contentDescription = stringResource(R.string.sin_ubicacion),
                         tint = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "Selecciona una ubicación de entrega",
+                        text = stringResource(R.string.seleccionar_direccion),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onErrorContainer
                     )
@@ -426,7 +440,7 @@ fun VenderScreen(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(if (useDefaultLocation) "Cambiar ubicación" else "Seleccionar ubicación")
+            Text(if (useDefaultLocation) stringResource(R.string.cambiar_direccion) else stringResource(R.string.seleccionar_direccion))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -462,16 +476,16 @@ fun VenderScreen(
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(if (uploadState.isUploadingImages) "Subiendo imágenes..." else "Publicando...")
+                Text(if (uploadState.isUploadingImages) stringResource(R.string.subiendo_imagen) else stringResource(R.string.publicando))
             } else {
-                Text("Publicar Producto", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.publicar_producto), style = MaterialTheme.typography.titleMedium)
             }
         }
 
         // Espaciado final para que el último elemento no quede tapado por la barra de navegación
         Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding()))
     }
-    }
+
 
     // Diálogo de éxito
     if (uploadState.success) {
@@ -480,8 +494,8 @@ fun VenderScreen(
                 productViewModel.resetUploadState()
                 homeViewModel.refreshProducts() // Refrescar productos en home
             },
-            title = { Text("¡Producto publicado!") },
-            text = { Text("Tu producto ha sido publicado exitosamente.") },
+            title = { Text(stringResource(R.string.producto_publicado)) },
+            text = { Text(stringResource(R.string.exito_publicar)) },
             confirmButton = {
                 TextButton(onClick = {
                     productViewModel.resetUploadState()
@@ -490,7 +504,7 @@ fun VenderScreen(
                         popUpTo(Routes.HOME) { inclusive = true }
                     }
                 }) {
-                    Text("Aceptar")
+                    Text(stringResource(R.string.aceptar))
                 }
             }
         )

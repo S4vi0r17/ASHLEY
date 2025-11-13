@@ -15,10 +15,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.R
 
 @Composable
 fun StatCard(
@@ -185,7 +187,7 @@ fun CategoryPieChart(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No hay datos de categorías",
+                    text = stringResource(R.string.no_hay_dcategorias),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
@@ -218,7 +220,7 @@ fun CategoryPieChart(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Productos por Categoría",
+                text = stringResource(R.string.productos_categorias),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -323,7 +325,7 @@ fun SimpleLineChart(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No hay datos disponibles",
+                        text = stringResource(R.string.no_hay_datos),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )

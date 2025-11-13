@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,15 +52,16 @@ fun AshleyApp() {
     val ubicacionViewModel: UbicacionViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
     val unreadMessagesViewModel: UnreadMessagesViewModel = hiltViewModel()
+    val context = LocalContext.current
 
     val unreadCount by unreadMessagesViewModel.unreadCount.collectAsState()
 
     val navigationItems = listOf(
-        Triple("Inicio", Icons.Default.Home, Routes.HOME),
-        Triple("Chats", Icons.AutoMirrored.Filled.Message, Routes.CHATS),
-        Triple("Vender", Icons.Default.AddCircle, Routes.VENDER),
-        Triple("Anuncios", Icons.AutoMirrored.Filled.List, Routes.ANUNCIOS),
-        Triple("Cuenta", Icons.Default.Person, Routes.CUENTA)
+        Triple(context.getString(R.string.inicio), Icons.Default.Home, Routes.HOME),
+        Triple(context.getString(R.string.chats), Icons.AutoMirrored.Filled.Message, Routes.CHATS),
+        Triple(context.getString(R.string.vender), Icons.Default.AddCircle, Routes.VENDER),
+        Triple(context.getString(R.string.anuncios), Icons.AutoMirrored.Filled.List, Routes.ANUNCIOS),
+        Triple(context.getString(R.string.cuenta), Icons.Default.Person, Routes.CUENTA)
     )
 
     // Estado actual de la ruta

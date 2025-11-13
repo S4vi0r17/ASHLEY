@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationServices
@@ -33,6 +34,7 @@ import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,12 +162,12 @@ fun ProductMapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Ubicación de entrega") },
+                title = { Text(stringResource(R.string.ubicacion_entrega)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 }
@@ -191,7 +193,7 @@ fun ProductMapScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.MyLocation,
-                        contentDescription = "Centrar en mi ubicación"
+                        contentDescription = stringResource(R.string.centrar_ubicacion)
                     )
                 }
             }
@@ -294,7 +296,7 @@ fun ProductMapScreen(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
                                     Text(
-                                        text = "Distancia",
+                                        text = stringResource(R.string.distancia),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -331,7 +333,7 @@ fun ProductMapScreen(
                                         horizontalAlignment = Alignment.Start
                                     ) {
                                         Text(
-                                            text = "Tiempo",
+                                            text = stringResource(R.string.tiempo),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -357,7 +359,7 @@ fun ProductMapScreen(
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "Calculando ruta...",
+                                    text = stringResource(R.string.calculando_ruta),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -365,7 +367,7 @@ fun ProductMapScreen(
                         } else if (routeInfo == null && routePoints.isEmpty() && !isLoadingRoute) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "No se pudo calcular la ruta. Verifica tu conexión.",
+                                text = stringResource(R.string.error_ruta),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.error
                             )
@@ -375,7 +377,7 @@ fun ProductMapScreen(
                         Divider()
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            text = "Activa la ubicación para ver la distancia y el tiempo estimado",
+                            text = stringResource(R.string.activar_ubicacion),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -171,14 +172,14 @@ fun LoginOpt(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Bienvenido a",
+                    stringResource(R.string.bienvenido_a),
                     fontSize = 24.sp,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Text(
-                    "ASHLEY",
+                    stringResource(R.string.titulo),
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.displaySmall,
@@ -290,7 +291,7 @@ fun GoogleOption(
                 modifier = Modifier.width(16.dp)
             )
             Text(
-                "Continuar con Google",
+                stringResource(R.string.continuar_con_google),
                 fontSize = 16.sp,
                 color = Color.White,
                 style = MaterialTheme.typography.labelLarge
@@ -330,7 +331,7 @@ fun EmailOption(
                 viewModel.onEmailChange(it)
             }, label = {
                 Text(
-                    "Email",
+                    stringResource(R.string.email),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }, colors = OutlinedTextFieldDefaults.colors(
@@ -368,7 +369,7 @@ fun EmailOption(
                 },
                 label = {
                     Text(
-                        "Contraseña", style = MaterialTheme.typography.bodyMedium
+                        stringResource(R.string.contrasena), style = MaterialTheme.typography.bodyMedium
                     )
                 },
                 colors = OutlinedTextFieldDefaults.colors(
@@ -405,7 +406,7 @@ fun EmailOption(
                     )
                 } else {
                     Text(
-                        "Ingresar",
+                        stringResource(R.string.ingresar),
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.labelLarge
@@ -422,7 +423,7 @@ fun RegistroTexto(
 ) {
     Row {
         Text(
-            "¿No tiene cuenta?",
+            stringResource(R.string.no_tiene_cuenta),
             fontSize = 12.sp,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -431,7 +432,7 @@ fun RegistroTexto(
             modifier = Modifier.width(8.dp)
         )
         Text(
-            "Regístrese",
+            stringResource(R.string.registrese),
             fontSize = 12.sp,
             modifier = Modifier.clickable {
                 navController.navigate("registro")
@@ -448,7 +449,7 @@ fun RecoverTexto(
     navController: NavController
 ) {
     Text(
-        "Olvidé mi contraseña",
+        stringResource(R.string.olvide_mi_contrasena),
         fontSize = 12.sp,
         modifier = Modifier.clickable {
             navController.navigate("recover")

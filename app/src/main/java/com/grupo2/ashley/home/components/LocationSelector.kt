@@ -11,10 +11,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.R
 
 @Composable
 fun LocationSelector(
@@ -40,7 +42,7 @@ fun LocationSelector(
         ) {
             Icon(
                 imageVector = Icons.Default.LocationOn,
-                contentDescription = "Ubicación",
+                contentDescription = stringResource(R.string.ubicacion),
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
@@ -48,7 +50,7 @@ fun LocationSelector(
             Spacer(modifier = Modifier.width(12.dp))
 
             Text(
-                text = if (mostrarTextoPorDefecto) "Elegir otra ubicación" else location,
+                text = if (mostrarTextoPorDefecto) stringResource(R.string.elegir_ubicacion) else location,
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (mostrarTextoPorDefecto) MaterialTheme.colorScheme.onSurfaceVariant

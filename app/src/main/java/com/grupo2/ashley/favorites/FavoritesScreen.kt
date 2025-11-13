@@ -1,5 +1,6 @@
 package com.grupo2.ashley.favorites
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,6 +31,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.*
+import com.grupo2.ashley.R
 
 class FavoritesViewModel : ViewModel() {
     private val repository = FavoritesRepository()
@@ -92,13 +96,16 @@ fun FavoritesScreen(
                 title = {
                     Column {
                         Text(
-                            "Mis Favoritos",
+                            stringResource(R.string.favoritos),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
                         if (favorites.isNotEmpty()) {
                             Text(
-                                "${favorites.size} productos",
+                                stringResource(
+                                    id = R.string.total_productos,
+                                    favorites.size
+                                ),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -109,7 +116,7 @@ fun FavoritesScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },
@@ -150,7 +157,7 @@ fun FavoritesScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "Error al cargar favoritos",
+                            text = stringResource(R.string.error_favoritos),
                             style = MaterialTheme.typography.titleLarge
                         )
                         Text(
@@ -160,7 +167,7 @@ fun FavoritesScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { viewModel.loadFavorites() }) {
-                            Text("Reintentar")
+                            Text(stringResource(R.string.reintentar))
                         }
                     }
                 }
@@ -181,13 +188,13 @@ fun FavoritesScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No tienes favoritos aún",
+                            text = stringResource(R.string.no_favoritos),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Los productos que marques como favoritos aparecerán aquí",
+                            text = stringResource(R.string.placeholder_favoritos),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -223,6 +230,7 @@ private fun FavoriteProductCard(
 ) {
     val currencyFormat = remember { NumberFormat.getCurrencyInstance(Locale("es", "PE")) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     
     Card(
         modifier = Modifier
@@ -287,7 +295,7 @@ private fun FavoriteProductCard(
                 )
                 
                 Text(
-                    text = "Agregado ${formatTime(favorite.addedAt)}",
+                    text = "Agregado ${formatTime(favorite.addedAt, context)}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
@@ -299,7 +307,7 @@ private fun FavoriteProductCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Favorite,
-                    contentDescription = "Quitar de favoritos",
+                    contentDescription = stringResource(R.string.quitar_favoritos),
                     tint = Color(0xFFE91E63)
                 )
             }
@@ -310,8 +318,8 @@ private fun FavoriteProductCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Quitar de favoritos") },
-            text = { Text("¿Estás seguro de que quieres quitar este producto de favoritos?") },
+            title = { Text(stringResource(R.string.quitar_favoritos)) },
+            text = { Text(stringResource(R.string.confirmar_quitar_favoritos)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -319,19 +327,19 @@ private fun FavoriteProductCard(
                         showDeleteDialog = false
                     }
                 ) {
-                    Text("Sí, quitar", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.confirmar_quitar), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancelar))
                 }
             }
         )
     }
 }
 
-private fun formatTime(timestamp: Long): String {
+private fun formatTime(timestamp: Long, context: Context): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
     val minutes = diff / 60000
@@ -339,10 +347,10 @@ private fun formatTime(timestamp: Long): String {
     val days = hours / 24
     
     return when {
-        minutes < 1 -> "hace un momento"
-        minutes < 60 -> "hace $minutes min"
-        hours < 24 -> "hace $hours h"
-        days < 7 -> "hace $days días"
+        minutes < 1 -> context.getString(R.string.momento)
+        minutes < 60 -> context.getString(R.string.hace_minutos, minutes)
+        hours < 24 -> context.getString(R.string.hace_horas, hours)
+        days < 7 -> context.getString(R.string.hace_dias, days)
         else -> {
             val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
             dateFormat.format(Date(timestamp))

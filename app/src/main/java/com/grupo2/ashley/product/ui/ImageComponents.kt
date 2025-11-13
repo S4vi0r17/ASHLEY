@@ -18,8 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.grupo2.ashley.R
 
 @Composable
 fun ImagePickerBox(
@@ -39,7 +41,7 @@ fun ImagePickerBox(
     ) {
         Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Agregar imagen",
+            contentDescription = stringResource(R.string.agregar_imagen),
             modifier = Modifier.size(48.dp),
             tint = MaterialTheme.colorScheme.primary
         )
@@ -56,7 +58,7 @@ fun ProductImageItem(
     ) {
         AsyncImage(
             model = imageUri,
-            contentDescription = "Imagen del producto",
+            contentDescription = stringResource(R.string.imagen_producto),
             modifier = Modifier
                 .fillMaxSize()
                 .clip(RoundedCornerShape(8.dp)),
@@ -74,7 +76,7 @@ fun ProductImageItem(
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Eliminar imagen",
+                contentDescription = stringResource(R.string.eliminar_imagen),
                 tint = Color.White,
                 modifier = Modifier.size(20.dp)
             )

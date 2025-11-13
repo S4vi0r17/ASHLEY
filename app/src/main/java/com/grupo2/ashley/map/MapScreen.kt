@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.LocationServices
@@ -53,9 +54,10 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import java.util.Locale
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("MissingPermission")
+@SuppressLint("MissingPermission", "LocalContextResourcesRead")
 @Composable
 fun MapScreen(
     viewModel: UbicacionViewModel,
@@ -64,7 +66,7 @@ fun MapScreen(
     val context = LocalContext.current
     val ubicacion by viewModel.ubicacionSeleccionada.collectAsState()
     val direccionActual by viewModel.direccionSeleccionada.collectAsState()
-    
+
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(ubicacion, 15f)
     }
@@ -78,12 +80,12 @@ fun MapScreen(
             Places.initialize(context.applicationContext, "AIzaSyD-htAcCn275_30Bvi7EuErkxd4tS8BumE")
         }
         isPlacesReady = true
-        
+
         // Solo obtener ubicación GPS automáticamente si NO hay una dirección válida previamente seleccionada
         // (evita sobrescribir cuando se viene desde edición de perfil)
-        val hasValidLocation = direccionActual.isNotEmpty() && 
+        val hasValidLocation = direccionActual.isNotEmpty() &&
                                direccionActual != "Sin dirección seleccionada"
-        
+
         if (!hasValidLocation) {
             // Obtener ubicación actual automáticamente solo si no hay ubicación previa
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -95,7 +97,7 @@ fun MapScreen(
                     location?.let {
                         if (!hasInitializedLocation) {
                             val currentLatLng = LatLng(it.latitude, it.longitude)
-                            
+
                             // Obtener dirección de la ubicación actual
                             val geocoder = Geocoder(context, Locale.getDefault())
                             try {
@@ -105,14 +107,14 @@ fun MapScreen(
                                 } else {
                                     "Ubicación actual"
                                 }
-                                
+
                                 viewModel.actualizarUbicacion(
                                     it.latitude,
                                     it.longitude,
                                     direccion,
                                     nombre = ""  // Se extraerá automáticamente
                                 )
-                                
+
                                 // Mover cámara de forma segura
                                 try {
                                     cameraPositionState.move(
@@ -154,12 +156,12 @@ fun MapScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Seleccionar ubicación de entrega") },
+                title = { Text(stringResource(R.string.titulo_seleccionar_ubicacion)) },
                 navigationIcon = {
                     IconButton(onClick = onLocationConfirmed) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 }
@@ -194,7 +196,7 @@ fun MapScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(30.dp),
-            label = { Text("Buscar dirección...") },
+            label = { Text(stringResource(R.string.buscar_direccion)) },
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.Black,
@@ -246,7 +248,7 @@ fun MapScreen(
                                                 } catch (e: Exception) {
                                                     query
                                                 }
-                                                
+
                                                 viewModel.actualizarUbicacion(
                                                     latLng.latitude,
                                                     latLng.longitude,
@@ -271,7 +273,7 @@ fun MapScreen(
 
         Box(modifier = Modifier.weight(1f)) {
             GoogleMap(
-                modifier = Modifier.fillMaxSize(), 
+                modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
                 onMapClick = { latLng ->
                     // Al hacer clic en el mapa, actualizar la ubicación
@@ -280,21 +282,21 @@ fun MapScreen(
                         val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
                         val direccion = if (!addresses.isNullOrEmpty()) {
                             val address = addresses[0]
-                            address.getAddressLine(0) ?: "Dirección desconocida"
+                            address.getAddressLine(0) ?: context.resources.getString(R.string.direccion_desconocida)
                         } else {
-                            "Dirección desconocida"
+                            context.resources.getString(R.string.direccion_desconocida)
                         }
-                        
+
                         viewModel.actualizarUbicacion(
                             latLng.latitude,
                             latLng.longitude,
                             direccion,
                             nombre = ""  // Se extraerá automáticamente
                         )
-                        
+
                         Toast.makeText(
                             context,
-                            "Ubicación actualizada",
+                            context.resources.getString(R.string.ubicacion_actualizada),
                             Toast.LENGTH_SHORT
                         ).show()
                     } catch (e: Exception) {
@@ -308,9 +310,9 @@ fun MapScreen(
                 }
             ) {
                 Marker(
-                    state = MarkerState(position = ubicacion), 
-                    title = "Ubicación de entrega",
-                    snippet = "Toca el mapa para cambiar la ubicación"
+                    state = MarkerState(position = ubicacion),
+                    title = context.resources.getString(R.string.ubicacion_entrega),
+                    snippet = context.resources.getString(R.string.toca_para_cambiar_ubicacion)
                 )
             }
 
@@ -321,10 +323,10 @@ fun MapScreen(
                 contract = ActivityResultContracts.RequestPermission()
             ) { isGranted: Boolean ->
                 if (isGranted) {
-                    Toast.makeText(context, "Permiso de ubicación concedido", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, context.resources.getString(R.string.permiso_concedido), Toast.LENGTH_SHORT)
                         .show()
                 } else {
-                    Toast.makeText(context, "Permiso de ubicación denegado", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, context.resources.getString(R.string.permiso_denegado), Toast.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -348,9 +350,9 @@ fun MapScreen(
                                     geocoder.getFromLocation(it.latitude, it.longitude, 1)
                                 val direccion = if (!addresses.isNullOrEmpty()) {
                                     val address = addresses[0]
-                                    address.getAddressLine(0) ?: "Dirección desconocida"
+                                    address.getAddressLine(0) ?: context.resources.getString(R.string.direccion_desconocida)
                                 } else {
-                                    "Dirección desconocida"
+                                    context.resources.getString(R.string.direccion_desconocida)
                                 }
 
 
@@ -367,10 +369,10 @@ fun MapScreen(
                                 )
 
                                 Toast.makeText(
-                                    context, "Ubicación actual detectada", Toast.LENGTH_SHORT
+                                    context, context.resources.getString(R.string.ubicacion_detectada), Toast.LENGTH_SHORT
                                 ).show()
                             } ?: Toast.makeText(
-                                context, "No se pudo obtener ubicación", Toast.LENGTH_SHORT
+                                context, context.resources.getString(R.string.error_obtener_ubicacion), Toast.LENGTH_SHORT
                             ).show()
                         }
                     } else {
@@ -381,14 +383,14 @@ fun MapScreen(
                     .align(Alignment.BottomCenter)
                     .padding(100.dp)
             ) {
-                Text("Mi ubicación")
+                Text(stringResource(R.string.mi_ubicacion))
             }
 
             Button(
                 onClick = {
                     Toast.makeText(
                         context,
-                        "Ubicación guardada",
+                        context.resources.getString(R.string.ubicacion_guardada),
                         Toast.LENGTH_SHORT
                     ).show()
                     onLocationConfirmed()
@@ -396,7 +398,7 @@ fun MapScreen(
                     .align(Alignment.BottomCenter)
                     .padding(50.dp)
             ) {
-                Text("Confirmar ubicación")
+                Text(stringResource(R.string.confirmar_ubicacion))
             }
         }
         }

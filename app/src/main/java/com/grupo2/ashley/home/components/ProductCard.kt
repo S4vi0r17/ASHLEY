@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.grupo2.ashley.home.models.Product
 import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.R
 
 @Composable
 fun ProductoCard(
@@ -104,7 +106,7 @@ fun ProductoCard(
                     Icon(
                         imageVector = if (product.isFavorite) Icons.Default.Favorite
                         else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorito",
+                        contentDescription = stringResource(R.string.favorito),
                         tint = if (product.isFavorite) Color(0xFFFF6B6B)
                         else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)

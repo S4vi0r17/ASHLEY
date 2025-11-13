@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import com.grupo2.ashley.R
 
 /**
  * Abre Google Maps mostrando la ruta desde la ubicación actual hasta el destino
@@ -33,7 +34,7 @@ fun openMapRoute(
     } catch (e: Exception) {
         Toast.makeText(
             context,
-            "Error al abrir el mapa: ${e.message}",
+            context.getString(R.string.error_mapa,{e.message}),
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -47,7 +48,7 @@ fun makePhoneCall(context: Context, phoneNumber: String) {
         if (phoneNumber.isBlank()) {
             Toast.makeText(
                 context,
-                "El vendedor no tiene número de teléfono registrado",
+                context.getString(R.string.error_telefono_vendedor),
                 Toast.LENGTH_SHORT
             ).show()
             return
@@ -64,7 +65,7 @@ fun makePhoneCall(context: Context, phoneNumber: String) {
     } catch (e: Exception) {
         Toast.makeText(
             context,
-            "Error al abrir el marcador: ${e.message}",
+            context.getString(R.string.error_marcador,{e.message}),
             Toast.LENGTH_SHORT
         ).show()
     }

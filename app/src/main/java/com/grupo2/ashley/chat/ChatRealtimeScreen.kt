@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,7 @@ import com.grupo2.ashley.chat.components.ChatInputBar
 import com.grupo2.ashley.chat.components.FullScreenMediaViewer
 import com.grupo2.ashley.chat.components.MessageBubble
 import com.grupo2.ashley.chat.components.ProductChatHeader
+import com.grupo2.ashley.R
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import kotlin.math.min
@@ -175,7 +177,7 @@ fun ChatRealtimeScreen(
                     android.util.Log.e("ChatScreen", "Error compressing image", e)
                     android.widget.Toast.makeText(
                         context,
-                        "Error al procesar la imagen",
+                        context.getString(R.string.error_imagen),
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -206,7 +208,7 @@ fun ChatRealtimeScreen(
                     android.util.Log.e("ChatScreen", "Error processing video", e)
                     android.widget.Toast.makeText(
                         context,
-                        "Error al procesar el video",
+                        context.getString(R.string.error_video),
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -250,7 +252,7 @@ fun ChatRealtimeScreen(
                         if (!participantInfo?.photoUrl.isNullOrEmpty()) {
                             AsyncImage(
                                 model = participantInfo?.photoUrl,
-                                contentDescription = "Profile picture",
+                                contentDescription = stringResource(R.string.foto_perfil),
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .size(40.dp)
@@ -268,7 +270,7 @@ fun ChatRealtimeScreen(
                         // Participant name
                         Column {
                             Text(
-                                text = participantInfo?.name ?: "Loading...",
+                                text = participantInfo?.name ?: stringResource(R.string.cargando),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1,
@@ -276,7 +278,7 @@ fun ChatRealtimeScreen(
                             )
                             // Optional: Add "Online" or "Last seen" status here
                             Text(
-                                text = "Tap here for contact info",
+                                text = stringResource(R.string.tocar_contacto),
                                 style = MaterialTheme.typography.bodySmall,
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
@@ -288,7 +290,7 @@ fun ChatRealtimeScreen(
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },
@@ -365,7 +367,7 @@ fun ChatRealtimeScreen(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = "escribiendo",
+                        text = stringResource(R.string.escribiendo),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
@@ -441,7 +443,7 @@ fun ChatRealtimeScreen(
                                 text = improvedText
                                 android.widget.Toast.makeText(
                                     context,
-                                    "¡Texto mejorado con IA! ✨",
+                                    context.getString(R.string.ia_mejora),
                                     android.widget.Toast.LENGTH_SHORT
                                 ).show()
                             }.onFailure { error ->

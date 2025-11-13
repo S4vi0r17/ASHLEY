@@ -11,12 +11,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.grupo2.ashley.home.components.*
 import com.grupo2.ashley.map.UbicacionViewModel
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +58,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Categorías",
+                text = stringResource(R.string.categorias),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(horizontal = 16.dp)
@@ -92,7 +94,7 @@ fun HomeScreen(
                             ) {
                                 CircularProgressIndicator()
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text("Cargando productos...")
+                                Text(stringResource(R.string.cargando_productos))
                             }
                         }
                     }
@@ -107,7 +109,7 @@ fun HomeScreen(
                                 modifier = Modifier.padding(32.dp)
                             ) {
                                 Text(
-                                    text = error ?: "Error desconocido",
+                                    text = error ?: stringResource(R.string.error_desconocido),
                                     color = MaterialTheme.colorScheme.error,
                                     textAlign = TextAlign.Center
                                 )
@@ -119,7 +121,7 @@ fun HomeScreen(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Reintentar")
+                                    Text(stringResource(R.string.reintentar))
                                 }
                             }
                         }
@@ -136,9 +138,9 @@ fun HomeScreen(
                             ) {
                                 Text(
                                     text = if (searchQuery.isNotEmpty() || selectedCategory != "all") {
-                                        "No se encontraron productos"
+                                        stringResource(R.string.no_se_encontraron_productos)
                                     } else {
-                                        "Aún no hay productos publicados"
+                                        stringResource(R.string.aun_no_hay_productos)
                                     },
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -146,7 +148,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "¡Sé el primero en publicar algo!",
+                                    text = stringResource(R.string.se_el_primero_en_publicar),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
