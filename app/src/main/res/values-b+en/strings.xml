@@ -33,7 +33,7 @@
     <string name="distancia">Distance</string>
     <string name="tiempo">Estimated time</string>
     <string name="calculando_ruta">Calculating route...</string>
-    <string name="error_ruta">We couldn't calculate the route. Please check your connection.</string>
+    <string name="error_ruta">We couldn\'t calculate the route. Please check your connection.</string>
     <string name="activar_ubicacion">Enable location to see distance and estimated time.</string>
 
     <!-- ProductDetailScreen -->
@@ -75,7 +75,7 @@
     <string name="permiso_concedido">Location permission granted</string>
     <string name="permiso_denegado">Location permission denied</string>
     <string name="ubicacion_detectada">Current location detected</string>
-    <string name="error_obtener_ubicacion">We couldn't get your location</string>
+    <string name="error_obtener_ubicacion">We couldn\'t get your location</string>
     <string name="ubicacion_guardada">Location saved successfully</string>
     <string name="confirmar_ubicacion">Confirm location</string>
 
@@ -86,7 +86,7 @@
     <string name="email">Email</string>
     <string name="contrasena">Password</string>
     <string name="ingresar">Log in</string>
-    <string name="no_tiene_cuenta">Don't have an account?</string>
+    <string name="no_tiene_cuenta">Don\'t have an account?</string>
     <string name="registrese">Sign up</string>
     <string name="olvide_mi_contrasena">Forgot my password</string>
 
@@ -127,7 +127,7 @@
     <!-- Favoritos -->
     <string name="favoritos">Favorites</string>
     <string name="total_productos">%d products</string>
-    <string name="error_favoritos">We couldn't load your favorites</string>
+    <string name="error_favoritos">We couldn\'t load your favorites</string>
     <string name="no_favoritos">You have no favorites yet</string>
     <string name="placeholder_favoritos">Products you mark as favorites will appear here.</string>
     <string name="confirmar_quitar_favoritos">Do you want to remove this product from favorites?</string>
@@ -219,7 +219,7 @@
     <string name="error_mapa">Error opening map: %s</string>
     <string name="error_telefono_vendedor">The seller does not have a registered phone number</string>
     <string name="error_marcador">Error opening dialer: %s</string>
-    <string name="metros">%i meters</string>
+    <string name="metros">%d meters</string>
 
     <!-- CuentaScreen -->
     <string name="ver_mis_estadisticas">View my statistics</string>
