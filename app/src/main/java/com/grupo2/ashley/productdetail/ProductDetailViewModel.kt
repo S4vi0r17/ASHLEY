@@ -3,6 +3,7 @@ package com.grupo2.ashley.productdetail
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grupo2.ashley.R
 import com.grupo2.ashley.favorites.FavoritesRepository
 import com.grupo2.ashley.home.models.Product
 import com.grupo2.ashley.profile.data.ProfileRepository
@@ -127,5 +128,17 @@ class ProductDetailViewModel(
 
     fun clearError() {
         _error.value = null
+    }
+
+
+    fun getCondition(condition: String): Int{
+        return when{
+            condition == "Nuevo" -> R.string.condicion_nuevo
+            condition == "Como nuevo" -> R.string.condicion_como_nuevo
+            condition == "Buen estado" -> R.string.condicion_buen_estado
+            condition == "Usado" -> R.string.condicion_usado
+            condition == "Para reparar" -> R.string.condicion_para_reparar
+            else -> R.string.error_desconocido
+        }
     }
 }

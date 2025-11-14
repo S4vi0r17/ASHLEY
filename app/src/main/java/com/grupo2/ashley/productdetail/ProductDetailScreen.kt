@@ -174,7 +174,7 @@ fun ProductDetailScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = product.condition,
+                    text = stringResource(viewModel.getCondition(product.condition)),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -220,7 +220,7 @@ fun ProductDetailScreen(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = getCategoryDisplayName(product.category),
+                            text = stringResource(getCategoryDisplayName(product.category)), // ->
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Normal
@@ -418,16 +418,16 @@ private fun formatDate(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
-private fun getCategoryDisplayName(categoryId: String): String {
+private fun getCategoryDisplayName(categoryId: String): Int{
     return when (categoryId) {
-        "electronics" -> "Electrónica"
-        "fashion" -> "Moda"
-        "home" -> "Hogar"
-        "sports" -> "Deportes"
-        "books" -> "Libros"
-        "toys" -> "Juguetes"
-        "vehicles" -> "Vehículos"
-        "others" -> "Otros"
-        else -> "Otros"
+        "electronics" -> R.string.cat_electronics
+        "fashion" -> R.string.cat_fashion
+        "home" -> R.string.cat_home
+        "sports" -> R.string.cat_sports
+        "books" -> R.string.cat_books
+        "toys" -> R.string.cat_toys
+        "vehicles" -> R.string.cat_vehicles
+        "others" -> R.string.cat_others
+        else -> R.string.error_desconocido
     }
 }

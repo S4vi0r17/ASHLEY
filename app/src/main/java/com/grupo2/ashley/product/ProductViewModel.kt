@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.grupo2.ashley.R
 
 class ProductViewModel : ViewModel() {
     private val productRepository = ProductRepository()
