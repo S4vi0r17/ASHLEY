@@ -24,25 +24,25 @@ class UnreadMessagesViewModel @Inject constructor(
         startObservingUnreadMessages()
     }
 
+    // Actualizar el contador cada cierto tiempo de formma automatica
     private fun startObservingUnreadMessages() {
         viewModelScope.launch {
             val currentUserId = auth.currentUser?.uid
             if (currentUserId != null) {
-                // Actualizar el contador cada cierto tiempo
-                kotlinx.coroutines.delay(1000) // Esperar 1 segundo inicial
+                kotlinx.coroutines.delay(1000)
                 while (true) {
                     try {
                         val count = chatRepository.getTotalUnreadCount(currentUserId)
                         _unreadCount.value = count
                     } catch (e: Exception) {
-                        // Ignorar errores silenciosamente
                     }
-                    kotlinx.coroutines.delay(5000) // Actualizar cada 5 segundos
+                    kotlinx.coroutines.delay(5000)
                 }
             }
         }
     }
 
+    // Actualizar el contador cada cierto tiempo de forma manual
     fun refreshUnreadCount() {
         viewModelScope.launch {
             val currentUserId = auth.currentUser?.uid
@@ -51,7 +51,6 @@ class UnreadMessagesViewModel @Inject constructor(
                     val count = chatRepository.getTotalUnreadCount(currentUserId)
                     _unreadCount.value = count
                 } catch (e: Exception) {
-                    // Ignorar errores silenciosamente
                 }
             }
         }

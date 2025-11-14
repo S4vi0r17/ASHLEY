@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material3.*
+import androidx.compose.material3.TopAppBarDefaults.centerAlignedTopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,14 +35,14 @@ fun ChatListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val conversations = uiState.conversations
 
-    // Request notification permission
+    // Solicitar permisos de push notifications
     RequestNotificationPermission { isGranted ->
         if (isGranted) {
-            // Permission granted - notifications will work
+            // Permission granted - ya funciona y no se necesita nada más por ahora
         }
     }
 
-    // Show error snackbar
+    // Mostrar mensajito de error corto como un toast
     LaunchedEffect(error) {
         error?.let {
             snackbarHostState.showSnackbar(
@@ -52,7 +53,7 @@ fun ChatListScreen(
         }
     }
 
-    // Start listening to conversations in real-time
+    // Escuchar en tiempo real las conversaciones :v
     LaunchedEffect(currentUserId) {
         viewModel.startListening(currentUserId)
     }
@@ -67,7 +68,7 @@ fun ChatListScreen(
                         fontWeight = FontWeight.Bold
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                colors = centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
@@ -75,7 +76,6 @@ fun ChatListScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         when {
-            // Show loading indicator
             isLoading && conversations.isEmpty() -> {
                 Box(
                     modifier = Modifier
@@ -89,7 +89,7 @@ fun ChatListScreen(
                     )
                 }
             }
-            // Show empty state
+            // Mostrar estado vacio :v
             conversations.isEmpty() -> {
                 Box(
                     modifier = Modifier
@@ -122,7 +122,7 @@ fun ChatListScreen(
                     }
                 }
             }
-            // Show conversations list
+            // Mostrar conversaciones
             else -> {
                 LazyColumn(
                     modifier = Modifier

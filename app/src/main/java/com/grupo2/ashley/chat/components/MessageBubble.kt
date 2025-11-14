@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+// Burbuja de mensaje que muestra texto, imagen, video, estado y opciones de menú
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageBubble(

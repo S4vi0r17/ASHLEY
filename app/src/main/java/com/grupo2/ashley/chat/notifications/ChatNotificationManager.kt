@@ -34,6 +34,7 @@ class ChatNotificationManager @Inject constructor(
         createNotificationChannel()
     }
 
+    // Crea el canal de notificaciones para mensajes de chat (Android O+)
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_HIGH
@@ -47,9 +48,7 @@ class ChatNotificationManager @Inject constructor(
         }
     }
 
-    /**
-     * Show a notification for a new message
-     */
+    // Muestra una notificación para un mensaje nuevo
     fun showMessageNotification(
         conversationId: String,
         message: Message,
@@ -105,12 +104,10 @@ class ChatNotificationManager @Inject constructor(
         )
     }
 
-    /**
-     * Show a grouped notification for multiple messages from the same conversation
-     */
+    // Muestra una notificación agrupada para múltiples mensajes de la misma conversación
     fun showGroupedMessageNotification(
         conversationId: String,
-        messages: List<Pair<Message, String>>, // Pair of Message and sender name
+        messages: List<Pair<Message, String>>,
         conversationName: String
     ) {
         if (messages.isEmpty()) return
@@ -161,16 +158,12 @@ class ChatNotificationManager @Inject constructor(
         )
     }
 
-    /**
-     * Cancel notification for a specific conversation
-     */
+    // Cancela la notificación de una conversación específica
     fun cancelNotification(conversationId: String) {
         notificationManager.cancel(NOTIFICATION_ID_BASE + conversationId.hashCode())
     }
 
-    /**
-     * Cancel all chat notifications
-     */
+    // Cancela todas las notificaciones de chat
     fun cancelAllNotifications() {
         notificationManager.cancelAll()
     }

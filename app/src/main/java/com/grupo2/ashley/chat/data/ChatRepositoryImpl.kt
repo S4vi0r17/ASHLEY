@@ -37,11 +37,11 @@ class ChatRepositoryImpl @Inject constructor(
     private val storage = FirebaseStorage.getInstance().reference
     private val TAG = "ChatRepositoryImpl"
 
-    // Track which conversation is currently active to prevent notifications
+    // Trackea la conversación activa para que no suelte notificaciones
     private var activeConversationId: String? = null
 
     init {
-        // Auto-sync when connection is restored
+        // Autosincronizar cuando el internet vuelve
         coroutineScope.launch {
             connectivityObserver.observe().collectLatest { status ->
                 if (status == ConnectivityObserver.Status.Available) {
@@ -52,14 +52,14 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     // MESSAGES
-
+    // Observa los mensajes de una conversación en tiempo real desde la base de datos local
     override fun observeMessages(conversationId: String): Flow<List<Message>> {
         return messageDao.getMessagesByConversation(conversationId)
             .map { entities ->
                 entities.map { it.toMessage() }
             }
             .onStart {
-                // Start listening to Firebase in background
+                // Escuchar al firebase en segundo plano
                 if (connectivityObserver.isConnected()) {
                     coroutineScope.launch {
                         startFirebaseSync(conversationId)
@@ -68,6 +68,7 @@ class ChatRepositoryImpl @Inject constructor(
             }
     }
 
+    // Envía un mensaje con texto, imagen o video. Guarda localmente primero y luego sincroniza con Firebase
     override suspend fun sendMessage(
         conversationId: String,
         senderId: String,
@@ -76,12 +77,12 @@ class ChatRepositoryImpl @Inject constructor(
         videoBytes: ByteArray?
     ): Result<Message> = withContext(Dispatchers.IO) {
         try {
-            Log.d(TAG, "📤 sendMessage: conversationId=$conversationId, hasImage=${imageBytes != null}, hasVideo=${videoBytes != null}, imageSize=${imageBytes?.size}, videoSize=${videoBytes?.size}")
+            Log.d(TAG, "sendMessage: conversationId=$conversationId, hasImage=${imageBytes != null}, hasVideo=${videoBytes != null}, imageSize=${imageBytes?.size}, videoSize=${videoBytes?.size}")
 
             val messageId = UUID.randomUUID().toString()
             val timestamp = System.currentTimeMillis()
 
-            // Create message entity
+            // Creacion de entidad de mensaje
             val message = Message(
                 id = messageId,
                 senderId = senderId,
@@ -93,27 +94,27 @@ class ChatRepositoryImpl @Inject constructor(
                 status = MessageStatus.PENDING
             )
 
-            // Save to local database first
+            // Guardar localmente primero
             val entity = MessageEntity.fromMessage(message, conversationId, isSynced = false)
                 .copy(localOnly = true)
             messageDao.insertMessage(entity)
             Log.d(TAG, "💾 Message saved to local DB: $messageId")
 
-            // If online, upload and sync
+            // Si está online, sincronizar
             if (connectivityObserver.isConnected()) {
-                Log.d(TAG, "🌐 Device is online, uploading media...")
+                Log.d(TAG, "Device is online, uploading media...")
                 try {
                     val finalImageUrl = if (imageBytes != null) {
-                        Log.d(TAG, "📸 Uploading image...")
+                        Log.d(TAG, "Uploading image...")
                         val url = uploadImageCompressed(imageBytes)
-                        Log.d(TAG, "✅ Image uploaded: $url")
+                        Log.d(TAG, "Image uploaded: $url")
                         url
                     } else null
 
                     val finalVideoUrl = if (videoBytes != null) {
-                        Log.d(TAG, "🎥 Uploading video...")
+                        Log.d(TAG, "Uploading video...")
                         val url = uploadVideo(videoBytes)
-                        Log.d(TAG, "✅ Video uploaded: $url")
+                        Log.d(TAG, "Video uploaded: $url")
                         url
                     } else null
 
@@ -130,42 +131,43 @@ class ChatRepositoryImpl @Inject constructor(
                         status = MessageStatus.SENT
                     )
 
-                    Log.d(TAG, "📨 Updating message: imageUrl=$finalImageUrl, videoUrl=$finalVideoUrl, mediaType=$mediaType")
+                    Log.d(TAG, "Updating message: imageUrl=$finalImageUrl, videoUrl=$finalVideoUrl, mediaType=$mediaType")
 
-                    // Update local database IMMEDIATELY to show in UI
+                    // Actualiza la base de datos local para mostrarse en la UI
                     messageDao.insertMessage(
                         MessageEntity.fromMessage(updatedMessage, conversationId, isSynced = false)
                             .copy(localOnly = false)
                     )
-                    Log.d(TAG, "💾 Local DB updated with URLs - should appear in UI now")
+                    Log.d(TAG, "Local DB updated with URLs - should appear in UI now")
 
-                    // Force a small delay to ensure Room processes the update
+                    // Forzar un pequeño retraso para asegurar que Room procese la actualización
                     delay(100)
 
-                    // Then sync to Firebase
+                    //Luego, sincroniza con Firebase.
                     syncMessageToFirebase(conversationId, updatedMessage)
 
-                    // Mark as synced
+                    // Marcar como sincronizado
                     messageDao.markAsSynced(messageId)
-                    Log.d(TAG, "✅ Message synced to Firebase")
+                    Log.d(TAG, "Message synced to Firebase")
 
                     Result.success(updatedMessage)
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ Failed to send message online", e)
+                    Log.e(TAG, "Failed to send message online", e)
                     messageDao.updateMessageStatus(messageId, MessageStatus.FAILED)
                     Result.failure(e)
                 }
             } else {
-                Log.w(TAG, "⚠️ Device offline, queuing for later sync")
-                // Queue for later sync
+                Log.w(TAG, "Device offline, queuing for later sync")
+                //En cola para sincronización posterior
                 Result.success(message)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to send message", e)
+            Log.e(TAG, "Failed to send message", e)
             Result.failure(e)
         }
     }
 
+    // Carga más mensajes antiguos con paginación
     override suspend fun loadMoreMessages(
         conversationId: String,
         offset: Int,
@@ -180,21 +182,23 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Actualiza el estado de un mensaje (PENDING, SENT, DELIVERED, READ, FAILED)
     override suspend fun updateMessageStatus(messageId: String, status: MessageStatus) {
         withContext(Dispatchers.IO) {
             messageDao.updateMessageStatus(messageId, status)
         }
     }
 
+    // Elimina un mensaje localmente y en Firebase (soft delete)
     override suspend fun deleteMessage(messageId: String, conversationId: String) {
         withContext(Dispatchers.IO) {
-            // Mark as deleted in local database first
+            // Marcar como eliminado primero en la base de datos local
             messageDao.markAsDeleted(messageId)
 
-            // Update conversation's last message
+            // Actualizar el último mensaje de la conversación
             updateConversationLastMessage(conversationId)
 
-            // Mark as deleted in Firebase if online and wait for confirmation
+            // Marca como eliminado en Firebase si está en línea y espera la confirmación.
             if (connectivityObserver.isConnected()) {
                 try {
                     suspendCoroutine<Unit> { cont ->
@@ -204,12 +208,12 @@ class ChatRepositoryImpl @Inject constructor(
                             .child(messageId)
                             .updateChildren(mapOf(
                                 "isDeleted" to true,
-                                "deleted" to true  // For backwards compatibility
+                                "deleted" to true
                             ))
                             .addOnSuccessListener {
                                 Log.d(TAG, "Message marked as deleted in Firebase: $messageId")
 
-                                // Update conversation's lastMessage in Firebase
+                                // Actualizar el último mensaje de la conversación en Firebase
                                 coroutineScope.launch {
                                     updateFirebaseConversationLastMessage(conversationId)
                                 }
@@ -228,6 +232,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Reintenta enviar un mensaje que falló
     override suspend fun retryFailedMessage(messageId: String) {
         withContext(Dispatchers.IO) {
             // Update status to pending and trigger sync
@@ -236,6 +241,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Marca todos los mensajes de una conversación como leídos
     override suspend fun markMessagesAsRead(conversationId: String, currentUserId: String) {
         withContext(Dispatchers.IO) {
             try {
@@ -251,7 +257,7 @@ class ChatRepositoryImpl @Inject constructor(
                     return@withContext
                 }
 
-                // Mark messages as read in local database
+                // Marcar mensajes como leídos en la base de datos local
                 val readTimestamp = System.currentTimeMillis()
                 messageDao.markConversationMessagesAsRead(
                     conversationId = conversationId,
@@ -260,7 +266,7 @@ class ChatRepositoryImpl @Inject constructor(
                     readAt = readTimestamp
                 )
 
-                // Update Firebase if online
+                // Actualiza Firebase si está en línea.
                 if (connectivityObserver.isConnected()) {
                     unreadMessageIds.forEach { messageId ->
                         val updates = mapOf(
@@ -290,6 +296,7 @@ class ChatRepositoryImpl @Inject constructor(
 
     // CONVERSATIONS
 
+    // Observa todas las conversaciones de un usuario en tiempo real
     override fun observeConversations(userId: String): Flow<List<Conversation>> {
         return conversationDao.getUserConversations(userId)
             .map { entities ->
@@ -308,6 +315,7 @@ class ChatRepositoryImpl @Inject constructor(
             }
     }
 
+    // Crea o recupera una conversación entre dos usuarios
     override suspend fun createOrGetConversation(
         userId1: String,
         userId2: String
@@ -339,7 +347,7 @@ class ChatRepositoryImpl @Inject constructor(
                 }
 
                 if (created) {
-                    // Save to local database
+                    // Guarda en base local
                     val entity = ConversationEntity(
                         id = conversationId,
                         participantsJson = "$userId1,$userId2",
@@ -351,7 +359,7 @@ class ChatRepositoryImpl @Inject constructor(
                     conversationDao.insertConversation(entity)
                 }
             } else {
-                // Create locally only
+                // Crear solo localmente
                 val entity = ConversationEntity(
                     id = conversationId,
                     participantsJson = "$userId1,$userId2",
@@ -370,12 +378,14 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Marca una conversación completa como leída
     override suspend fun markConversationAsRead(conversationId: String) {
         withContext(Dispatchers.IO) {
             conversationDao.markAsRead(conversationId)
         }
     }
 
+    // Actualiza el estado de escritura de un usuario en Firebase
     override suspend fun updateTypingStatus(
         conversationId: String,
         userId: String,
@@ -390,6 +400,7 @@ class ChatRepositoryImpl @Inject constructor(
 
     // SYNC
 
+    // Sincroniza mensajes pendientes cuando se recupera la conexión
     override suspend fun syncOfflineMessages() = withContext(Dispatchers.IO) {
         if (!connectivityObserver.isConnected()) return@withContext
 
@@ -413,6 +424,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Sincroniza todas las conversaciones desde Firebase
     override suspend fun syncConversations(userId: String) = withContext(Dispatchers.IO) {
         if (!connectivityObserver.isConnected()) return@withContext
 
@@ -448,6 +460,7 @@ class ChatRepositoryImpl @Inject constructor(
 
     // PRIVATE HELPERS
 
+    // Inicia la sincronización en tiempo real con Firebase para una conversación
     private suspend fun startFirebaseSync(conversationId: String) {
         val messagesRef = firebaseDb.child("conversations").child(conversationId).child("messages")
 
@@ -458,14 +471,14 @@ class ChatRepositoryImpl @Inject constructor(
                     val currentUserId = auth.currentUser?.uid
                     val newMessagesForNotification = mutableListOf<Pair<Message, String>>()
 
-                    // Get existing message IDs and their data to detect changes
+                    // Recupera mensajes existentes para comparar ids y poder sincronizar
                     val existingMessageIds = messageDao.getMessageIds(conversationId).toSet()
 
-                    // Collect all messages from Firebase
+                    // Recolecta todos
                     for (child in snapshot.children) {
                         val message = child.getValue(Message::class.java)
                         if (message != null) {
-                            // Set message ID from Firebase key if not already set
+                            // Settea messageId
                             if (message.id.isEmpty()) {
                                 message.id = child.key ?: ""
                             }
@@ -477,15 +490,15 @@ class ChatRepositoryImpl @Inject constructor(
                             Log.d(TAG, "   - VideoURL: ${message.videoUrl}")
                             Log.d(TAG, "   - MediaType: ${message.mediaType}")
 
-                            // Check both 'deleted' and 'isDeleted' fields for backwards compatibility
+                            // Chequea si ha sido eliminado
                             val isDeleted = child.child("isDeleted").getValue(Boolean::class.java) ?: false
                             val deleted = child.child("deleted").getValue(Boolean::class.java) ?: false
 
                             if (isDeleted || deleted) {
-                                // 🚫 El mensaje fue eliminado: borrar localmente
+                                // El mensaje fue eliminado: borrar localmente
                                 messageDao.deleteMessage(message.id)
                             } else {
-                                // ✅ Mensaje válido: sincronizar SOLO si tiene URLs de media o si es nuevo
+                                // Mensaje válido: sincronizar SOLO si tiene URLs de media o si es nuevo
                                 // Esto evita sobrescribir mensajes locales que están siendo procesados
                                 val shouldUpdate = message.imageUrl != null ||
                                                    message.videoUrl != null ||
@@ -527,7 +540,7 @@ class ChatRepositoryImpl @Inject constructor(
                     // Room will replace existing messages with the updated data (including isDeleted flag)
                     if (firebaseMessages.isNotEmpty()) {
                         messageDao.insertMessages(firebaseMessages)
-                        Log.d(TAG, "✅ Inserted/Updated ${firebaseMessages.size} messages from Firebase")
+                        Log.d(TAG, "Inserted/Updated ${firebaseMessages.size} messages from Firebase")
                     }
 
                     // Update conversation's last message to reflect any deletions
@@ -550,6 +563,7 @@ class ChatRepositoryImpl @Inject constructor(
         messagesRef.addValueEventListener(listener)
     }
 
+    // Muestra notificaciones para mensajes nuevos recibidos
     private suspend fun showNotificationsForNewMessages(
         conversationId: String,
         messages: List<Pair<Message, String>>
@@ -609,14 +623,15 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Establece la conversación actualmente abierta
     fun setActiveConversation(conversationId: String?) {
         activeConversationId = conversationId
-        // Cancel notifications for this conversation when it becomes active
         if (conversationId != null) {
             chatNotificationManager.cancelNotification(conversationId)
         }
     }
 
+    // Sincroniza un mensaje individual a Firebase
     private suspend fun syncMessageToFirebase(
         conversationId: String,
         message: Message
@@ -646,6 +661,7 @@ class ChatRepositoryImpl @Inject constructor(
             }
     }
 
+    // Comprime y sube una imagen a Firebase Storage
     private suspend fun uploadImageCompressed(imageBytes: ByteArray): String? = suspendCoroutine { cont ->
         try {
             // Compress image first
@@ -677,6 +693,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Sube un video a Firebase Storage
     private suspend fun uploadVideo(videoBytes: ByteArray): String? = suspendCoroutine { cont ->
         try {
             Log.d(TAG, "🎥 Uploading video: ${videoBytes.size} bytes")
@@ -706,6 +723,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Actualiza el último mensaje de una conversación en la base de datos local
     private suspend fun updateConversationLastMessage(conversationId: String) {
         try {
             // Get the latest non-deleted message
@@ -733,6 +751,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Actualiza el último mensaje de una conversación en Firebase
     private suspend fun updateFirebaseConversationLastMessage(conversationId: String) {
         try {
             // Get the latest non-deleted message
@@ -772,6 +791,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Obtiene información del producto asociado a una conversación
     override suspend fun getProductInfoForConversation(conversationId: String): ProductInfo? {
         return try {
             // Por ahora retorna null - puede implementarse si se necesita
@@ -782,6 +802,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Observa el estado de escritura de otro usuario en tiempo real
     override fun observeTypingStatus(conversationId: String, otherUserId: String): Flow<Boolean> {
         return callbackFlow {
             val typingRef = firebaseDb.child("conversations")
@@ -816,6 +837,7 @@ class ChatRepositoryImpl @Inject constructor(
         }
     }
 
+    // Obtiene el conteo total de mensajes sin leer para un usuario
     override suspend fun getTotalUnreadCount(currentUserId: String): Int {
         return withContext(Dispatchers.IO) {
             try {
