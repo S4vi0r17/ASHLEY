@@ -94,7 +94,6 @@ fun ParticipantInfoScreen(
                         )
                     }
 
-                    // Name
                     Text(
                         text = participantInfo?.name ?: "Loading...",
                         style = MaterialTheme.typography.headlineMedium,
@@ -106,7 +105,7 @@ fun ParticipantInfoScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Contact Info Section
+            // Seccion de información del contacto :v
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surface

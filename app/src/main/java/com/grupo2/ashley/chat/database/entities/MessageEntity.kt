@@ -17,10 +17,10 @@ data class MessageEntity(
     val videoUrl: String? = null,
     val mediaType: String? = null,
     val status: MessageStatus = MessageStatus.SENT,
-    val isSynced: Boolean = false, // True when synced to Firebase
-    val localOnly: Boolean = false, // True for messages waiting to be sent
-    val isDeleted: Boolean = false, // True when message has been deleted
-    val readAt: Long? = null // Timestamp when message was read
+    val isSynced: Boolean = false, // True cuando se ha sincronizado con Firebase
+    val localOnly: Boolean = false, // True cuando esperamos a que se envíe a Firebase
+    val isDeleted: Boolean = false, // True cuando eliminamos un mensaje :v
+    val readAt: Long? = null
 ) {
     fun toMessage(): Message {
         return Message(

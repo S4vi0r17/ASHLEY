@@ -38,7 +38,7 @@ fun ChatListItem(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Profile picture or generic avatar
+            // Foto de storage o avatar
             Box {
                 if (conversation.otherUserImageUrl.isNotEmpty()) {
                     AsyncImage(
@@ -58,8 +58,7 @@ fun ChatListItem(
                     )
                 }
 
-                // Online indicator (optional enhancement)
-                // You can add this later if you implement online status
+                // Aquí falta implementar el online status :/. sig semana
             }
 
             Spacer(modifier = Modifier.width(16.dp))

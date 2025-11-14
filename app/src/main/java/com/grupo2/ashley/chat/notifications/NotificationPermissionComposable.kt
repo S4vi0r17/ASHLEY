@@ -12,10 +12,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 
-/**
- * Request notification permission for Android 13+
- * This composable will automatically request permission when needed
- */
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun RequestNotificationPermission(
@@ -52,7 +49,6 @@ fun RequestNotificationPermission(
             )
         }
     } else {
-        // Permission not needed on Android 12 and below
         LaunchedEffect(Unit) {
             onPermissionResult(true)
         }
@@ -88,7 +84,7 @@ private fun NotificationPermissionRationaleDialog(
 }
 
 /**
- * Check if notification permission is granted
+ * Revisar si se han brindado las notificaciones
  */
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
