@@ -1,5 +1,6 @@
 package com.grupo2.ashley.dashboard
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -45,6 +47,7 @@ fun DashboardScreen(
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -58,7 +61,10 @@ fun DashboardScreen(
                         )
                         if (!dashboardState.isLoading) {
                             Text(
-                                text = stringResource(R.string.ultima_actualizacion,{formatTime(dashboardState.lastUpdated)}),
+                                text = stringResource(
+                                    R.string.ultima_actualizacion,
+                                    formatTime(dashboardState.lastUpdated, context)
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -657,7 +663,7 @@ private fun RecentProductCard(product: com.grupo2.ashley.dashboard.models.Produc
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = if (product.isActive) "Activo" else "Inactivo",
+                    text = if (product.isActive) stringResource(R.string.activo) else stringResource(R.string.inactivo),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (product.isActive) Color(0xFF4CAF50) else Color(0xFFFF5722),
                     fontWeight = FontWeight.Medium,
@@ -668,17 +674,17 @@ private fun RecentProductCard(product: com.grupo2.ashley.dashboard.models.Produc
     }
 }
 
-private fun formatTime(timestamp: Long): String {
+private fun formatTime(timestamp: Long, context: Context): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
     val minutes = diff / 60000
 
     return when {
-        minutes < 1 -> "Hace un momento"
-        minutes < 60 -> "Hace $minutes min"
+        minutes < 1 -> context.getString(R.string.momento)
+        minutes < 60 -> context.getString(R.string.hace_minutos)
         else -> {
             val hours = minutes / 60
-            if (hours < 24) "Hace $hours h" else "Hace ${hours / 24} días"
+            if (hours < 24) context.getString(R.string.hace_horas) else context.getString(R.string.hace_dias)
         }
     }
 }

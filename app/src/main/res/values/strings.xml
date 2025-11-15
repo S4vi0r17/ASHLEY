@@ -99,6 +99,10 @@
     <string name="no_tiene_cuenta">¿No tienes cuenta?</string>
     <string name="registrese">Regístrate</string>
     <string name="olvide_mi_contrasena">Olvidé mi contraseña</string>
+    <string name="idioma">Idioma</string>
+    <string name="espanol">Español</string>
+    <string name="ingles">Inglés</string>
+
 
     <!-- RecuperarUI -->
 
@@ -156,7 +160,7 @@
     <!-- DashboardScreen -->
 
     <string name="mi_dashboard">Mi dashboard</string>
-    <string name="ultima_actualizacion">Última actualización: %d</string>
+    <string name="ultima_actualizacion">Última actualización: %s</string>
     <string name="actualizar">Actualizar</string>
     <string name="cargando_estadisticas">Cargando estadísticas...</string>
     <string name="error_cargar_datos">Error al cargar los datos</string>
@@ -164,6 +168,8 @@
     <string name="productos_publicados">Productos publicados</string>
     <string name="vistas_totales">Vistas totales</string>
     <string name="precio_promedio">Precio promedio</string>
+    <string name="activo">Activo</string>
+    <string name="inactivo">Inactivo</string>
 
     <!-- DashboardComponents -->
 
@@ -315,5 +321,8 @@
     <string name="descripcion_permiso_notificacion_chat">Para avisarte cuando recibas mensajes nuevos, necesitamos tu permiso para enviar notificaciones. ¿Deseas activarlas?</string>
     <string name="accion_permitir">Permitir</string>
     <string name="accion_ahora_no">Ahora no</string>
+
+    <!-- AnunciosScreen -->
+    <string name="aqui_mostraran_tus_anuncios">Aqui se mostrarán tus anuncios</string>
 
 </resources>

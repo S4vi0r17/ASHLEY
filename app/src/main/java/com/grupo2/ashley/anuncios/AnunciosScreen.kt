@@ -1,4 +1,4 @@
-package com.grupo2.ashley.home
+package com.grupo2.ashley.anuncios
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,14 +16,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.grupo2.ashley.anuncios.components.*
 import com.grupo2.ashley.home.components.*
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.R
+import com.grupo2.ashley.anuncios.AnunciosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    viewModel: HomeViewModel,
+fun AnunciosScreen(
+    viewModel: AnunciosViewModel,
     ubicacionViewModel: UbicacionViewModel,
     onLocationClick: () -> Unit = {},
     onProductClick: (String) -> Unit = {},
@@ -53,23 +55,6 @@ fun HomeScreen(
                 query = searchQuery,
                 onQueryChange = { viewModel.onSearchQueryChange(it) },
                 onClearClick = { viewModel.clearSearch() }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = stringResource(R.string.categorias),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            CategoriesRow(
-                categories = categories,
-                selectedCategory = selectedCategory,
-                onCategoryClick = { viewModel.onCategorySelected(it) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -148,7 +133,7 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = stringResource(R.string.se_el_primero_en_publicar),
+                                    text = stringResource(R.string.aqui_mostraran_tus_anuncios),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
@@ -158,9 +143,8 @@ fun HomeScreen(
                     }
                     else -> {
                         // Mostrar grid de productos
-                        ProductsGrid(
+                       AnuncioGrid(
                             products = products,
-                            onFavoriteClick = { viewModel.toggleFavorite(it) },
                             onProductClick = onProductClick,
                             modifier = Modifier.fillMaxSize(),
                             bottomPadding = innerPadding.calculateBottomPadding() + 16.dp

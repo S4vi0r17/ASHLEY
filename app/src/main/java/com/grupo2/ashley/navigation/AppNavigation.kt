@@ -35,7 +35,8 @@ import com.grupo2.ashley.productdetail.ProductDetailScreen
 import com.grupo2.ashley.productdetail.ProductDetailViewModel
 import com.grupo2.ashley.productdetail.ProductMapScreen
 import com.grupo2.ashley.dashboard.DashboardScreen
-import com.grupo2.ashley.screens.AnunciosScreen
+import com.grupo2.ashley.anuncios.AnunciosScreen
+import com.grupo2.ashley.anuncios.AnunciosViewModel
 import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.utils.makePhoneCall
@@ -121,6 +122,7 @@ fun AppNavigation(
     homeViewModel: HomeViewModel,
     ubicacionViewModel: UbicacionViewModel,
     profileViewModel: ProfileViewModel,
+    anunciosViewModel : AnunciosViewModel,
     innerPadding: PaddingValues,
     navigationItems: List<Triple<String, Any, String>>
 ) {
@@ -287,7 +289,14 @@ fun AppNavigation(
             }
         ) {
             previousRouteIndex = currentRouteIndex
-            AnunciosScreen(innerPadding = innerPadding)
+            AnunciosScreen(
+                viewModel = anunciosViewModel,
+                ubicacionViewModel = ubicacionViewModel,
+                onLocationClick = { navController.navigate(Routes.SELECCIONAR_UBICACION) },
+                onProductClick = { productId ->
+                    navController.navigate(Routes.productDetail(productId))
+                },
+                innerPadding = innerPadding)
         }
 
         composable(

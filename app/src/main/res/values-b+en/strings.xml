@@ -89,6 +89,9 @@
     <string name="no_tiene_cuenta">Don\'t have an account?</string>
     <string name="registrese">Sign up</string>
     <string name="olvide_mi_contrasena">Forgot my password</string>
+    <string name="idioma">Language</string>
+    <string name="espanol">Spanish</string>
+    <string name="ingles">Englsh</string>
 
     <!-- RecuperarUI -->
     <string name="recuperar_contrasena">Recover password</string>
@@ -140,7 +143,7 @@
 
     <!-- DashboardScreen -->
     <string name="mi_dashboard">My dashboard</string>
-    <string name="ultima_actualizacion">Last update: %d</string>
+    <string name="ultima_actualizacion">Last update: %s</string>
     <string name="actualizar">Refresh</string>
     <string name="cargando_estadisticas">Loading statistics...</string>
     <string name="error_cargar_datos">Error loading data</string>
@@ -148,6 +151,8 @@
     <string name="productos_publicados">Published products</string>
     <string name="vistas_totales">Total views</string>
     <string name="precio_promedio">Average price</string>
+    <string name="activo">Active</string>
+    <string name="inactivo">Inactive</string>
 
     <!-- DashboardComponents -->
     <string name="no_hay_dcategorias">No category data</string>
@@ -286,5 +291,8 @@
     <string name="descripcion_permiso_notificacion_chat">To notify you when you receive new messages, we need your permission to send notifications. Do you want to enable them?</string>
     <string name="accion_permitir">Allow</string>
     <string name="accion_ahora_no">Not now</string>
+
+    <!-- AnunciosScreen -->
+    <string name="aqui_mostraran_tus_anuncios">Your ads will be displayed here.</string>
 
 </resources>

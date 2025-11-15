@@ -88,21 +88,4 @@ class ProductRepository {
         }
     }
 
-    suspend fun getUserProducts(userId: String): Result<List<Product>> {
-        return try {
-            val snapshot = firestore.collection("products")
-                .whereEqualTo("userId", userId)
-                .whereEqualTo("active", true)
-                .get()
-                .await()
-
-            val products = snapshot.documents.mapNotNull { doc ->
-                doc.toObject(Product::class.java)
-            }
-
-            Result.success(products)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 }

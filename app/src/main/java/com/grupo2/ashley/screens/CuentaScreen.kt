@@ -424,7 +424,7 @@ fun CuentaScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (defaultPickupLocationName.isNotEmpty()) {
-                                    defaultPickupLocationName
+                                    stringResource(R.string.sin_ubicacion)
                                 } else {
                                     stringResource(R.string.tu_ubicacion)
                                 },

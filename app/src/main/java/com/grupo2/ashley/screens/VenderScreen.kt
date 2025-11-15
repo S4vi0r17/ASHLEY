@@ -255,7 +255,6 @@ fun VenderScreen(
                 }
             }
 
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -508,5 +507,6 @@ fun VenderScreen(
                 }
             }
         )
+    }
     }
 }

@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.libraries.places.api.Places
+import com.grupo2.ashley.anuncios.AnunciosViewModel
 import com.grupo2.ashley.chat.UnreadMessagesViewModel
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.UbicacionViewModel
@@ -51,6 +52,7 @@ fun AshleyApp() {
     val homeViewModel: HomeViewModel = viewModel()
     val ubicacionViewModel: UbicacionViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val anunciosViewModel: AnunciosViewModel = viewModel()
     val unreadMessagesViewModel: UnreadMessagesViewModel = hiltViewModel()
     val context = LocalContext.current
 
@@ -155,6 +157,7 @@ fun AshleyApp() {
             homeViewModel = homeViewModel,
             ubicacionViewModel = ubicacionViewModel,
             profileViewModel = profileViewModel,
+            anunciosViewModel = anunciosViewModel,
             innerPadding = innerPadding,
             navigationItems = navigationItems
         )
