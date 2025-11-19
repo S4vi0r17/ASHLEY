@@ -26,6 +26,7 @@ import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.AppNavigation
 import com.grupo2.ashley.navigation.Routes
+import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,6 +54,7 @@ fun AshleyApp() {
     val ubicacionViewModel: UbicacionViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
     val anunciosViewModel: AnunciosViewModel = viewModel()
+    val productViewModel: ProductViewModel = viewModel()
     val unreadMessagesViewModel: UnreadMessagesViewModel = hiltViewModel()
     val context = LocalContext.current
 
@@ -159,6 +161,7 @@ fun AshleyApp() {
             profileViewModel = profileViewModel,
             anunciosViewModel = anunciosViewModel,
             innerPadding = innerPadding,
+            productViewModel = productViewModel,
             navigationItems = navigationItems
         )
     }

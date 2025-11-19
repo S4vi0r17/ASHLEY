@@ -324,5 +324,15 @@
 
     <!-- AnunciosScreen -->
     <string name="aqui_mostraran_tus_anuncios">Aqui se mostrarán tus anuncios</string>
+    <string name="editar_producto">Editar Producto</string>
+    <string name="el_titulo_es_requerido">El título es requerido</string>
+    <string name="la_categoria_es_requerida">La categoría es requerida</string>
+    <string name="error_numero_invalido">El precio debe ser un número válido</string>
+    <string name="debes_seleccionar_al_menos_una_imagen">Debes seleccionar al menos una imagen</string>
+    <string name="error_inesperado">Error inesperado %s</string>
+    <string name="modificando">Modificando...</string>
+    <string name="producto_editado">¡Producto Editado!</string>
+    <string name="editado_satisfactoriamente">Tu producto ha sido editado satisfactoriamente</string>
+
 
 </resources>

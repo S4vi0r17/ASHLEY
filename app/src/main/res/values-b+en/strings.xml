@@ -294,5 +294,14 @@
 
     <!-- AnunciosScreen -->
     <string name="aqui_mostraran_tus_anuncios">Your ads will be displayed here.</string>
+    <string name="editar_producto">Edit Product</string>
+    <string name="el_titulo_es_requerido">You need to enter a title</string>
+    <string name="la_categoria_es_requerida">Please choose a category</string>
+    <string name="error_numero_invalido">Please enter a valid price</string>
+    <string name="debes_seleccionar_al_menos_una_imagen">Select at least one image</string>
+    <string name="error_inesperado">Something went wrong: %s</string>
+    <string name="modificando">Saving changes...</string>
+    <string name="producto_editado">Product updated!</string>
+    <string name="editado_satisfactoriamente">Your product was updated successfully</string>
 
 </resources>

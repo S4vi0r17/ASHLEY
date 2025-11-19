@@ -1,6 +1,8 @@
 package com.grupo2.ashley.product
 
+import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grupo2.ashley.product.data.ProductRepository
@@ -19,6 +21,7 @@ class ProductViewModel : ViewModel() {
     private val profileRepository = ProfileRepository()
 
     // Estados del formulario
+    private val _allProducts = MutableStateFlow<List<Product>>(emptyList())
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
@@ -66,6 +69,7 @@ class ProductViewModel : ViewModel() {
 
     init {
         loadDefaultDeliveryLocation()
+        loadProducts()
     }
 
     private fun loadDefaultDeliveryLocation() {
@@ -140,27 +144,29 @@ class ProductViewModel : ViewModel() {
         // No limpiar la ubicación cuando se desactiva, solo cuando se seleccione una nueva
     }
 
-    fun publishProduct() {
+    fun publishProduct(context: Context) {
         viewModelScope.launch {
             try {
                 // Validaciones
                 if (_title.value.isBlank()) {
-                    _uploadState.value = ProductUploadState(error = "El título es requerido")
+                    _uploadState.value = ProductUploadState(error = context.getString(R.string.el_titulo_es_requerido))
                     return@launch
                 }
 
                 if (_category.value.isBlank()) {
-                    _uploadState.value = ProductUploadState(error = "La categoría es requerida")
+                    _uploadState.value = ProductUploadState(error = context.getString(R.string.la_categoria_es_requerida))
                     return@launch
                 }
 
                 if (_price.value.isBlank() || _price.value.toDoubleOrNull() == null) {
-                    _uploadState.value = ProductUploadState(error = "El precio debe ser un número válido")
+                    _uploadState.value =
+                        ProductUploadState(error = context.getString(R.string.error_numero_invalido))
                     return@launch
                 }
 
                 if (_selectedImages.value.isEmpty()) {
-                    _uploadState.value = ProductUploadState(error = "Debes seleccionar al menos una imagen")
+                    _uploadState.value =
+                        ProductUploadState(error = context.getString(R.string.debes_seleccionar_al_menos_una_imagen))
                     return@launch
                 }
 
@@ -240,5 +246,21 @@ class ProductViewModel : ViewModel() {
     fun resetUploadState() {
         _uploadState.value = ProductUploadState()
         _onProductPublished.value = false
+    }
+
+    fun loadProducts() {
+        viewModelScope.launch {
+            productRepository.getAllProducts()
+                .onSuccess { products ->
+                    _allProducts.value = products
+                }
+                .onFailure { exception ->
+                    _allProducts.value = emptyList()
+                }
+        }
+    }
+
+    fun getProductById(productId: String): Product? {
+        return _allProducts.value.find { it.productId == productId }
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.grupo2.ashley.anuncios.components.*
 import com.grupo2.ashley.home.components.*
 import com.grupo2.ashley.map.UbicacionViewModel
@@ -25,9 +26,9 @@ import com.grupo2.ashley.anuncios.AnunciosViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AnunciosScreen(
+    navController: NavHostController,
     viewModel: AnunciosViewModel,
     ubicacionViewModel: UbicacionViewModel,
-    onLocationClick: () -> Unit = {},
     onProductClick: (String) -> Unit = {},
     innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {

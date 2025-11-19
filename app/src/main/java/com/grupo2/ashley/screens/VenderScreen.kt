@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,6 +59,7 @@ fun VenderScreen(
     val deliveryAddress by productViewModel.deliveryAddress.collectAsState()
     val useDefaultLocation by productViewModel.useDefaultLocation.collectAsState()
     val uploadState by productViewModel.uploadState.collectAsState()
+    val context = LocalContext.current
 
     // Sincronizar ubicación del mapa
     val ubicacionMapa by viewModel.ubicacionSeleccionada.collectAsState()
@@ -463,7 +465,7 @@ fun VenderScreen(
 
         // Botón publicar
         Button(
-            onClick = { productViewModel.publishProduct() },
+            onClick = { productViewModel.publishProduct(context) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -487,26 +489,26 @@ fun VenderScreen(
 
 
     // Diálogo de éxito
-    if (uploadState.success) {
-        AlertDialog(
-            onDismissRequest = { 
-                productViewModel.resetUploadState()
-                homeViewModel.refreshProducts() // Refrescar productos en home
-            },
-            title = { Text(stringResource(R.string.producto_publicado)) },
-            text = { Text(stringResource(R.string.exito_publicar)) },
-            confirmButton = {
-                TextButton(onClick = {
+        if (uploadState.success) {
+            AlertDialog(
+                onDismissRequest = {
                     productViewModel.resetUploadState()
                     homeViewModel.refreshProducts() // Refrescar productos en home
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.HOME) { inclusive = true }
+                },
+                title = { Text(stringResource(R.string.producto_publicado)) },
+                text = { Text(stringResource(R.string.exito_publicar)) },
+                confirmButton = {
+                    TextButton(onClick = {
+                        productViewModel.resetUploadState()
+                        homeViewModel.refreshProducts() // Refrescar productos en home
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.HOME) { inclusive = true }
+                        }
+                    }) {
+                        Text(stringResource(R.string.aceptar))
                     }
-                }) {
-                    Text(stringResource(R.string.aceptar))
                 }
-            }
-        )
-    }
+            )
+        }
     }
 }
