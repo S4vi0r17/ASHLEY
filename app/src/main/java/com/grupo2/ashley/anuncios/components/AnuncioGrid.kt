@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.grupo2.ashley.home.components.ProductoCard
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.product.data.ProductRepository
 
 @Composable
@@ -34,7 +34,7 @@ fun AnuncioGrid(
         items(products) { product ->
             AnuncioCard(
                 product = product,
-                onClick = { onProductClick(product.id) },
+                onClick = { onProductClick(product.productId) },
                 navController = navController
             )
         }

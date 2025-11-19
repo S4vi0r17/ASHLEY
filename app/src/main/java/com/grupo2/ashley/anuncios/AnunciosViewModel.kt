@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.grupo2.ashley.home.data.CategoryData
-import com.grupo2.ashley.home.data.ProductRepository
+import com.grupo2.ashley.product.data.ProductRepository
 import com.grupo2.ashley.home.models.Category
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,9 +46,10 @@ class AnunciosViewModel : ViewModel() {
             _isLoading.value = true
             _error.value = null
 
-            productRepository.getAllProductsAnuncio()
+            productRepository.getAllProducts()
                 .onSuccess { products ->
-                    _allProducts.value = products
+                    val userid = auth.currentUser?.uid
+                    _allProducts.value = products.filter { it.userId == userid }
                     filterProducts()
                 }
                 .onFailure { exception ->
@@ -89,7 +90,7 @@ class AnunciosViewModel : ViewModel() {
     }
 
     fun getProductById(productId: String): Product? {
-        return _allProducts.value.find { it.id == productId }
+        return _allProducts.value.find { it.productId == productId }
     }
 
 }

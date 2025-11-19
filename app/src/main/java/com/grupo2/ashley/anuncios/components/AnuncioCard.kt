@@ -32,7 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.room.Delete
 import coil.compose.AsyncImage
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.R
 import com.grupo2.ashley.anuncios.AnunciosViewModel
@@ -78,9 +78,9 @@ fun AnuncioCard(
             ) {
 
                 // --- IMAGEN ---
-                if (product.imageUrl != null) {
+                if (product.images.firstOrNull() != null) {
                     AsyncImage(
-                        model = product.imageUrl,
+                        model = product.images.firstOrNull(),
                         contentDescription = product.title,
                         modifier = Modifier
                             .fillMaxSize()
@@ -109,7 +109,7 @@ fun AnuncioCard(
 
                 // --- BOTÓN ELIMINAR ---
                 IconButton(
-                    onClick = { viewModel.deleteProductbyID(product.id, context) },
+                    onClick = { viewModel.deleteProductbyID(product.productId, context) },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
@@ -160,7 +160,7 @@ fun AnuncioCard(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = product.location,
+                    text = product.deliveryAddress,
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

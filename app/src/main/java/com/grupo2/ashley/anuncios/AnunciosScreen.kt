@@ -18,10 +18,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.grupo2.ashley.anuncios.components.*
-import com.grupo2.ashley.home.components.*
+import com.grupo2.ashley.product.data.ProductRepository
+import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.R
 import com.grupo2.ashley.anuncios.AnunciosViewModel
+import com.grupo2.ashley.home.components.SearchBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

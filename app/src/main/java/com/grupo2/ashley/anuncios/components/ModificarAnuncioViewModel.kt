@@ -54,7 +54,7 @@ class ModificarAnuncioViewModel() : ViewModel() {
     private val _deliveryLongitude = MutableStateFlow(0.0)
     val deliveryLongitude: StateFlow<Double> = _deliveryLongitude.asStateFlow()
 
-    private val _useDefaultLocation = MutableStateFlow(true)
+    private val _useDefaultLocation = MutableStateFlow(false)
     val useDefaultLocation: StateFlow<Boolean> = _useDefaultLocation.asStateFlow()
 
     private val _uploadState = MutableStateFlow(ProductUploadState())
@@ -116,6 +116,7 @@ class ModificarAnuncioViewModel() : ViewModel() {
     }
     fun removeImage(image: Uri){
         _selectedImages.value = _selectedImages.value - image
+        removeLocalURI(image)
     }
 
     fun addImage(images: List<Uri>){

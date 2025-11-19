@@ -142,4 +142,28 @@ ProductRepository {
             Result.failure(e)
         }
     }
+
+    fun filterProducts(
+        products: List<Product>,
+        categoryId: String,
+        searchQuery: String
+    ): List<Product> {
+        var filtered = products
+
+        // Filtrar por categoría
+        if (categoryId != "all") {
+            filtered = filtered.filter { it.category == categoryId }
+        }
+
+        // Filtrar por búsqueda
+        if (searchQuery.isNotEmpty()) {
+            filtered = filtered.filter {
+                it.title.contains(searchQuery, ignoreCase = true) ||
+                        it.description.contains(searchQuery, ignoreCase = true) ||
+                        it.brand.contains(searchQuery, ignoreCase = true)
+            }
+        }
+
+        return filtered
+    }
 }
