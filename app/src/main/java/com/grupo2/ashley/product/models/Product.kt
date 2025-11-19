@@ -70,3 +70,9 @@ data class ProductUploadState(
     val success: Boolean = false,
     val productId: String? = null
 )
+
+data class ProductDeletedState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val success: Boolean = false,
+)

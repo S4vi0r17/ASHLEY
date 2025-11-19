@@ -12,6 +12,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.viewModelScope
 import com.grupo2.ashley.R
 import com.grupo2.ashley.product.models.ProductCondition
+import com.grupo2.ashley.product.models.ProductDeletedState
 import com.grupo2.ashley.product.models.ProductUploadState
 import kotlinx.coroutines.launch
 
@@ -58,6 +59,9 @@ class ModificarAnuncioViewModel() : ViewModel() {
 
     private val _uploadState = MutableStateFlow(ProductUploadState())
     val uploadState: StateFlow<ProductUploadState> = _uploadState.asStateFlow()
+
+    private val _deletedState = MutableStateFlow(ProductDeletedState())
+    val deletedState: StateFlow<ProductDeletedState> = _deletedState.asStateFlow()
 
     private val _onProductPublished = MutableStateFlow<Boolean>(false)
     val onProductPublished: StateFlow<Boolean> = _onProductPublished.asStateFlow()
@@ -230,7 +234,10 @@ class ModificarAnuncioViewModel() : ViewModel() {
                 val createResult = productRepository.updateProduct(product)
                 if (createResult.isFailure) {
                     _uploadState.value = ProductUploadState(
-                        error = "Error al crear el producto: ${createResult.exceptionOrNull()?.message}"
+                        error = context.getString(
+                            R.string.error_al_crear_el_producto,
+                            createResult.exceptionOrNull()?.message
+                        )
                     )
                     return@launch
                 }
@@ -253,5 +260,26 @@ class ModificarAnuncioViewModel() : ViewModel() {
     fun resetUploadState() {
         _uploadState.value = ProductUploadState()
         _onProductPublished.value = false
+    }
+
+    fun deleteProductbyID(productId: String, context: Context){
+        _deletedState.value = ProductDeletedState(isLoading = true)
+        viewModelScope.launch {
+            val result = productRepository.deleteProduct(productId)
+            if (result.isFailure) {
+                _deletedState.value = ProductDeletedState(
+                    error = context.getString(
+                        R.string.error_al_eliminar,
+                        result.exceptionOrNull()?.message
+                    )
+                )
+                return@launch
+            }
+            _deletedState.value = ProductDeletedState(isLoading = false, success = true)
+        } 
+    }
+
+    fun resetDeletedState() {
+        _deletedState.value = ProductDeletedState()
     }
 }

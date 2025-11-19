@@ -30,6 +30,7 @@ fun AnunciosScreen(
     viewModel: AnunciosViewModel,
     ubicacionViewModel: UbicacionViewModel,
     onProductClick: (String) -> Unit = {},
+    onDeleteClick: (String) -> Unit = {},
     innerPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
@@ -148,6 +149,7 @@ fun AnunciosScreen(
                             products = products,
                             onProductClick = onProductClick,
                             modifier = Modifier.fillMaxSize(),
+                            navController = navController,
                             bottomPadding = innerPadding.calculateBottomPadding() + 16.dp
                         )
                     }

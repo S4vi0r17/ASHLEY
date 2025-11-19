@@ -303,5 +303,10 @@
     <string name="modificando">Saving changes...</string>
     <string name="producto_editado">Product updated!</string>
     <string name="editado_satisfactoriamente">Your product was updated successfully</string>
+    <string name="producto_eliminado">Product deleted</string>
+    <string name="producto_eliminado_satisfactoriamente">Your product was deleted successfully</string>
+    <string name="error_al_eliminar">Couldn\'t delete the product: %1$s</string>
+    <string name="error_al_crear_el_producto">Couldn\'t create the product: %1$s</string>
+
 
 </resources>

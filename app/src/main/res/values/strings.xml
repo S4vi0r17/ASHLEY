@@ -333,6 +333,10 @@
     <string name="modificando">Modificando...</string>
     <string name="producto_editado">¡Producto Editado!</string>
     <string name="editado_satisfactoriamente">Tu producto ha sido editado satisfactoriamente</string>
+    <string name="producto_eliminado">Producto Eliminado</string>
+    <string name="producto_eliminado_satisfactoriamente">Producto eliminado satisfactoriamente</string>
+    <string name="error_al_eliminar">Error al eliminar: %1$s</string>
+    <string name="error_al_crear_el_producto">Error al crear el producto: %1$s</string>
 
 
 </resources>
