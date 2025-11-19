@@ -27,7 +27,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -219,7 +219,7 @@ fun ProductMapScreen(
                 Marker(
                     state = MarkerState(position = destinationLocation),
                     title = product.title,
-                    snippet = product.location
+                    snippet = product.deliveryAddress
                 )
                 
                 // NO agregamos marcador de "Mi ubicación" - solo se muestra el punto azul nativo del GPS
@@ -267,7 +267,7 @@ fun ProductMapScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = product.location,
+                            text = product.deliveryAddress,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

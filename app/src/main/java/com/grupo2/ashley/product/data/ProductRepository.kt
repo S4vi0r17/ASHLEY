@@ -166,4 +166,14 @@ ProductRepository {
 
         return filtered
     }
+
+    fun toggleFavorite(productId: String, currentProducts: List<Product>): List<Product> {
+        return currentProducts.map { product ->
+            if (product.productId == productId) {
+                product.copy(isFavorite = !product.isFavorite)
+            } else {
+                product
+            }
+        }
+    }
 }

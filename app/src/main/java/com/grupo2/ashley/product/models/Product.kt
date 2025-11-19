@@ -27,7 +27,8 @@ data class Product(
     // Campos para tracking y estadísticas
     val views: Int = 0,
     val favorites: Int = 0,
-    val messagesReceived: Int = 0
+    val messagesReceived: Int = 0,
+    val isFavorite: Boolean = false //Failsafe, actual favoritos no incluido
 )
 
 enum class ProductCondition(val displayName: String, @StringRes val labelResId: Int) {

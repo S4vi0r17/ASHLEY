@@ -2,10 +2,11 @@ package com.grupo2.ashley.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
 import com.grupo2.ashley.home.data.CategoryData
-import com.grupo2.ashley.home.data.ProductRepository
+import com.grupo2.ashley.product.data.ProductRepository
 import com.grupo2.ashley.home.models.Category
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel : ViewModel() {
 
     private val productRepository = ProductRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -46,7 +48,8 @@ class HomeViewModel : ViewModel() {
 
             productRepository.getAllProducts()
                 .onSuccess { products ->
-                    _allProducts.value = products
+                    val userid = auth.currentUser?.uid
+                    _allProducts.value = products.filter { it.userId != userid && it.isActive }
                     filterProducts()
                 }
                 .onFailure { exception ->
@@ -92,6 +95,6 @@ class HomeViewModel : ViewModel() {
     }
 
     fun getProductById(productId: String): Product? {
-        return _allProducts.value.find { it.id == productId }
+        return _allProducts.value.find { it.productId == productId }
     }
 }

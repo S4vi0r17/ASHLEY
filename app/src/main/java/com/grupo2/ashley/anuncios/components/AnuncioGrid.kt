@@ -10,9 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.grupo2.ashley.home.components.ProductoCard
 import com.grupo2.ashley.product.models.Product
-import com.grupo2.ashley.product.data.ProductRepository
 
 @Composable
 fun AnuncioGrid(

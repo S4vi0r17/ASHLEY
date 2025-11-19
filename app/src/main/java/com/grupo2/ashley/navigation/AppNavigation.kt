@@ -469,7 +469,6 @@ fun AppNavigation(
                     ubicacionViewModel = ubicacionViewModel,
                     anunciosViewModel = anunciosViewModel,
                     innerPadding = innerPadding,
-                    bottomPadding = innerPadding.calculateBottomPadding(),
                     navController = navController
                 )
             } else {

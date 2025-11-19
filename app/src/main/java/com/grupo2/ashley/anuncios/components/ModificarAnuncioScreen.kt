@@ -62,7 +62,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grupo2.ashley.product.models.Product
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -81,7 +80,6 @@ import kotlin.text.ifEmpty
 fun ModificarAnuncioScreen(
     product: Product,
     onBackClick: () -> Unit,
-    bottomPadding: Dp = 0.dp,
     innerPadding: PaddingValues = PaddingValues(0.dp),
     viewModel: ModificarAnuncioViewModel = viewModel(),
     ubicacionViewModel: UbicacionViewModel,

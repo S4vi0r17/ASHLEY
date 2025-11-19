@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 
 @Composable
 fun ProductsGrid(
@@ -30,8 +30,8 @@ fun ProductsGrid(
         items(products) { product ->
             ProductoCard(
                 product = product,
-                onFavoriteClick = { onFavoriteClick(product.id) },
-                onClick = { onProductClick(product.id) })
+                onFavoriteClick = { onFavoriteClick(product.productId) },
+                onClick = { onProductClick(product.productId) })
         }
     }
 }

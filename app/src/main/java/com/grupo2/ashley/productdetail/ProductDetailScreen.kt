@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.grupo2.ashley.R
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.profile.models.UserProfile
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -48,7 +48,7 @@ fun ProductDetailScreen(
     viewModel: ProductDetailViewModel = viewModel()
 ) {
 
-    val images = if (product.allImages.isNotEmpty()) product.allImages else listOfNotNull(product.imageUrl)
+    val images = product.images
     val pagerState = rememberPagerState(pageCount = { images.size })
 
     val isFavorite by viewModel.isFavorite.collectAsState()
@@ -174,7 +174,7 @@ fun ProductDetailScreen(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = stringResource(viewModel.getCondition(product.condition)),
+                    text = stringResource(viewModel.getCondition(product.condition.displayName)),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium

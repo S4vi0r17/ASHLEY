@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grupo2.ashley.R
 import com.grupo2.ashley.favorites.FavoritesRepository
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.profile.data.ProfileRepository
 import com.grupo2.ashley.profile.models.UserProfile
 import com.grupo2.ashley.tracking.ProductTrackingRepository
@@ -41,8 +41,8 @@ class ProductDetailViewModel(
     fun setProduct(product: Product) {
         _product.value = product
         loadSellerProfile(product.userId)
-        checkIfFavorite(product.id)
-        trackProductView(product.id)
+        checkIfFavorite(product.productId)
+        trackProductView(product.productId)
     }
 
     private fun loadSellerProfile(userId: String) {
@@ -107,9 +107,9 @@ class ProductDetailViewModel(
             _isTogglingFavorite.value = true
             try {
                 val result = favoritesRepository.toggleFavorite(
-                    productId = currentProduct.id,
+                    productId = currentProduct.productId,
                     productTitle = currentProduct.title,
-                    productImage = currentProduct.imageUrl ?: "",
+                    productImage = currentProduct.images.firstOrNull() ?: "",
                     productPrice = currentProduct.price
                 )
                 
