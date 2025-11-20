@@ -60,6 +60,7 @@ class ChatRealtimeViewModel @Inject constructor(
     private val pageSize = 50
     private var typingJob: kotlinx.coroutines.Job? = null
 
+    // Inicia la escucha de mensajes en tiempo real para una conversación
     fun startListening(conversationId: String) {
         currentConversationId = conversationId
         currentOffset = 0
@@ -82,6 +83,7 @@ class ChatRealtimeViewModel @Inject constructor(
         loadProductInfo(conversationId)
     }
 
+    // Carga información del producto asociado a la conversación
     private fun loadProductInfo(conversationId: String) {
         viewModelScope.launch {
             try {
@@ -93,6 +95,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Marca los mensajes de la conversación actual como leídos
     fun markMessagesAsRead(currentUserId: String) {
         val conversationId = currentConversationId ?: return
         viewModelScope.launch {
@@ -100,6 +103,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Detiene la escucha de mensajes y limpia el estado de conversación activa
     fun stopListening() {
         // Clear active conversation when leaving the chat
         (chatRepository as? com.grupo2.ashley.chat.data.ChatRepositoryImpl)?.setActiveConversation(null)
@@ -111,6 +115,7 @@ class ChatRealtimeViewModel @Inject constructor(
         (chatRepository as? com.grupo2.ashley.chat.data.ChatRepositoryImpl)?.setActiveConversation(null)
     }
 
+    // Carga más mensajes antiguos con paginación
     fun loadMoreMessages() {
         val conversationId = currentConversationId ?: return
         if (_isLoadingMore.value) return
@@ -128,6 +133,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Envía un mensaje con texto, imagen o video
     fun sendMessage(
         senderId: String?,
         text: String = "",
@@ -165,12 +171,14 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Reintenta enviar un mensaje que falló
     fun retryMessage(messageId: String) {
         viewModelScope.launch {
             chatRepository.retryFailedMessage(messageId)
         }
     }
 
+    // Elimina un mensaje de la conversación
     fun deleteMessage(messageId: String) {
         val conversationId = currentConversationId ?: return
         viewModelScope.launch {
@@ -178,6 +186,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Actualiza el estado de escritura del usuario en Firebase
     fun updateTypingStatus(userId: String, isTyping: Boolean) {
         val conversationId = currentConversationId ?: return
         viewModelScope.launch {
@@ -185,6 +194,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Marca la conversación y todos sus mensajes como leídos
     fun markAsRead(currentUserId: String?) {
         val conversationId = currentConversationId ?: return
         if (currentUserId == null) return
@@ -196,6 +206,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Carga la información del otro participante de la conversación
     fun loadParticipantInfo(conversationId: String, currentUserId: String?) {
         if (currentUserId == null) return
         this.currentUserId = currentUserId
@@ -233,6 +244,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Observa el estado de escritura del otro usuario en tiempo real
     private fun observeOtherUserTyping(conversationId: String, otherUserId: String) {
         viewModelScope.launch {
             chatRepository.observeTypingStatus(conversationId, otherUserId)
@@ -242,6 +254,7 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Maneja cambios en el texto del input y actualiza el indicador de escritura
     fun onTextChanged(text: String) {
         val conversationId = currentConversationId ?: return
         val userId = currentUserId ?: return
@@ -268,22 +281,26 @@ class ChatRealtimeViewModel @Inject constructor(
         }
     }
 
+    // Limpia el mensaje de error actual
     fun clearError() {
         _error.value = null
     }
 
+    // Establece una imagen pendiente para enviar
     fun setPendingImage(bytes: ByteArray) {
         _pendingImageBytes.value = bytes
         _pendingVideoBytes.value = null // Clear video if image is selected
         _pendingVideoThumbnail.value = null
     }
 
+    // Establece un video pendiente para enviar con su miniatura
     fun setPendingVideo(bytes: ByteArray, thumbnail: ByteArray?) {
         _pendingVideoBytes.value = bytes
         _pendingVideoThumbnail.value = thumbnail
         _pendingImageBytes.value = null // Clear image if video is selected
     }
 
+    // Limpia todos los medios pendientes (imagen/video)
     fun clearPendingMedia() {
         _pendingImageBytes.value = null
         _pendingVideoBytes.value = null

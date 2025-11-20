@@ -371,7 +371,6 @@ fun AppNavigation(
 
             if (product != null) {
                 val productDetailViewModel: ProductDetailViewModel = viewModel()
-                productDetailViewModel.setProduct(product)
 
                 // Llamar a setProduct solo una vez cuando se carga la pantalla
                 LaunchedEffect(productId) {

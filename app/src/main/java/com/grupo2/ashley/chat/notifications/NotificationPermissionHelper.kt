@@ -12,9 +12,6 @@ object NotificationPermissionHelper {
 
     const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
 
-    /**
-     * Check if notification permission is granted
-     */
     fun hasNotificationPermission(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ContextCompat.checkSelfPermission(
@@ -27,9 +24,6 @@ object NotificationPermissionHelper {
         }
     }
 
-    /**
-     * Check if we should show rationale for requesting permission
-     */
     fun shouldShowRationale(activity: Activity): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.shouldShowRequestPermissionRationale(
@@ -41,9 +35,6 @@ object NotificationPermissionHelper {
         }
     }
 
-    /**
-     * Request notification permission
-     */
     fun requestNotificationPermission(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ActivityCompat.requestPermissions(
@@ -54,9 +45,6 @@ object NotificationPermissionHelper {
         }
     }
 
-    /**
-     * Check if notification permission is required for this device
-     */
     fun isPermissionRequired(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     }

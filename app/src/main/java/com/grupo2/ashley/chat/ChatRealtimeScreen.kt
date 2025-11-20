@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import kotlin.math.min
 
-// Función para comprimir imágenes
+// Comprime y redimensiona una imagen manteniendo la proporción
 private fun compressImage(bytes: ByteArray, maxWidth: Int = 1024, maxHeight: Int = 1024, quality: Int = 80): ByteArray {
     val originalBitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
@@ -76,7 +76,7 @@ private fun compressImage(bytes: ByteArray, maxWidth: Int = 1024, maxHeight: Int
     return compressedBytes
 }
 
-// Función para extraer fotograma de video
+// Extrae el primer fotograma de un video como miniatura
 private fun extractVideoFrame(context: android.content.Context, uri: android.net.Uri): ByteArray? {
     val retriever = MediaMetadataRetriever()
     try {
@@ -116,6 +116,7 @@ private fun extractVideoFrame(context: android.content.Context, uri: android.net
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+// Pantalla principal de chat en tiempo real con mensajes, medios y estado de escritura
 @Composable
 fun ChatRealtimeScreen(
     conversationId: String,

@@ -23,6 +23,7 @@ class ChatRealtimeRepository(
 
     private val storage: StorageReference = FirebaseStorage.getInstance().reference
 
+    // Envía un mensaje a Firebase. Si incluye imagen, la sube primero
     fun sendMessage(
         conversationId: String,
         message: Message,
@@ -44,6 +45,7 @@ class ChatRealtimeRepository(
     }
 
 
+    // Agrega un listener en tiempo real para los mensajes de una conversación
     fun addMessagesListener(
         conversationId: String,
         onChange: (List<Message>) -> Unit
@@ -68,11 +70,13 @@ class ChatRealtimeRepository(
         return listener
     }
 
+    // Remueve un listener de mensajes
     fun removeMessagesListener(conversationId: String, listener: ValueEventListener) {
         db.child("conversations").child(conversationId).child("messages")
             .removeEventListener(listener)
     }
 
+    // Guarda un mensaje en Firebase y actualiza metadatos de la conversación
     private fun saveMessage(conversationId: String, message: Message, onComplete: (Boolean) -> Unit) {
         val ref = db.child("conversations").child(conversationId).child("messages").push()
         val messageId = ref.key ?: UUID.randomUUID().toString()
@@ -80,7 +84,6 @@ class ChatRealtimeRepository(
 
         ref.setValue(messageWithId)
             .addOnSuccessListener {
-                // Actualiza metadatos de conversación
                 val conversationUpdate = mapOf(
                     "lastMessage" to messageWithId,
                     "timestamp" to messageWithId.timestamp
@@ -94,6 +97,7 @@ class ChatRealtimeRepository(
             .addOnFailureListener { onComplete(false) }
     }
 
+    // Sube una imagen a Firebase Storage y retorna su URL
     private fun uploadImage(imageBytes: ByteArray, onResult: (String?) -> Unit) {
         val fileName = "chat_images/${UUID.randomUUID()}.jpg"
         val imageRef = storage.child(fileName)
@@ -113,6 +117,7 @@ class ChatRealtimeRepository(
             }
     }
 
+    // Crea una nueva conversación o recupera una existente entre dos usuarios
     fun createOrGetConversation(
         userId1: String,
         userId2: String,
@@ -143,7 +148,7 @@ class ChatRealtimeRepository(
         }
     }
 
-    // Obtener información del producto asociado a una conversación
+    // Obtiene información del producto asociado a una conversación desde Firebase y Firestore
     suspend fun getProductInfoForConversation(conversationId: String): ProductInfo? {
         return try {
             val conversationSnapshot = db.child("conversations")
@@ -177,7 +182,7 @@ class ChatRealtimeRepository(
         }
     }
 
-    // Marcar mensajes como leídos
+    // Marca todos los mensajes de una conversación como leídos en Firebase
     suspend fun markMessagesAsRead(conversationId: String, currentUserId: String) {
         try {
             val messagesRef = db.child("conversations")

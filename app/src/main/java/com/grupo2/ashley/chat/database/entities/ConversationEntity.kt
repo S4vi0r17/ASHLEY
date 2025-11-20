@@ -9,7 +9,7 @@ import com.grupo2.ashley.chat.models.LastMessage
 data class ConversationEntity(
     @PrimaryKey
     val id: String,
-    val participantsJson: String, // Stored as JSON string
+    val participantsJson: String,
     val lastMessageText: String?,
     val lastMessageTimestamp: Long?,
     val lastMessageSenderId: String?,
