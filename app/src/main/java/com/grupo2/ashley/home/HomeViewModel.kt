@@ -7,6 +7,7 @@ import com.grupo2.ashley.home.data.CategoryData
 import com.grupo2.ashley.product.data.ProductRepository
 import com.grupo2.ashley.home.models.Category
 import com.grupo2.ashley.product.models.Product
+import com.grupo2.ashley.favorites.FavoritesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,6 +16,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel : ViewModel() {
 
     private val productRepository = ProductRepository()
+    private val favoritesRepository = FavoritesRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _searchQuery = MutableStateFlow("")
@@ -49,7 +51,21 @@ class HomeViewModel : ViewModel() {
             productRepository.getAllProducts()
                 .onSuccess { products ->
                     val userid = auth.currentUser?.uid
-                    _allProducts.value = products.filter { it.userId != userid && it.isActive }
+                    val filteredProducts = products.filter { it.userId != userid && it.isActive }
+
+                    // Cargar favoritos del usuario para marcar productos
+                    favoritesRepository.getUserFavorites()
+                        .onSuccess { favorites ->
+                            val favoriteIds = favorites.map { it.productId }.toSet()
+                            _allProducts.value = filteredProducts.map { product ->
+                                product.copy(isFavorite = favoriteIds.contains(product.productId))
+                            }
+                        }
+                        .onFailure {
+                            // Si falla la carga de favoritos, continuar sin marcarlos
+                            _allProducts.value = filteredProducts
+                        }
+
                     filterProducts()
                 }
                 .onFailure { exception ->
@@ -78,8 +94,28 @@ class HomeViewModel : ViewModel() {
     }
 
     fun toggleFavorite(productId: String) {
-        _products.value = productRepository.toggleFavorite(productId, _products.value)
-        _allProducts.value = productRepository.toggleFavorite(productId, _allProducts.value)
+        viewModelScope.launch {
+            // Encontrar el producto
+            val product = _allProducts.value.find { it.productId == productId } ?: return@launch
+
+            // Alternar favorito en Firebase
+            favoritesRepository.toggleFavorite(
+                productId = productId,
+                productTitle = product.title,
+                productImage = product.images.firstOrNull() ?: "",
+                productPrice = product.price
+            ).onSuccess { isFavorite ->
+                // Actualizar estado local inmediatamente
+                _products.value = _products.value.map {
+                    if (it.productId == productId) it.copy(isFavorite = isFavorite)
+                    else it
+                }
+                _allProducts.value = _allProducts.value.map {
+                    if (it.productId == productId) it.copy(isFavorite = isFavorite)
+                    else it
+                }
+            }
+        }
     }
 
     private fun filterProducts() {

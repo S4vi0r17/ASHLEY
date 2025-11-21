@@ -48,7 +48,8 @@ fun CuentaScreen(
     viewModel: ProfileViewModel = viewModel(),
     ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null,
     onNavigateToMap: (() -> Unit)? = null,
-    onNavigateToDashboard: (() -> Unit)? = null
+    onNavigateToDashboard: (() -> Unit)? = null,
+    onNavigateToFavorites: (() -> Unit)? = null
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
@@ -317,6 +318,67 @@ fun CuentaScreen(
                         imageVector = Icons.Default.ChevronRight,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+        }
+
+        // Botón para ir a Favoritos
+        if (onNavigateToFavorites != null && !isEditing) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToFavorites() },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.mis_favoritos),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Text(
+                                text = stringResource(R.string.productos_guardados),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
             }

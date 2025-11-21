@@ -349,9 +349,8 @@ private fun DashboardContent(
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            // Datos simulados para demostración (reemplazar con datos reales de Firebase)
             val viewsData = stats.viewsLast7Days.map { daily ->
-                val label = daily.date.takeLast(5) // "MM-dd" o ajusta formato
+                val label = daily.date.takeLast(5) // "MM-dd"
                 label to daily.views
             }
             val favoritesData = stats.viewsLast7Days.map { daily ->
@@ -363,31 +362,6 @@ private fun DashboardContent(
                 favoritesData = favoritesData,
                 title = "Últimos 7 Días"
             )
-            
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "📊 Los datos históricos se mostrarán cuando implementes el tracking de vistas diarias",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
         }
 
         // Espaciado final para que el último elemento no quede tapado por la barra de navegación

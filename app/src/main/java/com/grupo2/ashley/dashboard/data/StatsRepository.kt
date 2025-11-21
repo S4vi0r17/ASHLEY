@@ -91,13 +91,16 @@ class StatsRepository {
             
             val memberSince = userDoc.getLong("createdAt") ?: System.currentTimeMillis()
             
+            // Calcular total de mensajes recibidos
+            val totalMessages = products.sumOf { it.messagesReceived }
+
             val stats = UserStats(
                 totalProductsPublished = products.size,
                 activeProducts = activeProducts,
                 inactiveProducts = inactiveProducts,
                 totalViews = totalViews,
                 totalFavorites = totalFavorites,
-                totalMessages = 0, // TODO: Implementar cuando exista chat
+                totalMessages = totalMessages,
                 categoriesUsed = productsByCategory.keys.size,
                 averagePrice = averagePrice,
                 mostViewedProduct = mostViewedProduct,
@@ -170,32 +173,7 @@ class StatsRepository {
             isActive = product.isActive
         )
     }
-    
-    private fun calculateLast7DaysStats(products: List<Product>): List<DailyStats> {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val calendar = Calendar.getInstance()
-        val last7Days = mutableListOf<DailyStats>()
-        
-        // Generar los últimos 7 días
-        for (i in 6 downTo 0) {
-            calendar.timeInMillis = System.currentTimeMillis()
-            calendar.add(Calendar.DAY_OF_YEAR, -i)
-            val date = dateFormat.format(calendar.time)
-            
-            // Inicializar con ceros
-            last7Days.add(
-                DailyStats(
-                    date = date,
-                    views = 0,
-                    favorites = 0,
-                    messages = 0
-                )
-            )
-        }
-        
-        return last7Days
-    }
-    
+
     /**
      * Obtiene estadísticas diarias reales de TODOS los productos del usuario
      */

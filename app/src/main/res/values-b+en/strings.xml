@@ -129,6 +129,8 @@
 
     <!-- Favoritos -->
     <string name="favoritos">Favorites</string>
+    <string name="mis_favoritos">My favorites</string>
+    <string name="productos_guardados">View saved products</string>
     <string name="total_productos">%d products</string>
     <string name="error_favoritos">We couldn\'t load your favorites</string>
     <string name="no_favoritos">You have no favorites yet</string>
