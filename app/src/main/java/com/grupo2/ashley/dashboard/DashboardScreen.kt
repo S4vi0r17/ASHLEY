@@ -350,25 +350,14 @@ private fun DashboardContent(
             )
 
             // Datos simulados para demostración (reemplazar con datos reales de Firebase)
-            val viewsData = listOf(
-                "11-01" to 0,
-                "11-02" to 0,
-                "11-03" to 0,
-                "11-04" to 0,
-                "11-05" to 0,
-                "11-06" to 0,
-                "11-07" to stats.totalViews
-            )
-            val favoritesData = listOf(
-                "11-01" to 0,
-                "11-02" to 0,
-                "11-03" to 0,
-                "11-04" to 0,
-                "11-05" to 0,
-                "11-06" to 0,
-                "11-07" to stats.totalFavorites
-            )
-            
+            val viewsData = stats.viewsLast7Days.map { daily ->
+                val label = daily.date.takeLast(5) // "MM-dd" o ajusta formato
+                label to daily.views
+            }
+            val favoritesData = stats.viewsLast7Days.map { daily ->
+                val label = daily.date.takeLast(5)
+                label to daily.favorites
+            }
             VicoMultiLineChart(
                 viewsData = viewsData,
                 favoritesData = favoritesData,
