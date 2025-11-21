@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 class HomeViewModel : ViewModel() {
 
     private val productRepository = ProductRepository()
     private val favoritesRepository = FavoritesRepository()
     private val auth = FirebaseAuth.getInstance()
+    private var currentFavoriteIds: Set<String> = emptySet()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -40,9 +42,39 @@ class HomeViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        loadProducts()
+        observeProductsRealtime()
+        observeFavoritesRealtime()
     }
 
+    private fun observeFavoritesRealtime() {
+        viewModelScope.launch {
+            favoritesRepository.observeUserFavoriteIds().collectLatest { favoriteIds ->
+                currentFavoriteIds = favoriteIds
+                // Actualizar _allProducts y _products según los favoritos actuales
+                _allProducts.value = _allProducts.value.map { product ->
+                    product.copy(isFavorite = favoriteIds.contains(product.productId))
+                }
+                // Reaplicar filtro para mostrar cambios en pantalla
+                filterProducts()
+            }
+        }
+    }
+
+    private fun observeProductsRealtime() {
+        viewModelScope.launch {
+            productRepository.observeAllProducts().collectLatest { productsList ->
+                val userid = auth.currentUser?.uid
+                val filteredProducts = productsList.filter { it.userId != userid && it.isActive }
+                // aplicar favoritos conocidos
+                _allProducts.value = filteredProducts.map { product ->
+                    product.copy(isFavorite = currentFavoriteIds.contains(product.productId))
+                }
+                filterProducts()
+            }
+        }
+    }
+
+    // loadProducts is kept for manual refresh if needed
     fun loadProducts() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -52,20 +84,10 @@ class HomeViewModel : ViewModel() {
                 .onSuccess { products ->
                     val userid = auth.currentUser?.uid
                     val filteredProducts = products.filter { it.userId != userid && it.isActive }
-
-                    // Cargar favoritos del usuario para marcar productos
-                    favoritesRepository.getUserFavorites()
-                        .onSuccess { favorites ->
-                            val favoriteIds = favorites.map { it.productId }.toSet()
-                            _allProducts.value = filteredProducts.map { product ->
-                                product.copy(isFavorite = favoriteIds.contains(product.productId))
-                            }
-                        }
-                        .onFailure {
-                            // Si falla la carga de favoritos, continuar sin marcarlos
-                            _allProducts.value = filteredProducts
-                        }
-
+                    val favoriteIds = currentFavoriteIds
+                    _allProducts.value = filteredProducts.map { product ->
+                        product.copy(isFavorite = favoriteIds.contains(product.productId))
+                    }
                     filterProducts()
                 }
                 .onFailure { exception ->

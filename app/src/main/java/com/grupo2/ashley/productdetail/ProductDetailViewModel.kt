@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 
 class ProductDetailViewModel(
     private val profileRepository: ProfileRepository = ProfileRepository(),
@@ -38,11 +40,14 @@ class ProductDetailViewModel(
     private val _isTogglingFavorite = MutableStateFlow(false)
     val isTogglingFavorite: StateFlow<Boolean> = _isTogglingFavorite.asStateFlow()
 
+    private var favoritesObserverJob: Job? = null
+
     fun setProduct(product: Product) {
         _product.value = product
         loadSellerProfile(product.userId)
         checkIfFavorite(product.productId)
         trackProductView(product.productId)
+        observeFavoritesForCurrentProduct()
     }
 
     private fun loadSellerProfile(userId: String) {
@@ -122,6 +127,18 @@ class ProductDetailViewModel(
                 _error.value = "Error al actualizar favorito"
             } finally {
                 _isTogglingFavorite.value = false
+            }
+        }
+    }
+
+    private fun observeFavoritesForCurrentProduct() {
+        // Cancel previous observer
+        favoritesObserverJob?.cancel()
+        val productId = _product.value?.productId ?: return
+
+        favoritesObserverJob = viewModelScope.launch {
+            favoritesRepository.observeUserFavoriteIds().collectLatest { ids ->
+                _isFavorite.value = ids.contains(productId)
             }
         }
     }

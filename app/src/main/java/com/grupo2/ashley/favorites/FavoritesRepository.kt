@@ -5,6 +5,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -64,7 +67,7 @@ class FavoritesRepository {
                         "date" to today,
                         "views" to 0,
                         "favorites" to 1,
-                        "messages" to 0,
+                        "messagesReceived" to 0,
                         "timestamp" to System.currentTimeMillis()
                     )
                 ).await()
@@ -177,6 +180,36 @@ class FavoritesRepository {
             Log.e(TAG, "Error al obtener favoritos: ${e.message}", e)
             Result.failure(e)
         }
+    }
+
+    /**
+     * Observa en tiempo real los IDs de productos marcados como favoritos por el usuario.
+     * Emite un Set de productId cada vez que cambian.
+     */
+    fun observeUserFavoriteIds(): Flow<Set<String>> = callbackFlow {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            trySend(emptySet())
+            close()
+            return@callbackFlow
+        }
+
+        val favoritesRef = firestore.collection("users")
+            .document(userId)
+            .collection(FAVORITES_COLLECTION)
+
+        val listener = favoritesRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // En caso de error, no cerramos el flow, solo enviamos vacío
+                trySend(emptySet())
+                return@addSnapshotListener
+            }
+
+            val ids = snapshot?.documents?.mapNotNull { it.getString("productId") }?.toSet() ?: emptySet()
+            trySend(ids)
+        }
+
+        awaitClose { listener.remove() }
     }
     
     /**

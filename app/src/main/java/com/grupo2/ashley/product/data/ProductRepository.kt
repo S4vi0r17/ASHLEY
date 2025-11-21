@@ -8,6 +8,9 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import com.grupo2.ashley.product.models.Product
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import java.util.UUID
 
 class
@@ -141,6 +144,56 @@ ProductRepository {
             Log.e("ProductRepository", "Error al cargar productos", e)
             Result.failure(e)
         }
+    }
+
+    /**
+     * Observa en tiempo real todos los productos.
+     */
+    fun observeAllProducts(): Flow<List<Product>> = callbackFlow {
+        val query = firestore.collection("products").orderBy("createdAt", Query.Direction.DESCENDING)
+        val listener = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(emptyList())
+                return@addSnapshotListener
+            }
+
+            val products = snapshot?.documents?.mapNotNull { doc ->
+                try {
+                    doc.toObject(Product::class.java)?.copy(productId = doc.id)
+                } catch (e: Exception) {
+                    null
+                }
+            } ?: emptyList()
+
+            trySend(products)
+        }
+
+        awaitClose { listener.remove() }
+    }
+
+    /**
+     * Observa en tiempo real los productos de un usuario (owner).
+     */
+    fun observeProductsByUser(userId: String): Flow<List<Product>> = callbackFlow {
+        val query = firestore.collection("products").whereEqualTo("userId", userId)
+        val listener = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                trySend(emptyList())
+                return@addSnapshotListener
+            }
+
+            val products = snapshot?.documents?.mapNotNull { doc ->
+                try {
+                    doc.toObject(Product::class.java)?.copy(productId = doc.id)
+                } catch (e: Exception) {
+                    null
+                }
+            } ?: emptyList()
+
+            trySend(products)
+        }
+
+        awaitClose { listener.remove() }
     }
 
     fun filterProducts(

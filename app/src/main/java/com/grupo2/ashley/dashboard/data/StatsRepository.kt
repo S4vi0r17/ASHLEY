@@ -214,7 +214,7 @@ class StatsRepository {
                     if (statsMap.containsKey(date)) {
                         val views = statDoc.getLong("views")?.toInt() ?: 0
                         val favorites = statDoc.getLong("favorites")?.toInt() ?: 0
-                        val messages = statDoc.getLong("messages")?.toInt() ?: 0
+                        val messages = statDoc.getLong("messagesReceived")?.toInt() ?: 0
                         
                         val currentStats = statsMap[date]!!
                         statsMap[date] = DailyStats(
