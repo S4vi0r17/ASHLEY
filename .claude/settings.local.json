@@ -5,7 +5,9 @@
       "Bash(./gradlew build:*)",
       "Bash(./gradlew :app:compileDebugKotlin:*)",
       "Bash(./gradlew:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []
