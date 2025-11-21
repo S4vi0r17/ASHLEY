@@ -78,7 +78,8 @@ fun AshleyApp() {
         bottomBar = {
             // Solo mostrar la barra de navegación si no estamos en la pantalla de seleccionar ubicación
             if (currentDestination != Routes.SELECCIONAR_UBICACION &&
-                !currentDestination.orEmpty().startsWith("chat/")) {
+                !currentDestination.orEmpty().startsWith("chat/") &&
+                !currentDestination.orEmpty().startsWith("participant_info/")) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
                     tonalElevation = 3.dp

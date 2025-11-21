@@ -120,17 +120,6 @@ class ProfileViewModel : ViewModel() {
     }
 
     /**
-     * Verifica si el perfil está completo
-     */
-    fun checkProfileComplete() {
-        viewModelScope.launch {
-            val isComplete = repository.isProfileComplete()
-            _isProfileComplete.value = isComplete
-            Log.d(TAG, "Perfil completo: $isComplete")
-        }
-    }
-
-    /**
      * Actualiza los campos del formulario
      */
     fun onFirstNameChange(value: String) {

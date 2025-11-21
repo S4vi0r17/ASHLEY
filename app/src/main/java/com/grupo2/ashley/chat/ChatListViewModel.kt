@@ -81,7 +81,8 @@ class ChatListViewModel @Inject constructor(
                             lastMessage = conversation.lastMessage,
                             isOnline = false,
                             unreadCount = 0,
-                            productInfo = null
+                            productInfo = null,
+                            isBlocked = conversation.isBlocked
                         )
                     }
                     _uiState.value = ChatListUiState(conversations = enrichedConversations)
