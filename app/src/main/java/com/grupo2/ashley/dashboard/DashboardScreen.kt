@@ -1,5 +1,6 @@
 package com.grupo2.ashley.dashboard
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -20,6 +21,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -32,6 +35,7 @@ import com.grupo2.ashley.ui.theme.AppGradients
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,6 +47,7 @@ fun DashboardScreen(
 ) {
     val dashboardState by viewModel.dashboardState.collectAsState()
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -50,13 +55,16 @@ fun DashboardScreen(
                 title = {
                     Column {
                         Text(
-                            "Mi Dashboard",
+                            stringResource(R.string.mi_dashboard),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
                         if (!dashboardState.isLoading) {
                             Text(
-                                text = "Última actualización: ${formatTime(dashboardState.lastUpdated)}",
+                                text = stringResource(
+                                    R.string.ultima_actualizacion,
+                                    formatTime(dashboardState.lastUpdated, context)
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
@@ -67,7 +75,7 @@ fun DashboardScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },
@@ -75,7 +83,7 @@ fun DashboardScreen(
                     IconButton(onClick = { viewModel.refreshStats() }) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
-                            contentDescription = "Actualizar"
+                            contentDescription = stringResource(R.string.actualizar)
                         )
                     }
                 },
@@ -96,7 +104,7 @@ fun DashboardScreen(
                 }
                 dashboardState.error != null -> {
                     ErrorView(
-                        error = dashboardState.error ?: "Error desconocido",
+                        error = dashboardState.error ?: stringResource(R.string.error_desconocido),
                         onRetry = { viewModel.refreshStats() }
                     )
                 }
@@ -127,7 +135,7 @@ private fun LoadingView() {
                 strokeWidth = 4.dp
             )
             Text(
-                text = "Cargando estadísticas...",
+                text = stringResource(R.string.cargando_estadisticas),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
             )
@@ -153,7 +161,7 @@ private fun ErrorView(error: String, onRetry: () -> Unit) {
                 tint = MaterialTheme.colorScheme.error
             )
             Text(
-                text = "Error al cargar datos",
+                text = stringResource(R.string.cargando_estadisticas),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
@@ -169,7 +177,7 @@ private fun ErrorView(error: String, onRetry: () -> Unit) {
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Reintentar")
+                Text(stringResource(R.string.reintentar))
             }
         }
     }
@@ -196,7 +204,7 @@ private fun DashboardContent(
 
         // Estadísticas principales
         Text(
-            text = "Resumen General",
+            text = stringResource(R.string.resumen_general),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 8.dp)
@@ -204,7 +212,7 @@ private fun DashboardContent(
 
         // Productos publicados
         StatCard(
-            title = "Productos Publicados",
+            title = stringResource(R.string.productos_publicados),
             value = stats.totalProductsPublished.toString(),
             icon = Icons.Default.ShoppingBag,
             gradient = AppGradients.PrimaryGradient,
@@ -217,14 +225,14 @@ private fun DashboardContent(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             MiniStatCard(
-                title = "Vistas Totales",
+                title = stringResource(R.string.vistas_totales),
                 value = stats.totalViews.toString(),
                 icon = Icons.Default.Visibility,
                 color = Color(0xFF2196F3),
                 modifier = Modifier.weight(1f)
             )
             MiniStatCard(
-                title = "Favoritos",
+                title = stringResource(R.string.favoritos),
                 value = stats.totalFavorites.toString(),
                 icon = Icons.Default.Favorite,
                 color = Color(0xFFE91E63),
@@ -237,14 +245,14 @@ private fun DashboardContent(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             MiniStatCard(
-                title = "Categorías",
+                title = stringResource(R.string.categorias),
                 value = stats.categoriesUsed.toString(),
                 icon = Icons.Default.Category,
                 color = Color(0xFF9C27B0),
                 modifier = Modifier.weight(1f)
             )
             MiniStatCard(
-                title = "Precio Promedio",
+                title = stringResource(R.string.precio_promedio),
                 value = if (stats.averagePrice > 0) {
                     currencyFormat.format(stats.averagePrice)
                 } else {
@@ -655,7 +663,7 @@ private fun RecentProductCard(product: com.grupo2.ashley.dashboard.models.Produc
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    text = if (product.isActive) "Activo" else "Inactivo",
+                    text = if (product.isActive) stringResource(R.string.activo) else stringResource(R.string.inactivo),
                     style = MaterialTheme.typography.labelSmall,
                     color = if (product.isActive) Color(0xFF4CAF50) else Color(0xFFFF5722),
                     fontWeight = FontWeight.Medium,
@@ -666,17 +674,17 @@ private fun RecentProductCard(product: com.grupo2.ashley.dashboard.models.Produc
     }
 }
 
-private fun formatTime(timestamp: Long): String {
+private fun formatTime(timestamp: Long, context: Context): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
     val minutes = diff / 60000
 
     return when {
-        minutes < 1 -> "Hace un momento"
-        minutes < 60 -> "Hace $minutes min"
+        minutes < 1 -> context.getString(R.string.momento)
+        minutes < 60 -> context.getString(R.string.hace_minutos)
         else -> {
             val hours = minutes / 60
-            if (hours < 24) "Hace $hours h" else "Hace ${hours / 24} días"
+            if (hours < 24) context.getString(R.string.hace_horas) else context.getString(R.string.hace_dias)
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.grupo2.ashley.chat.components
 
+import android.content.Context
+import com.grupo2.ashley.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -9,12 +11,12 @@ fun formatTimestamp(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
-fun formatConversationTimestamp(timestamp: Long): String {
+fun formatConversationTimestamp(timestamp: Long, context: Context): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
 
     return when {
-        diff < 60000 -> "Ahora"
+        diff < 60000 -> context.getString(R.string.ahora)
         diff < 3600000 -> "${diff / 60000}m"
         diff < 86400000 -> "${diff / 3600000}h"
         diff < 604800000 -> "${diff / 86400000}d"

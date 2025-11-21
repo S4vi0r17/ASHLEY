@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.models.ProductInfo
 import java.text.NumberFormat
 import java.util.Locale
+import com.grupo2.ashley.R
 
 @Composable
 fun ProductChatHeader(
@@ -62,7 +64,7 @@ fun ProductChatHeader(
                 if (productInfo.imageUrl.isNotEmpty()) {
                     AsyncImage(
                         model = productInfo.imageUrl,
-                        contentDescription = "Imagen del producto",
+                        contentDescription = stringResource(R.string.imagen_producto),
                         modifier = Modifier
                             .size(72.dp)
                             .clip(RoundedCornerShape(8.dp)),
@@ -78,7 +80,7 @@ fun ProductChatHeader(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "Sin imagen",
+                            text = stringResource(R.string.sin_imagen),
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -94,7 +96,7 @@ fun ProductChatHeader(
                 ) {
                     // Badge de "Producto"
                     Text(
-                        text = "Producto",
+                        text = stringResource(R.string.producto),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary,
@@ -147,7 +149,7 @@ fun ProductChatHeader(
                 // Icono de flecha para indicar que es clickeable
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
-                    contentDescription = "Ver producto",
+                    contentDescription = stringResource(R.string.ver_producto),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(24.dp)
                 )

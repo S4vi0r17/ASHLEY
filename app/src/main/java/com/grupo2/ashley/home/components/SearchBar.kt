@@ -10,10 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grupo2.ashley.ui.components.GradientIconButton
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
+import com.grupo2.ashley.R
 
 @Composable
 fun SearchBar(
@@ -32,7 +34,7 @@ fun SearchBar(
             modifier = Modifier.weight(1f),
             placeholder = {
                 Text(
-                    "Buscar productos...",
+                    stringResource(R.string.buscar_productos),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -40,7 +42,7 @@ fun SearchBar(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Buscar",
+                    contentDescription = stringResource(R.string.buscar),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
@@ -59,7 +61,7 @@ fun SearchBar(
         GradientIconButton(
             onClick = onClearClick,
             icon = Icons.Default.Clear,
-            contentDescription = "Limpiar búsqueda",
+            contentDescription = stringResource(R.string.limpiar_busqueda),
             gradient = AppGradients.SecondaryGradient,
             size = 48
         )

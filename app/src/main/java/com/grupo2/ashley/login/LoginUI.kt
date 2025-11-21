@@ -2,6 +2,8 @@ package com.grupo2.ashley.login
 
 import android.os.Bundle
 import android.util.Log
+import android.content.Context
+import android.content.res.Configuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -14,42 +16,27 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -72,6 +59,7 @@ import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.Locale
 
 @AndroidEntryPoint
 class Login : ComponentActivity() {
@@ -81,54 +69,23 @@ class Login : ComponentActivity() {
         setContent {
             ASHLEYTheme {
                 val navController = rememberNavController()
-                // ViewModel compartido para el perfil
-                val profileViewModel: com.grupo2.ashley.profile.ProfileViewModel = viewModel()
-                // ViewModel compartido para la ubicación
-                val ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel = viewModel()
 
                 NavHost(navController = navController, startDestination = "main") {
+
                     composable("main") {
                         val viewModel: LoginViewModel = viewModel()
-
-                        LoginOpt(
-                            viewModel, navController
-                        )
+                        LoginOpt(viewModel, navController)
                     }
+
                     composable("login") {
                         AshleyApp()
                     }
-                    composable("profileSetup") {
-                        com.grupo2.ashley.profile.ProfileSetupScreen(
-                            viewModel = profileViewModel,
-                            onProfileComplete = {
-                                navController.navigate("login") {
-                                    popUpTo("main") { inclusive = true }
-                                }
-                            },
-                            onSelectLocation = {
-                                navController.navigate("selectProfileLocation")
-                            },
-                            ubicacionViewModel = ubicacionViewModel
-                        )
-                    }
-                    composable("selectProfileLocation") {
-                        com.grupo2.ashley.profile.ProfileLocationPickerScreen(
-                            viewModel = profileViewModel,
-                            onLocationSelected = {
-                                navController.popBackStack()
-                            },
-                            onBack = {
-                                navController.popBackStack()
-                            },
-                            ubicacionViewModel = ubicacionViewModel
-                        )
-                    }
+
                     composable("registro") {
                         val viewModel: RegistroViewModel = viewModel()
-                        Registro(
-                            viewModel, navController
-                        )
+                        Registro(viewModel, navController)
                     }
+
                     composable("recover") {
                         RecuperarContra()
                     }
@@ -145,11 +102,12 @@ fun LoginOpt(
 ) {
     val errorMessage = viewModel.errorMessage.collectAsState().value
     var isVisible by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
-    // Animación de fade-in inicial
-    LaunchedEffect(Unit) {
-        isVisible = true
-    }
+    // 🔥 NUEVO: Recompose key (soluciona que no cambie Email/Contraseña al instante)
+    var languageKey by remember { mutableStateOf(0) }
+
+    LaunchedEffect(Unit) { isVisible = true }
 
     Box(
         modifier = Modifier
@@ -157,35 +115,34 @@ fun LoginOpt(
             .background(MaterialTheme.colorScheme.background)
             .padding(horizontal = 24.dp, vertical = 16.dp),
         contentAlignment = Alignment.Center
-    ){
+    ) {
         AnimatedVisibility(
             visible = isVisible,
             enter = fadeIn(animationSpec = tween(AnimationConstants.SLOW_DURATION))
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(vertical = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            key(languageKey) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+
                 Text(
-                    "Bienvenido a",
+                    stringResource(R.string.bienvenido_a),
                     fontSize = 24.sp,
-                    style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Text(
-                    "ASHLEY",
+                    stringResource(R.string.titulo),
                     fontSize = 36.sp,
                     fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.displaySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                // Mostrar mensaje de error global
                 AnimatedVisibility(
                     visible = errorMessage != null,
                     enter = fadeIn(animationSpec = tween(AnimationConstants.FLUID_DURATION)),
@@ -196,30 +153,32 @@ fun LoginOpt(
                             text = it,
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 13.sp,
-                            modifier = Modifier.padding(horizontal = 32.dp),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodySmall
+                            textAlign = TextAlign.Center
                         )
                     }
                 }
 
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                if (errorMessage != null) Spacer(modifier = Modifier.height(8.dp))
 
-                GoogleOption(
-                    viewModel, navController
-                )
-                EmailOption(
-                    viewModel, navController
-                )
-                RegistroTexto(
-                    navController
-                )
-                RecoverTexto(
-                    navController
-                )
+                GoogleOption(viewModel, navController)
+                EmailOption(viewModel, navController)
+                RegistroTexto(navController)
+                RecoverTexto(navController)
+
+                // Texto para abrir popup
+                LanguageTexto { showLanguageDialog = true }
+                }
             }
+        }
+
+
+        if (showLanguageDialog) {
+            LanguageDialog(
+                onDismiss = { showLanguageDialog = false },
+                onLanguageChanged = {
+                    languageKey++
+                }
+            )
         }
     }
 }
@@ -243,21 +202,13 @@ fun GoogleOption(
                     profileSetup = { navController.navigate("profileSetup") }
                 )
             } else {
-                Log.e("GAUTH", "Error: idToken es null")
                 viewModel.setGoogleError("Error: No se pudo obtener el token de Google")
             }
         } catch (ex: ApiException) {
-            Log.e(
-                "GAUTH",
-                "Error en autenticación con Google (ApiException): ${ex.statusCode} - ${ex.message}",
-                ex
-            )
-            viewModel.setGoogleError("Error al iniciar sesión con Google. Código: ${ex.statusCode}")
-        } catch (ex: Exception) {
-            Log.e("GAUTH", "Error en autenticación con Google: ${ex.message}", ex)
-            viewModel.setGoogleError("Error inesperado: ${ex.message ?: "Intenta nuevamente"}")
+            viewModel.setGoogleError("Error Google: ${ex.statusCode}")
         }
     }
+
     val token = "440995167304-8hc733q2dgvfbf6k9pmf04mlmil1qsfb.apps.googleusercontent.com"
     val context = LocalContext.current
     val isLoading = viewModel.isLoading.collectAsState().value
@@ -286,14 +237,11 @@ fun GoogleOption(
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)
             )
-            Spacer(
-                modifier = Modifier.width(16.dp)
-            )
+            Spacer(modifier = Modifier.width(16.dp))
             Text(
-                "Continuar con Google",
+                stringResource(R.string.continuar_con_google),
                 fontSize = 16.sp,
-                color = Color.White,
-                style = MaterialTheme.typography.labelLarge
+                color = Color.White
             )
         }
     }
@@ -308,153 +256,166 @@ fun EmailOption(
     val visibilidad = viewModel.visibility.collectAsState().value
     val isLoading = viewModel.isLoading.collectAsState().value
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ){
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            HorizontalDivider(
-                modifier = Modifier.width(282.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-            Spacer(
-                modifier = Modifier.height(10.dp)
-            )
-            OutlinedTextField(
-                value = email, onValueChange = {
-                viewModel.onEmailChange(it)
-            }, label = {
-                Text(
-                    "Email",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }, colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                focusedLabelColor = MaterialTheme.colorScheme.primary,
-                cursorColor = MaterialTheme.colorScheme.primary
-            ), singleLine = true
-            )
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+        HorizontalDivider(
+            modifier = Modifier.width(282.dp),
+            color = MaterialTheme.colorScheme.outlineVariant
+        )
 
-            OutlinedTextField(
-                value = password,
-                visualTransformation = if (visibilidad) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val image = if (visibilidad) Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
+        Spacer(modifier = Modifier.height(10.dp))
 
-                    IconButton(
-                        onClick = {
-                            viewModel.toggleVisibility()
-                        }) {
-                        Icon(
-                            imageVector = image,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                },
-                onValueChange = {
-                    viewModel.onPasswordChange(it)
-                },
-                label = {
-                    Text(
-                        "Contraseña", style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.primary
-                ),
-                singleLine = true
-            )
+        OutlinedTextField(
+            value = email,
+            onValueChange = { viewModel.onEmailChange(it) },
+            label = { Text(stringResource(R.string.email)) },
+            singleLine = true
+        )
 
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            GradientButton(
-                onClick = {
-                    viewModel.authLoginEmail(
-                        home = { navController.navigate("login") },
-                        profileSetup = { navController.navigate("profileSetup") }
-                    )
-                },
-                enabled = !isLoading,
-                modifier = Modifier
-                    .width(286.dp)
-                    .height(52.dp),
-                gradient = AppGradients.SecondaryGradient
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Text(
-                        "Ingresar",
-                        fontSize = 16.sp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.labelLarge
+        OutlinedTextField(
+            value = password,
+            onValueChange = { viewModel.onPasswordChange(it) },
+            label = { Text(stringResource(R.string.contrasena)) },
+            singleLine = true,
+            visualTransformation =
+                if (visibilidad) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { viewModel.toggleVisibility() }) {
+                    Icon(
+                        imageVector = if (visibilidad) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = null
                     )
                 }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        GradientButton(
+            onClick = {
+                viewModel.authLoginEmail(
+                    home = { navController.navigate("login") },
+                    profileSetup = { navController.navigate("profileSetup") }
+                )
+            },
+            enabled = !isLoading,
+            modifier = Modifier
+                .width(286.dp)
+                .height(52.dp),
+            gradient = AppGradients.SecondaryGradient
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
+                Text(
+                    stringResource(R.string.ingresar),
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }
 }
 
 @Composable
-fun RegistroTexto(
-    navController: NavController
-) {
+fun RegistroTexto(navController: NavController) {
     Row {
         Text(
-            "¿No tiene cuenta?",
+            stringResource(R.string.no_tiene_cuenta),
             fontSize = 12.sp,
-            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Spacer(
-            modifier = Modifier.width(8.dp)
-        )
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
-            "Regístrese",
+            stringResource(R.string.registrese),
             fontSize = 12.sp,
-            modifier = Modifier.clickable {
-                navController.navigate("registro")
-            },
+            modifier = Modifier.clickable { navController.navigate("registro") },
             fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.primary
         )
     }
 }
 
 @Composable
-fun RecoverTexto(
-    navController: NavController
-) {
+fun RecoverTexto(navController: NavController) {
     Text(
-        "Olvidé mi contraseña",
+        stringResource(R.string.olvide_mi_contrasena),
         fontSize = 12.sp,
-        modifier = Modifier.clickable {
-            navController.navigate("recover")
-        },
+        modifier = Modifier.clickable { navController.navigate("recover") },
         fontWeight = FontWeight.Bold,
-        style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.primary
     )
+}
+
+
+@Composable
+fun LanguageTexto(onClick: () -> Unit) {
+    Text(
+        "Idioma",
+        fontSize = 12.sp,
+        modifier = Modifier.clickable { onClick() },
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+
+@Composable
+fun LanguageDialog(
+    onDismiss: () -> Unit,
+    onLanguageChanged: () -> Unit
+) {
+    val context = LocalContext.current
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.idioma)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                Text(
+                    stringResource(R.string.espanol),
+                    modifier = Modifier.clickable {
+                        context.updateLocale("es")
+                        onLanguageChanged()
+                        onDismiss()
+                    }
+                )
+
+                Text(
+                    stringResource(R.string.ingles),
+                    modifier = Modifier.clickable {
+                        context.updateLocale("en")
+                        onLanguageChanged()
+                        onDismiss()
+                    }
+                )
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            Text(
+                stringResource(R.string.volver),
+                modifier = Modifier.clickable { onDismiss() }
+            )
+        }
+    )
+}
+
+
+fun Context.updateLocale(language: String) {
+    val locale = Locale(language)
+    Locale.setDefault(locale)
+
+    val config = Configuration(resources.configuration)
+    config.setLocale(locale)
+
+    @Suppress("DEPRECATION")
+    resources.updateConfiguration(config, resources.displayMetrics)
 }

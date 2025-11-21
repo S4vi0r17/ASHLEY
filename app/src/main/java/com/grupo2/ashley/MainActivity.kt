@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,11 +20,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.libraries.places.api.Places
+import com.grupo2.ashley.anuncios.AnunciosViewModel
 import com.grupo2.ashley.chat.UnreadMessagesViewModel
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.AppNavigation
 import com.grupo2.ashley.navigation.Routes
+import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,16 +53,19 @@ fun AshleyApp() {
     val homeViewModel: HomeViewModel = viewModel()
     val ubicacionViewModel: UbicacionViewModel = viewModel()
     val profileViewModel: ProfileViewModel = viewModel()
+    val anunciosViewModel: AnunciosViewModel = viewModel()
+    val productViewModel: ProductViewModel = viewModel()
     val unreadMessagesViewModel: UnreadMessagesViewModel = hiltViewModel()
+    val context = LocalContext.current
 
     val unreadCount by unreadMessagesViewModel.unreadCount.collectAsState()
 
     val navigationItems = listOf(
-        Triple("Inicio", Icons.Default.Home, Routes.HOME),
-        Triple("Chats", Icons.AutoMirrored.Filled.Message, Routes.CHATS),
-        Triple("Vender", Icons.Default.AddCircle, Routes.VENDER),
-        Triple("Anuncios", Icons.AutoMirrored.Filled.List, Routes.ANUNCIOS),
-        Triple("Cuenta", Icons.Default.Person, Routes.CUENTA)
+        Triple(context.getString(R.string.inicio), Icons.Default.Home, Routes.HOME),
+        Triple(context.getString(R.string.chats), Icons.AutoMirrored.Filled.Message, Routes.CHATS),
+        Triple(context.getString(R.string.vender), Icons.Default.AddCircle, Routes.VENDER),
+        Triple(context.getString(R.string.anuncios), Icons.AutoMirrored.Filled.List, Routes.ANUNCIOS),
+        Triple(context.getString(R.string.cuenta), Icons.Default.Person, Routes.CUENTA)
     )
 
     // Estado actual de la ruta
@@ -153,7 +159,9 @@ fun AshleyApp() {
             homeViewModel = homeViewModel,
             ubicacionViewModel = ubicacionViewModel,
             profileViewModel = profileViewModel,
+            anunciosViewModel = anunciosViewModel,
             innerPadding = innerPadding,
+            productViewModel = productViewModel,
             navigationItems = navigationItems
         )
     }

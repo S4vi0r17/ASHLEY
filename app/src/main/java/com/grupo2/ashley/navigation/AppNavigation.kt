@@ -1,5 +1,6 @@
 package com.grupo2.ashley.navigation
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -35,7 +36,10 @@ import com.grupo2.ashley.productdetail.ProductDetailScreen
 import com.grupo2.ashley.productdetail.ProductDetailViewModel
 import com.grupo2.ashley.productdetail.ProductMapScreen
 import com.grupo2.ashley.dashboard.DashboardScreen
-import com.grupo2.ashley.screens.AnunciosScreen
+import com.grupo2.ashley.anuncios.AnunciosScreen
+import com.grupo2.ashley.anuncios.AnunciosViewModel
+import com.grupo2.ashley.anuncios.components.ModificarAnuncioScreen
+import com.grupo2.ashley.anuncios.components.ModificarAnuncioViewModel
 import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.utils.makePhoneCall
@@ -55,9 +59,11 @@ object Routes {
     const val PRODUCT_DETAIL = "product_detail/{productId}"
     const val PRODUCT_MAP = "product_map/{productId}"
     const val DASHBOARD = "dashboard"
+    const val MODIFICAR_ANUNCIOS = "editar_anuncio/{productId}"
 
     fun productDetail(productId: String) = "product_detail/$productId"
     fun productMap(productId: String) = "product_map/$productId"
+    fun modificarAnuncio(productId: String) = "editar_anuncio/$productId"
 }
 
 // Funciones de animación para diferentes tipos de navegación
@@ -121,15 +127,19 @@ fun AppNavigation(
     homeViewModel: HomeViewModel,
     ubicacionViewModel: UbicacionViewModel,
     profileViewModel: ProfileViewModel,
+    anunciosViewModel : AnunciosViewModel,
     innerPadding: PaddingValues,
-    navigationItems: List<Triple<String, Any, String>>
+    navigationItems: List<Triple<String, Any, String>>,
+    productViewModel: ProductViewModel
 ) {
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination?.route
 
     var previousRouteIndex by remember { mutableIntStateOf(0) }
     val currentRouteIndex =
-        navigationItems.indexOfFirst { it.third == currentDestination }.takeIf { it >= 0 } ?: 0
+        navigationItems.indexOfFirst { it.third == currentDestination }.let { index ->
+            if (index != -1) index else previousRouteIndex
+        }
 
     val userProfile by profileViewModel.userProfile.collectAsState()
     val currentUserId = userProfile?.userId
@@ -287,7 +297,14 @@ fun AppNavigation(
             }
         ) {
             previousRouteIndex = currentRouteIndex
-            AnunciosScreen(innerPadding = innerPadding)
+            AnunciosScreen(
+                navController = navController,
+                viewModel = anunciosViewModel,
+                ubicacionViewModel = ubicacionViewModel,
+                onProductClick = { productId ->
+                    navController.navigate(Routes.modificarAnuncio(productId))
+                },
+                innerPadding = innerPadding)
         }
 
         composable(
@@ -424,6 +441,41 @@ fun AppNavigation(
                 onBackClick = { navController.popBackStack() },
                 bottomPadding = innerPadding.calculateBottomPadding()
             )
+        }
+
+        composable(
+            route = Routes.MODIFICAR_ANUNCIOS,
+            arguments = listOf(navArgument("productId") { type = NavType.StringType }),
+            enterTransition = { NavigationAnimations.verticalSlideEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.verticalSlideExit() }
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId") ?: ""
+            val product = productViewModel.getProductById(productId)
+
+            if (product != null) {
+                val modificarAnuncioViewModel: ModificarAnuncioViewModel = viewModel()
+
+                // Llamar a setProduct solo una vez cuando se carga la pantalla
+                LaunchedEffect(productId) {
+                    modificarAnuncioViewModel.setProduct(product)
+                }
+
+                ModificarAnuncioScreen(
+                    product = product,
+                    onBackClick = { navController.popBackStack() },
+                    ubicacionViewModel = ubicacionViewModel,
+                    anunciosViewModel = anunciosViewModel,
+                    innerPadding = innerPadding,
+                    navController = navController
+                )
+            } else {
+                Log.e("HOLA","ERROR")
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+            }
         }
     }
 }

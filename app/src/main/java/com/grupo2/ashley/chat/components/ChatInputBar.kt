@@ -46,6 +46,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import android.graphics.BitmapFactory
+import androidx.compose.ui.res.stringResource
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +98,7 @@ fun ChatInputBar(
                             )
                             Image(
                                 bitmap = bitmap.asImageBitmap(),
-                                contentDescription = "Vista previa de imagen",
+                                contentDescription = stringResource(R.string.vista_pimagen),
                                 contentScale = ContentScale.Fit,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -122,7 +124,7 @@ fun ChatInputBar(
                                     )
                                     Image(
                                         bitmap = bitmap.asImageBitmap(),
-                                        contentDescription = "Vista previa de video",
+                                        contentDescription = stringResource(R.string.vista_pvideo),
                                         contentScale = ContentScale.Fit,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -132,7 +134,7 @@ fun ChatInputBar(
                                     // Icono de play encima del thumbnail
                                     Icon(
                                         imageVector = Icons.Default.PlayCircleOutline,
-                                        contentDescription = "Play",
+                                        contentDescription = stringResource(R.string.empezar),
                                         modifier = Modifier.size(64.dp),
                                         tint = Color.White.copy(alpha = 0.9f)
                                     )
@@ -153,13 +155,13 @@ fun ChatInputBar(
                                         ) {
                                             Icon(
                                                 imageVector = Icons.Default.PlayCircleOutline,
-                                                contentDescription = "Video seleccionado",
+                                                contentDescription = stringResource(R.string.video_seleccionado),
                                                 modifier = Modifier.size(64.dp),
                                                 tint = MaterialTheme.colorScheme.primary
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Text(
-                                                text = "Video seleccionado",
+                                                text = stringResource(R.string.video_seleccionado),
                                                 style = MaterialTheme.typography.bodyMedium,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -183,7 +185,7 @@ fun ChatInputBar(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
-                                contentDescription = "Cancelar",
+                                contentDescription = stringResource(R.string.cancelar),
                                 tint = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -210,7 +212,7 @@ fun ChatInputBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.Image,
-                    contentDescription = "Seleccionar imagen",
+                    contentDescription = stringResource(R.string.seleccionar_imagen),
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -229,7 +231,7 @@ fun ChatInputBar(
             ) {
                 Icon(
                     imageVector = Icons.Default.VideoLibrary,
-                    contentDescription = "Seleccionar video",
+                    contentDescription = stringResource(R.string.seleccionar_video),
                     tint = MaterialTheme.colorScheme.secondary
                 )
             }
@@ -240,7 +242,7 @@ fun ChatInputBar(
             OutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
-                placeholder = { Text("Escribe un mensaje...") },
+                placeholder = { Text(stringResource(R.string.escribe_mensaje)) },
                 modifier = Modifier
                     .weight(1f)
                     .heightIn(min = 48.dp),
@@ -289,7 +291,7 @@ fun ChatInputBar(
                     } else {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = "Mejorar con IA",
+                            contentDescription = stringResource(R.string.mejorar_ia),
                             tint = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier.size(22.dp)
                         )
@@ -324,7 +326,7 @@ fun ChatInputBar(
                 } else {
                     Icon(
                         imageVector = Icons.Default.Send,
-                        contentDescription = "Enviar",
+                        contentDescription = stringResource(R.string.enviar),
                         tint = if (canSend)
                             MaterialTheme.colorScheme.onPrimary
                         else

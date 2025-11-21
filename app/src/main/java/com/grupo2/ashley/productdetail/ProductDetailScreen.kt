@@ -19,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -26,7 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.grupo2.ashley.home.models.Product
+import com.grupo2.ashley.R
+import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.profile.models.UserProfile
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -45,9 +48,9 @@ fun ProductDetailScreen(
     viewModel: ProductDetailViewModel = viewModel()
 ) {
 
-    val images = if (product.allImages.isNotEmpty()) product.allImages else listOfNotNull(product.imageUrl)
+    val images = product.images
     val pagerState = rememberPagerState(pageCount = { images.size })
-    
+
     val isFavorite by viewModel.isFavorite.collectAsState()
     val isTogglingFavorite by viewModel.isTogglingFavorite.collectAsState()
 
@@ -59,12 +62,11 @@ fun ProductDetailScreen(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },
                 actions = {
-                    // Botón de favorito
                     IconButton(
                         onClick = { viewModel.toggleFavorite() },
                         enabled = !isTogglingFavorite
@@ -77,7 +79,9 @@ fun ProductDetailScreen(
                         } else {
                             Icon(
                                 imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                                contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                                contentDescription = stringResource(
+                                    if (isFavorite) R.string.quitar_favoritos else R.string.agregar_favoritos
+                                ),
                                 tint = if (isFavorite) Color(0xFFE91E63) else MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -100,7 +104,6 @@ fun ProductDetailScreen(
                 )
                 .verticalScroll(rememberScrollState())
         ) {
-            // Carousel de imágenes
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -112,13 +115,12 @@ fun ProductDetailScreen(
                 ) { page ->
                     AsyncImage(
                         model = images[page],
-                        contentDescription = "Imagen ${page + 1} de ${images.size}",
+                        contentDescription = stringResource(R.string.imagen_de, page + 1, images.size),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 }
 
-                // Indicador de página (1/4)
                 Surface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -134,7 +136,6 @@ fun ProductDetailScreen(
                     )
                 }
 
-                // Indicadores de puntos
                 Row(
                     Modifier
                         .align(Alignment.BottomCenter)
@@ -158,13 +159,11 @@ fun ProductDetailScreen(
                 }
             }
 
-            // Contenido del producto
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
             ) {
-                // Precio
                 Text(
                     text = formatPrice(product.price),
                     fontSize = 28.sp,
@@ -174,9 +173,8 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Condición
                 Text(
-                    text = product.condition,
+                    text = stringResource(viewModel.getCondition(product.condition.displayName)),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
@@ -184,7 +182,6 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Título del producto
                 Text(
                     text = product.title,
                     fontSize = 20.sp,
@@ -194,21 +191,20 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Estado y Categoría
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
                         Text(
-                            text = "Estado",
+                            text = stringResource(R.string.estado),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Disponible",
+                            text = stringResource(R.string.disponible),
                             fontSize = 14.sp,
                             color = Color(0xFF4CAF50),
                             fontWeight = FontWeight.SemiBold
@@ -217,14 +213,14 @@ fun ProductDetailScreen(
 
                     Column {
                         Text(
-                            text = "Categorías",
+                            text = stringResource(R.string.categorias),
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = getCategoryDisplayName(product.category),
+                            text = stringResource(getCategoryDisplayName(product.category)), // ->
                             fontSize = 14.sp,
                             color = MaterialTheme.colorScheme.onSurface,
                             fontWeight = FontWeight.Normal
@@ -234,9 +230,8 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Descripción
                 Text(
-                    text = "Descripción",
+                    text = stringResource(R.string.descripcion),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -253,9 +248,8 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Información del vendedor
                 Text(
-                    text = "Vendedor",
+                    text = stringResource(R.string.vendedor),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -267,12 +261,10 @@ fun ProductDetailScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botones de acción
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Botón Mapa
                     OutlinedButton(
                         onClick = onMapClick,
                         modifier = Modifier.weight(1f),
@@ -286,15 +278,14 @@ fun ProductDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
-                                contentDescription = "Mapa",
+                                contentDescription = stringResource(R.string.mapa),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Mapa", fontSize = 12.sp)
+                            Text(stringResource(R.string.mapa), fontSize = 12.sp)
                         }
                     }
 
-                    // Botón Llamar
                     OutlinedButton(
                         onClick = onCallClick,
                         modifier = Modifier.weight(1f),
@@ -308,15 +299,14 @@ fun ProductDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Phone,
-                                contentDescription = "Llamar",
+                                contentDescription = stringResource(R.string.llamar),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Llamar", fontSize = 12.sp)
+                            Text(stringResource(R.string.llamar), fontSize = 12.sp)
                         }
                     }
 
-                    // Botón Chat
                     OutlinedButton(
                         onClick = onChatClick,
                         modifier = Modifier.weight(1f),
@@ -330,16 +320,15 @@ fun ProductDetailScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.Chat,
-                                contentDescription = "Chat",
+                                contentDescription = stringResource(R.string.chat),
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Chat", fontSize = 12.sp)
+                            Text(stringResource(R.string.chat), fontSize = 12.sp)
                         }
                     }
                 }
 
-                // Espaciado final para que el último elemento no quede tapado por la barra de navegación
                 Spacer(modifier = Modifier.height(32.dp + bottomPadding))
             }
         }
@@ -362,7 +351,6 @@ fun SellerInfoCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar del vendedor
             Surface(
                 modifier = Modifier.size(56.dp),
                 shape = CircleShape,
@@ -371,7 +359,7 @@ fun SellerInfoCard(
                 if (sellerProfile?.profileImageUrl?.isNotEmpty() == true) {
                     AsyncImage(
                         model = sellerProfile.profileImageUrl,
-                        contentDescription = "Foto del vendedor",
+                        contentDescription = stringResource(R.string.foto_vendedor),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
@@ -382,7 +370,7 @@ fun SellerInfoCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "Avatar",
+                            contentDescription = stringResource(R.string.avatar),
                             modifier = Modifier.size(32.dp),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -409,7 +397,7 @@ fun SellerInfoCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Miembro desde: ${formatDate(sellerProfile?.createdAt ?: 0L)}",
+                    text = stringResource(R.string.miembro_desde, formatDate(sellerProfile?.createdAt ?: 0L)),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -430,16 +418,16 @@ private fun formatDate(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
-private fun getCategoryDisplayName(categoryId: String): String {
+private fun getCategoryDisplayName(categoryId: String): Int{
     return when (categoryId) {
-        "electronics" -> "Electrónica"
-        "fashion" -> "Moda"
-        "home" -> "Hogar"
-        "sports" -> "Deportes"
-        "books" -> "Libros"
-        "toys" -> "Juguetes"
-        "vehicles" -> "Vehículos"
-        "others" -> "Otros"
-        else -> "Otros"
+        "electronics" -> R.string.cat_electronics
+        "fashion" -> R.string.cat_fashion
+        "home" -> R.string.cat_home
+        "sports" -> R.string.cat_sports
+        "books" -> R.string.cat_books
+        "toys" -> R.string.cat_toys
+        "vehicles" -> R.string.cat_vehicles
+        "others" -> R.string.cat_others
+        else -> R.string.error_desconocido
     }
 }

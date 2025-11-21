@@ -14,11 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.models.Message
 import com.grupo2.ashley.chat.models.MessageStatus
+import com.grupo2.ashley.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -86,12 +88,12 @@ fun MessageBubble(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Block,
-                                contentDescription = "Deleted",
+                                contentDescription = stringResource(R.string.eliminado),
                                 modifier = Modifier.size(16.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Este mensaje fue eliminado",
+                                text = stringResource(R.string.contenido_eliminado),
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                                 ),
@@ -110,7 +112,7 @@ fun MessageBubble(
                             ) {
                                 AsyncImage(
                                     model = imageUrl,
-                                    contentDescription = "Imagen del mensaje",
+                                    contentDescription = stringResource(R.string.imagen_mensaje),
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -160,19 +162,19 @@ fun MessageBubble(
             ) {
                 onRetry?.let {
                     DropdownMenuItem(
-                        text = { Text("Reintentar envío") },
+                        text = { Text(stringResource(R.string.reintentar_envio)) },
                         onClick = {
                             it()
                             showMenu = false
                         },
                         leadingIcon = {
-                            Icon(Icons.Default.Refresh, contentDescription = "Retry")
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.reintentar))
                         }
                     )
                 }
                 onDelete?.let {
                     DropdownMenuItem(
-                        text = { Text("Eliminar mensaje") },
+                        text = { Text(stringResource(R.string.eliminar_imagen)) },
                         onClick = {
                             it()
                             showMenu = false
@@ -180,7 +182,7 @@ fun MessageBubble(
                         leadingIcon = {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = "Delete",
+                                contentDescription = stringResource(R.string.eliminar),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -206,7 +208,7 @@ fun MessageBubble(
                     MessageStatus.PENDING -> {
                         Icon(
                             imageVector = Icons.Default.Schedule,
-                            contentDescription = "Sending",
+                            contentDescription = stringResource(R.string.enviando),
                             modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -214,7 +216,7 @@ fun MessageBubble(
                     MessageStatus.SENT -> {
                         Icon(
                             imageVector = Icons.Default.Done,
-                            contentDescription = "Sent",
+                            contentDescription = stringResource(R.string.enviado),
                             modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -222,7 +224,7 @@ fun MessageBubble(
                     MessageStatus.DELIVERED -> {
                         Icon(
                             imageVector = Icons.Default.DoneAll,
-                            contentDescription = "Delivered",
+                            contentDescription = stringResource(R.string.entregado),
                             modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -230,7 +232,7 @@ fun MessageBubble(
                     MessageStatus.READ -> {
                         Icon(
                             imageVector = Icons.Default.DoneAll,
-                            contentDescription = "Read",
+                            contentDescription = stringResource(R.string.leido),
                             modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -238,7 +240,7 @@ fun MessageBubble(
                     MessageStatus.FAILED -> {
                         Icon(
                             imageVector = Icons.Default.Error,
-                            contentDescription = "Failed",
+                            contentDescription = stringResource(R.string.fallido),
                             modifier = Modifier.size(12.dp),
                             tint = MaterialTheme.colorScheme.error
                         )

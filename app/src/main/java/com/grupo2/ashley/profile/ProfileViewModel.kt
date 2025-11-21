@@ -1,9 +1,12 @@
 package com.grupo2.ashley.profile
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grupo2.ashley.R
 import com.grupo2.ashley.profile.data.ImageStorageRepository
 import com.grupo2.ashley.profile.data.ProfileRepository
 import com.grupo2.ashley.profile.models.ProfileUpdateState
@@ -239,7 +242,7 @@ class ProfileViewModel : ViewModel() {
     /**
      * Valida los campos del formulario
      */
-    private fun validateForm(): String? {
+    private fun validateForm(context: Context): String? {
         Log.d(TAG, "Validando formulario...")
         Log.d(TAG, "Nombre: '${_firstName.value}'")
         Log.d(TAG, "Apellido: '${_lastName.value}'")
@@ -248,12 +251,12 @@ class ProfileViewModel : ViewModel() {
         Log.d(TAG, "Nombre ubicación: '${_defaultPickupLocationName.value}'")
         
         return when {
-            _firstName.value.isBlank() -> "El nombre es requerido"
-            _lastName.value.isBlank() -> "El apellido es requerido"
-            _phoneNumber.value.isBlank() -> "El teléfono es requerido"
-            _phoneNumber.value.length < 9 -> "El teléfono debe tener al menos 9 dígitos"
-            _fullAddress.value.isBlank() -> "La dirección es requerida"
-            _defaultPickupLocationName.value.isBlank() -> "Debes seleccionar tu ubicación de entrega predeterminada"
+            _firstName.value.isBlank() -> context.getString(R.string.error_nombre_requerido)
+            _lastName.value.isBlank() -> context.getString(R.string.error_apellido_requerido)
+            _phoneNumber.value.isBlank() -> context.getString(R.string.error_telefono_requerido)
+            _phoneNumber.value.length < 9 -> context.getString(R.string.error_telefono_longitud)
+            _fullAddress.value.isBlank() -> context.getString(R.string.error_direccion_requerida)
+            _defaultPickupLocationName.value.isBlank() -> context.getString(R.string.error_ubicacion_predeterminada_requerida)
             else -> null
         }
     }
@@ -261,8 +264,8 @@ class ProfileViewModel : ViewModel() {
     /**
      * Guarda el perfil del usuario
      */
-    fun saveProfile(onSuccess: () -> Unit) {
-        val validationError = validateForm()
+    fun saveProfile(context: Context, onSuccess: () -> Unit) {
+        val validationError = validateForm(context)
         if (validationError != null) {
             _updateState.value = ProfileUpdateState(error = validationError)
             return
@@ -308,8 +311,8 @@ class ProfileViewModel : ViewModel() {
     /**
      * Actualiza el perfil existente
      */
-    fun updateProfile(onSuccess: () -> Unit) {
-        val validationError = validateForm()
+    fun updateProfile(context: Context, onSuccess: () -> Unit) {
+        val validationError = validateForm(context)
         if (validationError != null) {
             _updateState.value = ProfileUpdateState(error = validationError)
             return

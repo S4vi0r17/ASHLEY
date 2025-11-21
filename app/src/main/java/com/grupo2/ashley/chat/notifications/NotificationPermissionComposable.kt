@@ -7,10 +7,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.grupo2.ashley.R
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -62,22 +64,18 @@ private fun NotificationPermissionRationaleDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Notificaciones de Chat") },
+        title = { Text(stringResource(id = R.string.titulo_notificacion_chat)) },
         text = {
-            Text(
-                "Para recibir notificaciones de nuevos mensajes, " +
-                "necesitamos tu permiso para mostrar notificaciones. " +
-                "¿Deseas activar las notificaciones?"
-            )
+            Text(stringResource(id = R.string.descripcion_permiso_notificacion_chat))
         },
         confirmButton = {
             TextButton(onClick = onConfirm) {
-                Text("Permitir")
+                Text(stringResource(id = R.string.accion_permitir))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Ahora no")
+                Text(stringResource(id = R.string.accion_ahora_no))
             }
         }
     )
