@@ -58,7 +58,7 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
             handleDataMessage(remoteMessage.data)
         }
 
-        // Las push noti se moestrarán automaticamente por el sistema cuando la app esté en segundo plano y en primero
+        // Las push noti se mostrarán automaticamente por el sistema cuando la app esté en segundo plano y en primero
         remoteMessage.notification?.let {
             Log.d(TAG, "Message notification body: ${it.body}")
         }
