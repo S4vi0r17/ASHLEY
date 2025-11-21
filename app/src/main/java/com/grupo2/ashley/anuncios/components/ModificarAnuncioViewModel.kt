@@ -1,27 +1,27 @@
-package com.grupo2.ashley.product
+package com.grupo2.ashley.anuncios.components
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.grupo2.ashley.product.data.ProductRepository
 import com.grupo2.ashley.product.models.Product
-import com.grupo2.ashley.product.models.ProductCondition
-import com.grupo2.ashley.product.models.ProductUploadState
 import com.grupo2.ashley.profile.data.ProfileRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import androidx.lifecycle.ViewModel
+import androidx.core.net.toUri
+import androidx.lifecycle.viewModelScope
 import com.grupo2.ashley.R
+import com.grupo2.ashley.product.models.ProductCondition
+import com.grupo2.ashley.product.models.ProductDeletedState
+import com.grupo2.ashley.product.models.ProductUploadState
+import kotlinx.coroutines.launch
 
-class ProductViewModel : ViewModel() {
-    private val productRepository = ProductRepository()
-    private val profileRepository = ProfileRepository()
+class ModificarAnuncioViewModel() : ViewModel() {
+    val profileRepository = ProfileRepository()
+    val productRepository = com.grupo2.ashley.product.data.ProductRepository()
+    private val _product = MutableStateFlow<Product?>(null)
+    val product: StateFlow<Product?> = _product.asStateFlow()
 
-    // Estados del formulario
-    private val _allProducts = MutableStateFlow<List<Product>>(emptyList())
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
@@ -39,11 +39,9 @@ class ProductViewModel : ViewModel() {
 
     private val _description = MutableStateFlow("")
     val description: StateFlow<String> = _description.asStateFlow()
-
     private val _selectedImages = MutableStateFlow<List<Uri>>(emptyList())
     val selectedImages: StateFlow<List<Uri>> = _selectedImages.asStateFlow()
 
-    // Ubicación de entrega
     private val _deliveryLocationName = MutableStateFlow("")
     val deliveryLocationName: StateFlow<String> = _deliveryLocationName.asStateFlow()
 
@@ -56,20 +54,38 @@ class ProductViewModel : ViewModel() {
     private val _deliveryLongitude = MutableStateFlow(0.0)
     val deliveryLongitude: StateFlow<Double> = _deliveryLongitude.asStateFlow()
 
-    private val _useDefaultLocation = MutableStateFlow(true)
+    private val _useDefaultLocation = MutableStateFlow(false)
     val useDefaultLocation: StateFlow<Boolean> = _useDefaultLocation.asStateFlow()
 
-    // Estado de carga
     private val _uploadState = MutableStateFlow(ProductUploadState())
     val uploadState: StateFlow<ProductUploadState> = _uploadState.asStateFlow()
 
-    // Callback para notificar cuando se publica un producto
+    private val _deletedState = MutableStateFlow(ProductDeletedState())
+    val deletedState: StateFlow<ProductDeletedState> = _deletedState.asStateFlow()
+
     private val _onProductPublished = MutableStateFlow<Boolean>(false)
     val onProductPublished: StateFlow<Boolean> = _onProductPublished.asStateFlow()
 
-    init {
-        loadDefaultDeliveryLocation()
-        loadProducts()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    private var _localURIs = MutableStateFlow<List<Uri>>(emptyList())
+    var localURIs: StateFlow<List<Uri>> = _localURIs.asStateFlow()
+
+    private val _remoteURLs = MutableStateFlow<List<String>>(emptyList())
+    var remoteURLs: StateFlow<List<String>> = _remoteURLs.asStateFlow()
+
+    fun setProduct(product: Product) {
+        _product.value = product
+    }
+
+    fun loadSelectedImages(images: List<String>) {
+        _remoteURLs.value = images
+        val oldimages = images.map{ it.toUri() }
+        _selectedImages.value = oldimages
     }
 
     private fun loadDefaultDeliveryLocation() {
@@ -83,6 +99,37 @@ class ProductViewModel : ViewModel() {
                 }
             }
         }
+    }
+
+    fun updateDeliveryLocation(latitude: Double, longitude: Double, address: String, locationName: String) {
+        _deliveryLatitude.value = latitude
+        _deliveryLongitude.value = longitude
+        _deliveryAddress.value = address
+        _deliveryLocationName.value = locationName
+    }
+
+    fun toggleUseDefaultLocation() {
+        _useDefaultLocation.value = !_useDefaultLocation.value
+        if (_useDefaultLocation.value) {
+            loadDefaultDeliveryLocation()
+        } else loadProductLocation(_product.value)
+    }
+    fun removeImage(image: Uri){
+        _selectedImages.value = _selectedImages.value - image
+        removeLocalURI(image)
+    }
+
+    fun addImage(images: List<Uri>){
+        _selectedImages.value = _selectedImages.value + images
+        _localURIs.value = images
+    }
+
+    fun addLocalURI(image : Uri){
+        _localURIs.value = _localURIs.value + image
+    }
+
+    fun removeLocalURI(image: Uri){
+        _localURIs.value = _localURIs.value - image
     }
 
     fun updateTitle(value: String) {
@@ -109,42 +156,25 @@ class ProductViewModel : ViewModel() {
         _description.value = value
     }
 
-    fun addImage(uri: Uri) {
-        _selectedImages.value = _selectedImages.value + uri
+    fun loadProductValues(product: Product){
+        _title.value = product.title
+        _brand.value = product.brand
+        _category.value = product.category
+        _condition.value = product.condition
+        _price.value = product.price.toString()
+        _description.value = product.description
     }
 
-    fun removeImage(uri: Uri) {
-        _selectedImages.value = _selectedImages.value - uri
+    fun loadProductLocation(product: Product?){
+        if(product != null) {
+            _deliveryLocationName.value = product.deliveryLocationName
+            _deliveryAddress.value = product.deliveryAddress
+            _deliveryLatitude.value = product.deliveryLatitude
+            _deliveryLongitude.value = product.deliveryLongitude
+        } else loadDefaultDeliveryLocation()
     }
 
-    fun setSelectedImages(images: List<Uri>) {
-        _selectedImages.value = images
-    }
-
-    fun updateDeliveryLocationName(value: String) {
-        _deliveryLocationName.value = value
-    }
-
-    fun updateDeliveryAddress(value: String) {
-        _deliveryAddress.value = value
-    }
-
-    fun updateDeliveryLocation(latitude: Double, longitude: Double, address: String, locationName: String) {
-        _deliveryLatitude.value = latitude
-        _deliveryLongitude.value = longitude
-        _deliveryAddress.value = address
-        _deliveryLocationName.value = locationName
-    }
-
-    fun toggleUseDefaultLocation() {
-        _useDefaultLocation.value = !_useDefaultLocation.value
-        if (_useDefaultLocation.value) {
-            loadDefaultDeliveryLocation()
-        }
-        // No limpiar la ubicación cuando se desactiva, solo cuando se seleccione una nueva
-    }
-
-    fun publishProduct(context: Context) {
+    fun modifyProduct(context: Context){
         viewModelScope.launch {
             try {
                 // Validaciones
@@ -170,15 +200,10 @@ class ProductViewModel : ViewModel() {
                     return@launch
                 }
 
-                if (_deliveryLatitude.value == 0.0 || _deliveryLongitude.value == 0.0) {
-                    _uploadState.value = ProductUploadState(error = "Debes seleccionar una ubicación de entrega")
-                    return@launch
-                }
-
                 _uploadState.value = ProductUploadState(isLoading = true, isUploadingImages = true)
 
                 // Subir imágenes
-                val imageResult = productRepository.uploadProductImages(_selectedImages.value)
+                val imageResult = productRepository.uploadProductImages(_localURIs.value)
                 if (imageResult.isFailure) {
                     _uploadState.value = ProductUploadState(
                         error = "Error al subir las imágenes: ${imageResult.exceptionOrNull()?.message}"
@@ -187,28 +212,33 @@ class ProductViewModel : ViewModel() {
                 }
 
                 val imageUrls = imageResult.getOrNull() ?: emptyList()
+                val allImages = _remoteURLs.value + imageUrls
 
                 _uploadState.value = ProductUploadState(isLoading = true, uploadProgress = 0.5f)
 
                 // Crear producto
                 val product = Product(
+                    productId = _product.value?.productId ?: "",
                     title = _title.value,
                     brand = _brand.value,
                     category = _category.value,
                     condition = _condition.value,
                     price = _price.value.toDouble(),
                     description = _description.value,
-                    images = imageUrls,
+                    images = allImages,
                     deliveryLocationName = _deliveryLocationName.value,
                     deliveryAddress = _deliveryAddress.value,
                     deliveryLatitude = _deliveryLatitude.value,
                     deliveryLongitude = _deliveryLongitude.value
                 )
 
-                val createResult = productRepository.createProduct(product)
+                val createResult = productRepository.updateProduct(product)
                 if (createResult.isFailure) {
                     _uploadState.value = ProductUploadState(
-                        error = "Error al crear el producto: ${createResult.exceptionOrNull()?.message}"
+                        error = context.getString(
+                            R.string.error_al_crear_el_producto,
+                            createResult.exceptionOrNull()?.message
+                        )
                     )
                     return@launch
                 }
@@ -222,25 +252,10 @@ class ProductViewModel : ViewModel() {
 
                 // Notificar que se publicó un producto
                 _onProductPublished.value = true
-
-                // Limpiar formulario
-                clearForm()
             } catch (e: Exception) {
-                _uploadState.value = ProductUploadState(error = "Error inesperado: ${e.message}")
+                _uploadState.value = ProductUploadState(error = context.getString(R.string.error_inesperado,{e.message}))
             }
         }
-    }
-
-    private fun clearForm() {
-        _title.value = ""
-        _brand.value = ""
-        _category.value = ""
-        _condition.value = ProductCondition.NUEVO
-        _price.value = ""
-        _description.value = ""
-        _selectedImages.value = emptyList()
-        _useDefaultLocation.value = true
-        loadDefaultDeliveryLocation()
     }
 
     fun resetUploadState() {
@@ -248,19 +263,24 @@ class ProductViewModel : ViewModel() {
         _onProductPublished.value = false
     }
 
-    fun loadProducts() {
+    fun deleteProductbyID(productId: String, context: Context){
+        _deletedState.value = ProductDeletedState(isLoading = true)
         viewModelScope.launch {
-            productRepository.getAllProducts()
-                .onSuccess { products ->
-                    _allProducts.value = products
-                }
-                .onFailure { exception ->
-                    _allProducts.value = emptyList()
-                }
-        }
+            val result = productRepository.deleteProduct(productId)
+            if (result.isFailure) {
+                _deletedState.value = ProductDeletedState(
+                    error = context.getString(
+                        R.string.error_al_eliminar,
+                        result.exceptionOrNull()?.message
+                    )
+                )
+                return@launch
+            }
+            _deletedState.value = ProductDeletedState(isLoading = false, success = true)
+        } 
     }
 
-    fun getProductById(productId: String): Product? {
-        return _allProducts.value.find { it.productId == productId }
+    fun resetDeletedState() {
+        _deletedState.value = ProductDeletedState()
     }
 }

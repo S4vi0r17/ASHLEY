@@ -65,8 +65,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.compose.runtime)
-    implementation(libs.androidx.material.icons.extended)
-
+    
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)

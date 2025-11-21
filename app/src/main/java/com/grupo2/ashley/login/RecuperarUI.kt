@@ -1,5 +1,6 @@
 package com.grupo2.ashley.login
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -17,7 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import com.grupo2.ashley.R
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,6 +59,7 @@ class RecuperarUI : ComponentActivity() {
     }
 }
 
+@SuppressLint("LocalContextResourcesRead")
 @Composable
 fun RecuperarContra() {
     var email by remember { mutableStateOf("") }
@@ -86,7 +89,7 @@ fun RecuperarContra() {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    "Recuperar contraseña",
+                    stringResource(R.string.recuperar_contrasena),
                     fontWeight = FontWeight.Bold,
                     fontSize = 24.sp,
                     style = MaterialTheme.typography.headlineMedium,
@@ -94,7 +97,7 @@ fun RecuperarContra() {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Te enviaremos un correo con las instrucciones",
+                    stringResource(R.string.instrucciones),
                     modifier = Modifier.alpha(0.7f),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -107,7 +110,7 @@ fun RecuperarContra() {
                         email = it
                     }, label = {
                         Text(
-                            "Email", style = MaterialTheme.typography.bodyMedium
+                            stringResource(R.string.email), style = MaterialTheme.typography.bodyMedium
                         )
                     }, colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -126,12 +129,12 @@ fun RecuperarContra() {
                                 if (task.isSuccessful) {
                                     Toast.makeText(
                                         context,
-                                        "Correo enviado satisfactoriamente",
+                                        context.resources.getString(R.string.correo_satisfactorio),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 } else {
                                     Toast.makeText(
-                                        context, "Correo no registrado", Toast.LENGTH_SHORT
+                                        context, context.resources.getString(R.string.error_correo_no_registrado), Toast.LENGTH_SHORT
                                     ).show()
                                 }
                             }
@@ -143,7 +146,7 @@ fun RecuperarContra() {
                     gradient = AppGradients.SecondaryGradient
                 ) {
                     Text(
-                        "Enviar correo",
+                        stringResource(R.string.enviar_correo),
                         fontSize = 16.sp,
                         color = Color.White,
                         style = MaterialTheme.typography.labelLarge

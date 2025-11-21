@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0"
+agp = "8.13.1"
 firebaseBom = "34.5.0"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
@@ -24,9 +24,9 @@ lifecycleViewmodelKtx = "2.9.4"
 runtime = "1.9.4"
 material3 = "1.4.0"
 vicoV = "2.0.0-alpha.28"
-hilt = "2.57.2"
-hiltNavigationCompose = "1.3.0"
-room = "2.8.3"
+room = "2.6.1"
+hilt = "2.51"
+hiltNavigationCompose = "1.2.0"
 ksp = "2.2.21-2.0.4"
 firebaseAuth = "24.0.1"
 firebaseFirestore = "26.0.2"
@@ -38,6 +38,10 @@ coilCompose = "2.7.0"
 coroutinesAndroid = "1.10.2"
 accompanistPermissions = "0.37.3"
 geminiai = "0.9.0"
+coil = "3.0.4"
+coroutines = "1.10.2"
+accompanist = "0.37.0"
+playServicesAuth = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -81,16 +85,15 @@ hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-com
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
-firebase-auth = { module = "com.google.firebase:firebase-auth", version.ref = "firebaseAuth" }
-firebase-firestore = { module = "com.google.firebase:firebase-firestore", version.ref = "firebaseFirestore" }
-firebase-storage = { module = "com.google.firebase:firebase-storage", version.ref = "firebaseStorage" }
-firebase-messaging = { module = "com.google.firebase:firebase-messaging", version.ref = "firebaseMessaging" }
-firebase-database = { module = "com.google.firebase:firebase-database-ktx", version.ref = "firebaseDatabase" }
-google-play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutinesAndroid" }
-accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
-generativeai = {module = "com.google.ai.client.generativeai:generativeai", version.ref ="geminiai"}
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+firebase-database = { module = "com.google.firebase:firebase-database" }
+google-play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

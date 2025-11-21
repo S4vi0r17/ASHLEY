@@ -24,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import coil.compose.AsyncImage
 import androidx.compose.ui.text.input.KeyboardType
@@ -34,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,20 +54,21 @@ fun ProfileSetupScreen(
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
     val defaultPickupLocationName by viewModel.defaultPickupLocationName.collectAsState()
-    
+    val context = LocalContext.current
+
     // Sincronizar ubicación del mapa si está disponible
     ubicacionViewModel?.let { ubicacionVM ->
         val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
         val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
         val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
-        
+
         // Actualizar cuando cualquier valor cambie
         LaunchedEffect(direccionMapa) {
             android.util.Log.d("ProfileSetupScreen", "=== LaunchedEffect ejecutado ===")
             android.util.Log.d("ProfileSetupScreen", "Dirección mapa: '$direccionMapa'")
             android.util.Log.d("ProfileSetupScreen", "Nombre ubicación: '$nombreUbicacion'")
             android.util.Log.d("ProfileSetupScreen", "Lat: ${ubicacionMapa.latitude}, Lng: ${ubicacionMapa.longitude}")
-            
+
             // Actualizar SIEMPRE que haya una dirección válida, sin importar el texto
             if (direccionMapa.isNotBlank() && direccionMapa != "Sin dirección seleccionada") {
                 android.util.Log.d("ProfileSetupScreen", "✓ Actualizando ubicación en ViewModel...")
@@ -110,7 +114,7 @@ fun ProfileSetupScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Completa tu perfil",
+                        text = stringResource(R.string.completar_perfil),
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -152,7 +156,7 @@ fun ProfileSetupScreen(
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         Text(
-                            "Para continuar usando ASHLEY, necesitamos algunos datos adicionales",
+                            stringResource(R.string.mensaje_informativo),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -189,7 +193,7 @@ fun ProfileSetupScreen(
                         } else if (profileImageUrl.isNotEmpty() || selectedImageUri != null) {
                             AsyncImage(
                                 model = selectedImageUri ?: profileImageUrl,
-                                contentDescription = "Foto de perfil",
+                                contentDescription = stringResource(R.string.foto_perfil),
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .clip(CircleShape),
@@ -198,13 +202,13 @@ fun ProfileSetupScreen(
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Person,
-                                contentDescription = "Agregar foto",
+                                contentDescription = stringResource(R.string.agregar_foto_desc),
                                 modifier = Modifier.size(60.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
-                    
+
                     TextButton(
                         onClick = { imagePickerLauncher.launch("image/*") },
                         enabled = !isUploadingImage && !updateState.isLoading
@@ -217,9 +221,9 @@ fun ProfileSetupScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             if (profileImageUrl.isNotEmpty() || selectedImageUri != null)
-                                "Cambiar foto"
+                                stringResource(R.string.cambiar_foto)
                             else
-                                "Agregar foto (Opcional)"
+                                stringResource(R.string.agregar_foto)
                         )
                     }
                 }
@@ -253,7 +257,7 @@ fun ProfileSetupScreen(
                 OutlinedTextField(
                     value = firstName,
                     onValueChange = viewModel::onFirstNameChange,
-                    label = { Text("Nombre *") },
+                    label = { Text(stringResource(R.string.nombre_label)) },
                     leadingIcon = {
                         Icon(Icons.Default.Person, contentDescription = null)
                     },
@@ -266,7 +270,7 @@ fun ProfileSetupScreen(
                 OutlinedTextField(
                     value = lastName,
                     onValueChange = viewModel::onLastNameChange,
-                    label = { Text("Apellido *") },
+                    label = { Text(stringResource(R.string.apellido_label)) },
                     leadingIcon = {
                         Icon(Icons.Default.Person, contentDescription = null)
                     },
@@ -279,7 +283,7 @@ fun ProfileSetupScreen(
                 OutlinedTextField(
                     value = phoneNumber,
                     onValueChange = viewModel::onPhoneNumberChange,
-                    label = { Text("Teléfono *") },
+                    label = { Text(stringResource(R.string.telefono_label)) },
                     leadingIcon = {
                         Icon(Icons.Default.Phone, contentDescription = null)
                     },
@@ -287,14 +291,14 @@ fun ProfileSetupScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     singleLine = true,
                     enabled = !updateState.isLoading,
-                    placeholder = { Text("+51 999 999 999") }
+                    placeholder = { Text(stringResource(R.string.telefono_placeholder)) }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Sección de Dirección
                 Text(
-                    text = "Dirección *",
+                    text = stringResource(R.string.direccion_label),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -315,7 +319,7 @@ fun ProfileSetupScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.LocationOn,
-                                contentDescription = "Ubicación",
+                                contentDescription = "Ubicación", // NOTA: No se proveyó string para "Ubicación"
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.size(24.dp)
                             )
@@ -323,9 +327,9 @@ fun ProfileSetupScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = if (defaultPickupLocationName.isNotEmpty()) {
-                                        defaultPickupLocationName
+                                        stringResource(R.string.sin_ubicacion) // ->
                                     } else {
-                                        "Ubicación seleccionada"
+                                        stringResource(R.string.ubicacion_seleccionada)
                                     },
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
@@ -355,7 +359,7 @@ fun ProfileSetupScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (fullAddress.isEmpty()) "Seleccionar dirección" else "Cambiar dirección")
+                    Text(if (fullAddress.isEmpty()) stringResource(R.string.seleccionar_direccion) else stringResource(R.string.cambiar_direccion))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -393,7 +397,7 @@ fun ProfileSetupScreen(
                             )
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    "Ubicación de Entrega Predeterminada *",
+                                    stringResource(R.string.ubicacion_entrega_predeterminada),
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -401,9 +405,9 @@ fun ProfileSetupScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     if (defaultPickupLocationName.isBlank())
-                                        "Toca para seleccionar tu ubicación en el mapa"
+                                        stringResource(R.string.toca_para_seleccionar)
                                     else
-                                        defaultPickupLocationName,
+                                        stringResource(R.string.sin_ubicacion),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = if (defaultPickupLocationName.isBlank())
                                         MaterialTheme.colorScheme.error
@@ -421,7 +425,7 @@ fun ProfileSetupScreen(
                 }
 
                 Text(
-                    "Esta será la ubicación predeterminada donde los compradores recogerán los productos que vendas",
+                    stringResource(R.string.mensaje_entrega_predeterminada),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 8.dp)
@@ -432,7 +436,7 @@ fun ProfileSetupScreen(
                 // Botón guardar
                 GradientButton(
                     onClick = {
-                        viewModel.saveProfile(onProfileComplete)
+                        viewModel.saveProfile(context,onProfileComplete)
                     },
                     enabled = !updateState.isLoading,
                     modifier = Modifier
@@ -448,7 +452,7 @@ fun ProfileSetupScreen(
                         )
                     } else {
                         Text(
-                            "Guardar y Continuar",
+                            stringResource(R.string.guardar_y_continuar),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -457,7 +461,7 @@ fun ProfileSetupScreen(
                 }
 
                 Text(
-                    "* Campos obligatorios",
+                    stringResource(R.string.campos_obligatorios),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

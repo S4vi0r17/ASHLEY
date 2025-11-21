@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -38,6 +39,7 @@ import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,20 +63,20 @@ fun CuentaScreen(
     val profileImageUrl by viewModel.profileImageUrl.collectAsState()
     val isUploadingImage by viewModel.isUploadingImage.collectAsState()
     val updateState by viewModel.updateState.collectAsState()
-    
+
     // Estado para mostrar indicador de ubicación actualizada
     var locationJustUpdated by remember { mutableStateOf(false) }
-    
+
     // Sincronizar ubicación del mapa si está disponible
     ubicacionViewModel?.let { ubicacionVM ->
         val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
         val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
         val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
-        
+
         // Actualizar cuando la dirección cambie
         LaunchedEffect(direccionMapa) {
             // Actualizar SIEMPRE que haya una dirección válida
-            if (direccionMapa.isNotBlank() && direccionMapa != "Sin dirección seleccionada") {
+            if (direccionMapa.isNotBlank() && direccionMapa != context.getString(R.string.sin_ubicacion)) {
                 viewModel.updateLocation(
                     address = direccionMapa,
                     latitude = ubicacionMapa.latitude,
@@ -82,7 +84,7 @@ fun CuentaScreen(
                     locationName = nombreUbicacion
                 )
                 locationJustUpdated = true
-                
+
                 // Resetear el indicador después de 2 segundos
                 kotlinx.coroutines.delay(2000)
                 locationJustUpdated = false
@@ -165,7 +167,7 @@ fun CuentaScreen(
                     } else if (profileImageUrl.isNotEmpty() || selectedImageUri != null) {
                         AsyncImage(
                             model = selectedImageUri ?: profileImageUrl,
-                            contentDescription = "Foto de perfil",
+                            contentDescription = stringResource(R.string.foto_perfil),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .clip(CircleShape),
@@ -179,7 +181,7 @@ fun CuentaScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    
+
                     // Badge para editar foto
                     if (isEditing) {
                         Box(
@@ -198,7 +200,7 @@ fun CuentaScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.CameraAlt,
-                                contentDescription = "Cambiar foto",
+                                contentDescription = stringResource(R.string.cambiar_foto),
                                 modifier = Modifier.size(18.dp),
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
@@ -210,7 +212,7 @@ fun CuentaScreen(
                     text = if (userProfile != null) {
                         "${userProfile?.firstName} ${userProfile?.lastName}"
                     } else {
-                        "Cargando..."
+                        stringResource(R.string.cargando)
                     },
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
@@ -266,13 +268,13 @@ fun CuentaScreen(
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "Mi Dashboard",
+                                text = stringResource(R.string.mi_dashboard),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                             Text(
-                                text = "Ver mis estadísticas y métricas",
+                                text = stringResource(R.string.ver_mis_estadisticas),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                             )
@@ -333,7 +335,7 @@ fun CuentaScreen(
                         tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Text(
-                        text = "Perfil actualizado exitosamente",
+                        text = stringResource(R.string.perfil_actualizado),
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -342,7 +344,7 @@ fun CuentaScreen(
         }
 
         Text(
-            "Información Personal",
+            stringResource(R.string.informacion_personal),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -352,7 +354,7 @@ fun CuentaScreen(
         OutlinedTextField(
             value = firstName,
             onValueChange = viewModel::onFirstNameChange,
-            label = { Text("Nombre") },
+            label = { Text(stringResource(R.string.nombre)) },
             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
             enabled = isEditing && !updateState.isLoading,
@@ -362,7 +364,7 @@ fun CuentaScreen(
         OutlinedTextField(
             value = lastName,
             onValueChange = viewModel::onLastNameChange,
-            label = { Text("Apellido") },
+            label = { Text(stringResource(R.string.apellido)) },
             leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
             enabled = isEditing && !updateState.isLoading,
@@ -372,7 +374,7 @@ fun CuentaScreen(
         OutlinedTextField(
             value = phoneNumber,
             onValueChange = viewModel::onPhoneNumberChange,
-            label = { Text("Teléfono") },
+            label = { Text(stringResource(R.string.telefono)) },
             leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -382,7 +384,7 @@ fun CuentaScreen(
 
         // Sección de Dirección
         Text(
-            text = "Dirección",
+            text = stringResource(R.string.direccion),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -409,7 +411,7 @@ fun CuentaScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Ubicación",
+                        contentDescription = stringResource(R.string.ubicacion),
                         tint = if (locationJustUpdated) {
                             MaterialTheme.colorScheme.onTertiaryContainer
                         } else {
@@ -422,9 +424,9 @@ fun CuentaScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (defaultPickupLocationName.isNotEmpty()) {
-                                    defaultPickupLocationName
+                                    stringResource(R.string.sin_ubicacion)
                                 } else {
-                                    "Tu ubicación"
+                                    stringResource(R.string.tu_ubicacion)
                                 },
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
@@ -437,7 +439,7 @@ fun CuentaScreen(
                             if (locationJustUpdated) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "✓ Actualizado",
+                                    text = stringResource(R.string.perfil_actualizado),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.tertiary
@@ -470,13 +472,13 @@ fun CuentaScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Sin ubicación",
+                        contentDescription = stringResource(R.string.sin_ubicacion),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "No has configurado una dirección",
+                        text = stringResource(R.string.no_direccion_configurada),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
@@ -495,7 +497,7 @@ fun CuentaScreen(
                     val currentLng = viewModel.defaultPickupLongitude.value
                     val currentAddress = viewModel.fullAddress.value
                     val currentName = viewModel.defaultPickupLocationName.value
-                    
+
                     if (currentAddress.isNotEmpty() && currentLat != 0.0 && currentLng != 0.0) {
                         // Si ya tiene una dirección guardada, cargarla en el mapa
                         vm.actualizarUbicacion(
@@ -517,7 +519,7 @@ fun CuentaScreen(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(if (fullAddress.isEmpty()) "Seleccionar dirección" else "Cambiar dirección")
+            Text(if (fullAddress.isEmpty()) stringResource(R.string.seleccionar_direccion) else stringResource(R.string.cambiar_direccion))
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -540,12 +542,12 @@ fun CuentaScreen(
                         .height(40.dp),
                     enabled = !updateState.isLoading
                 ) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancelar))
                 }
 
                 GradientButton(
                     onClick = {
-                        viewModel.updateProfile {
+                        viewModel.updateProfile(context) {
                             // Perfil actualizado
                         }
                     },
@@ -567,7 +569,7 @@ fun CuentaScreen(
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                         } else {
-                            Text("Guardar", color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp)
+                            Text(stringResource(R.string.guardar), color = MaterialTheme.colorScheme.onPrimary, fontSize = 14.sp)
                         }
                     }
                 }
@@ -596,7 +598,7 @@ fun CuentaScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            "Editar Perfil",
+                            stringResource(R.string.editar_perfil),
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
@@ -621,7 +623,7 @@ fun CuentaScreen(
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Cerrar Sesión", fontSize = 16.sp)
+            Text(stringResource(R.string.cerrar_sesion), fontSize = 16.sp)
         }
 
         // Espaciado final para que el último elemento no quede tapado por la barra de navegación
@@ -633,8 +635,8 @@ fun CuentaScreen(
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
-            title = { Text("Cerrar Sesión") },
-            text = { Text("¿Estás seguro que deseas cerrar sesión?") },
+            title = { Text(stringResource(R.string.cerrar_sesion)) },
+            text = { Text(stringResource(R.string.confirmar_cerrar_sesion)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -643,12 +645,12 @@ fun CuentaScreen(
                         (context as? Activity)?.finish()
                     }
                 ) {
-                    Text("Sí, cerrar sesión", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.si_cerrar_sesion), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(R.string.cancelar))
                 }
             }
         )

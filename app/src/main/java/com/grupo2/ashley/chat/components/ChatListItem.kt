@@ -13,12 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.grupo2.ashley.chat.models.ConversationWithUser
+import com.grupo2.ashley.R
 
 @Composable
 fun ChatListItem(
@@ -26,6 +29,7 @@ fun ChatListItem(
     onClick: () -> Unit
 ) {
     val displayName = conversation.otherUserName
+    val context = LocalContext.current
 
     Surface(
         modifier = Modifier
@@ -44,7 +48,7 @@ fun ChatListItem(
                 if (conversation.otherUserImageUrl.isNotEmpty()) {
                     AsyncImage(
                         model = conversation.otherUserImageUrl,
-                        contentDescription = "Profile picture",
+                        contentDescription = stringResource(R.string.foto_perfil),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(56.dp)
@@ -85,7 +89,7 @@ fun ChatListItem(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = conversation.lastMessage?.timestamp?.let { formatConversationTimestamp(it) } ?: "",
+                        text = conversation.lastMessage?.timestamp?.let { formatConversationTimestamp(it,context) } ?: "",
                         style = MaterialTheme.typography.labelMedium,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -102,6 +106,35 @@ fun ChatListItem(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.weight(1f)
+                    Text(
+                        text = conversation.lastMessage?.text?.ifEmpty { "Photo" } ?: stringResource(R.string.escribe_mensaje),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontSize = 14.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        color = if (conversation.unreadCount > 0) {
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        },
+                        fontWeight = if (conversation.unreadCount > 0) {
+                            FontWeight.Medium
+                        } else {
+                            FontWeight.Normal
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    if (conversation.unreadCount > 0) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(22.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Block,

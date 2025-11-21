@@ -27,10 +27,12 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import android.location.Geocoder
+import androidx.compose.ui.res.stringResource
 import java.util.Locale
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("MissingPermission")
+@SuppressLint("MissingPermission", "LocalContextResourcesRead")
 @Composable
 fun ProfileLocationPickerScreen(
     viewModel: ProfileViewModel,
@@ -72,7 +74,7 @@ fun ProfileLocationPickerScreen(
                     cameraPositionState.move(
                         CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
                     )
-                    
+
                     // Obtener dirección
                     try {
                         val geocoder = Geocoder(context, Locale.getDefault())
@@ -98,10 +100,10 @@ fun ProfileLocationPickerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Seleccionar Ubicación de Entrega") },
+                title = { Text(stringResource(R.string.titulo_seleccionar_ubicacion)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -126,7 +128,7 @@ fun ProfileLocationPickerScreen(
                                     cameraPositionState.move(
                                         CameraUpdateFactory.newLatLngZoom(currentLatLng, 16f)
                                     )
-                                    
+
                                     try {
                                         val geocoder = Geocoder(context, Locale.getDefault())
                                         val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
@@ -144,7 +146,7 @@ fun ProfileLocationPickerScreen(
                     },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer
                 ) {
-                    Icon(Icons.Default.MyLocation, contentDescription = "Mi ubicación")
+                    Icon(Icons.Default.MyLocation, contentDescription = stringResource(R.string.mi_ubicacion))
                 }
 
                 // Botón para confirmar ubicación
@@ -156,7 +158,7 @@ fun ProfileLocationPickerScreen(
                             selectedLocation.latitude,
                             selectedLocation.longitude
                         )
-                        
+
                         // Actualizar ubicación en UbicacionViewModel si está disponible
                         ubicacionViewModel?.actualizarUbicacion(
                             lat = selectedLocation.latitude,
@@ -164,16 +166,16 @@ fun ProfileLocationPickerScreen(
                             direccion = selectedAddress,
                             nombre = "" // Se auto-extraerá de la dirección
                         )
-                        
+
                         android.util.Log.d("ProfileLocationPicker", "Ubicación confirmada:")
                         android.util.Log.d("ProfileLocationPicker", "Dirección: $selectedAddress")
                         android.util.Log.d("ProfileLocationPicker", "Lat: ${selectedLocation.latitude}, Lng: ${selectedLocation.longitude}")
-                        
+
                         onLocationSelected()
                     },
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(Icons.Default.Check, contentDescription = "Confirmar")
+                    Icon(Icons.Default.Check, contentDescription = stringResource(R.string.confirmar))
                 }
             }
         }
@@ -188,13 +190,13 @@ fun ProfileLocationPickerScreen(
                 cameraPositionState = cameraPositionState,
                 onMapClick = { latLng ->
                     selectedLocation = latLng
-                    
+
                     // Obtener dirección del punto seleccionado
                     try {
                         val geocoder = Geocoder(context, Locale.getDefault())
                         val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
                         if (!addresses.isNullOrEmpty()) {
-                            selectedAddress = addresses[0].getAddressLine(0) ?: "Ubicación seleccionada"
+                            selectedAddress = addresses[0].getAddressLine(0) ?: context.resources.getString(R.string.ubicacion_seleccionada)
                         } else {
                             selectedAddress = "Lat: ${latLng.latitude}, Lng: ${latLng.longitude}"
                         }
@@ -205,7 +207,7 @@ fun ProfileLocationPickerScreen(
             ) {
                 Marker(
                     state = MarkerState(position = selectedLocation),
-                    title = "Ubicación de entrega",
+                    title = stringResource(R.string.ubicacion_entrega),
                     snippet = selectedAddress
                 )
             }
@@ -223,7 +225,7 @@ fun ProfileLocationPickerScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        "Ubicación Seleccionada",
+                        stringResource(R.string.ubicacion_seleccionada),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )

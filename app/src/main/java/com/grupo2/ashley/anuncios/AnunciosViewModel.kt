@@ -1,4 +1,4 @@
-package com.grupo2.ashley.home
+package com.grupo2.ashley.anuncios
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class AnunciosViewModel : ViewModel() {
 
     private val productRepository = ProductRepository()
     private val auth = FirebaseAuth.getInstance()
@@ -49,7 +49,7 @@ class HomeViewModel : ViewModel() {
             productRepository.getAllProducts()
                 .onSuccess { products ->
                     val userid = auth.currentUser?.uid
-                    _allProducts.value = products.filter { it.userId != userid && it.isActive }
+                    _allProducts.value = products.filter { it.userId == userid }
                     filterProducts()
                 }
                 .onFailure { exception ->
@@ -77,11 +77,6 @@ class HomeViewModel : ViewModel() {
         filterProducts()
     }
 
-    fun toggleFavorite(productId: String) {
-        _products.value = productRepository.toggleFavorite(productId, _products.value)
-        _allProducts.value = productRepository.toggleFavorite(productId, _allProducts.value)
-    }
-
     private fun filterProducts() {
         _products.value = productRepository.filterProducts(
             _allProducts.value,
@@ -97,4 +92,5 @@ class HomeViewModel : ViewModel() {
     fun getProductById(productId: String): Product? {
         return _allProducts.value.find { it.productId == productId }
     }
+
 }

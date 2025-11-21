@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -81,7 +82,7 @@ fun CategoryItem(
                         CategoryIcon.VEHICLES -> Icons.Default.DirectionsCar
                         CategoryIcon.OTHERS -> Icons.Default.MoreHoriz
                     },
-                    contentDescription = category.name,
+                    contentDescription = stringResource(category.labelResId),
                     modifier = Modifier.size(32.dp),
                     tint = if (isSelected) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -92,7 +93,7 @@ fun CategoryItem(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = category.name,
+            text = stringResource(category.labelResId),
             fontSize = 12.sp,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             style = MaterialTheme.typography.labelMedium,

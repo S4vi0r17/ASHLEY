@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +31,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.grupo2.ashley.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,12 +79,12 @@ fun ParticipantInfoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Contact Info") },
+                title = { Text(stringResource(R.string.titulo_informacion_contacto)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.volver)
                         )
                     }
                 },
@@ -114,7 +116,7 @@ fun ParticipantInfoScreen(
                     if (!participantInfo?.photoUrl.isNullOrEmpty()) {
                         AsyncImage(
                             model = participantInfo?.photoUrl,
-                            contentDescription = "Profile picture",
+                            contentDescription = stringResource(R.string.foto_perfil),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(120.dp)
@@ -130,7 +132,7 @@ fun ParticipantInfoScreen(
                     }
 
                     Text(
-                        text = participantInfo?.name ?: "Loading...",
+                        text = participantInfo?.name ?: stringResource(R.string.cargando),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -154,7 +156,7 @@ fun ParticipantInfoScreen(
                     if (!participantInfo?.email.isNullOrEmpty()) {
                         ContactInfoItem(
                             icon = Icons.Default.Email,
-                            label = "Email",
+                            label = stringResource(R.string.email),
                             content = participantInfo?.email ?: ""
                         )
 
@@ -168,7 +170,7 @@ fun ParticipantInfoScreen(
                     if (!participantInfo?.phoneNumber.isNullOrEmpty()) {
                         ContactInfoItem(
                             icon = Icons.Default.Phone,
-                            label = "Phone",
+                            label = stringResource(R.string.telefono),
                             content = participantInfo?.phoneNumber ?: ""
                         )
                     }
@@ -189,8 +191,8 @@ fun ParticipantInfoScreen(
                 ) {
                     // About Section
                     InfoSection(
-                        title = "About",
-                        content = "Hey there! I'm using ASHLEY"
+                        title = stringResource(R.string.acerca_de),
+                        content = stringResource(R.string.contenido_acerca_de)
                     )
 
                     HorizontalDivider(
@@ -200,8 +202,8 @@ fun ParticipantInfoScreen(
 
                     // Media Section Placeholder
                     InfoSection(
-                        title = "Media, Links, and Docs",
-                        content = "No media shared yet"
+                        title = stringResource(R.string.titulo_multimedia),
+                        content = stringResource(R.string.contenido_multimedia)
                     )
                 }
             }
@@ -221,6 +223,7 @@ fun ParticipantInfoScreen(
                 ) {
                     ActionButton(
                         text = if (!isMuted) "Mute Notifications" else "Unmute Notifications",
+                        text = if (notificationsEnabled) stringResource(R.string.silenciar_notificaciones) else stringResource(R.string.activar_notificaciones),
                         icon = Icons.Default.Notifications,
                         isEnabled = !isMuted,
                         isDestructive = false,
@@ -228,7 +231,7 @@ fun ParticipantInfoScreen(
                     )
 
                     ActionButton(
-                        text = if (isBlocked) "Unblock Contact" else "Block Contact",
+                        text = if (isBlocked) stringResource(R.string.desbloquear_contacto) else stringResource(R.string.bloquear_contacto),
                         icon = Icons.Default.Block,
                         isEnabled = !isBlocked,
                         isDestructive = true,

@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -103,7 +104,7 @@ fun Registro(
     // Navegar a ProfileSetup cuando el registro es exitoso
     LaunchedEffect(registroExitoso) {
         if (registroExitoso) {
-            Toast.makeText(context, "¡Registro completado exitosamente!", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, context.resources.getString(R.string.registro_exitoso), Toast.LENGTH_LONG).show()
             navController.navigate("profileSetup") {
                 popUpTo("registro") { inclusive = true }
             }
@@ -129,7 +130,7 @@ fun Registro(
                     .background(MaterialTheme.colorScheme.background)
             ) {
                 Text(
-                    "Crear Cuenta",
+                    stringResource(R.string.crear_cuenta),
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.displaySmall,
@@ -139,7 +140,7 @@ fun Registro(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    "Regístrate en ASHLEY",
+                    stringResource(R.string.registrate_en_ashley),
                     fontSize = 16.sp,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -175,7 +176,7 @@ fun Registro(
                         viewModel.onEmailChange(it)
                     },
                     label = {
-                        Text("Correo electrónico", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.email), style = MaterialTheme.typography.bodyMedium)
                     },
                     enabled = !isLoading,
                     singleLine = true,
@@ -203,7 +204,7 @@ fun Registro(
                             }) {
                             Icon(
                                 imageVector = image,
-                                contentDescription = if (visibility1) "Ocultar contraseña" else "Mostrar contraseña",
+                                contentDescription = if (visibility1) stringResource(R.string.ocultar_contrasena) else stringResource(R.string.mostrar_contrasena),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -212,7 +213,7 @@ fun Registro(
                         viewModel.onPasswordChange(it)
                     },
                     label = {
-                        Text("Contraseña", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.contrasena), style = MaterialTheme.typography.bodyMedium)
                     },
                     enabled = !isLoading,
                     singleLine = true,
@@ -240,7 +241,7 @@ fun Registro(
                             }) {
                             Icon(
                                 imageVector = image,
-                                contentDescription = if (visibility2) "Ocultar contraseña" else "Mostrar contraseña",
+                                contentDescription = if (visibility2) stringResource(R.string.ocultar_contrasena) else stringResource(R.string.mostrar_contrasena),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -249,7 +250,7 @@ fun Registro(
                         viewModel.onRPasswordChange(it)
                     },
                     label = {
-                        Text("Confirmar contraseña", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.confirmar_contrasena), style = MaterialTheme.typography.bodyMedium)
                     },
                     enabled = !isLoading,
                     singleLine = true,
@@ -284,7 +285,7 @@ fun Registro(
                         )
                     } else {
                         Text(
-                            "Registrarme",
+                            stringResource(R.string.registrarme),
                             fontSize = 16.sp,
                             color = MaterialTheme.colorScheme.onPrimary,
                             style = MaterialTheme.typography.labelLarge
@@ -299,14 +300,14 @@ fun Registro(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "¿Ya tienes cuenta?",
+                        stringResource(R.string.ya_tienes_cuenta),
                         fontSize = 14.sp,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        "Iniciar Sesión",
+                        stringResource(R.string.iniciar_sesion),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.bodySmall,

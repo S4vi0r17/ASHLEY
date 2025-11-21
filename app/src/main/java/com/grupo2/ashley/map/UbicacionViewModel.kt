@@ -1,9 +1,11 @@
 package com.grupo2.ashley.map
 
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.grupo2.ashley.R
 
 class UbicacionViewModel : ViewModel() {
 
