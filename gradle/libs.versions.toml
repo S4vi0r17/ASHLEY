@@ -24,6 +24,10 @@ lifecycleViewmodelKtx = "2.9.4"
 runtime = "1.9.4"
 material3 = "1.4.0"
 vicoV = "2.0.0-alpha.28"
+room = "2.6.1"
+hilt = "2.51"
+hiltNavigationCompose = "1.2.0"
+ksp = "2.2.21-1.0.29"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,7 +60,7 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 navigation = {group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx" }
-androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }<
+androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 vico-compose = { group = "com.patrykandpatrick.vico", name = "compose", version.ref = "vicoV" }
 vico-compose-m3 = { group = "com.patrykandpatrick.vico", name = "compose-m3", version.ref = "vicoV" }
