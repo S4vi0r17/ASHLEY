@@ -494,7 +494,7 @@ class ChatRepositoryImpl @Inject constructor(
         // Verificar si la conversación está bloqueada
         val isBlocked = conversationDao.isConversationBlocked(conversationId) ?: false
         if (isBlocked) {
-            Log.d(TAG, "🚫 Conversation $conversationId is BLOCKED, skipping Firebase sync")
+            Log.d(TAG, "Conversation $conversationId is BLOCKED, skipping Firebase sync")
             return
         }
 
@@ -506,7 +506,7 @@ class ChatRepositoryImpl @Inject constructor(
                     // Double-check if conversation is still not blocked before syncing
                     val isBlocked = conversationDao.isConversationBlocked(conversationId) ?: false
                     if (isBlocked) {
-                        Log.d(TAG, "🚫 Conversation $conversationId is BLOCKED, skipping message sync")
+                        Log.d(TAG, "Conversation $conversationId is BLOCKED, skipping message sync")
                         return@launch
                     }
 
@@ -580,7 +580,7 @@ class ChatRepositoryImpl @Inject constructor(
                         val isArchived = conversationDao.isConversationArchived(conversationId) ?: false
                         if (isArchived) {
                             conversationDao.unarchiveConversation(conversationId)
-                            Log.d(TAG, "📬 Auto-unarchived conversation $conversationId due to new message")
+                            Log.d(TAG, "Auto-unarchived conversation $conversationId due to new message")
                         }
                     }
 
@@ -609,12 +609,12 @@ class ChatRepositoryImpl @Inject constructor(
         try {
             // Verificar si la conversación está silenciada
             val isMuted = conversationDao.isConversationMuted(conversationId) ?: false
-            Log.d(TAG, "🔔 Checking mute state for conversation $conversationId: isMuted=$isMuted")
+            Log.d(TAG, "Checking mute state for conversation $conversationId: isMuted=$isMuted")
             if (isMuted) {
-                Log.d(TAG, "🔕 Conversation $conversationId is MUTED, skipping notifications")
+                Log.d(TAG, "Conversation $conversationId is MUTED, skipping notifications")
                 return
             }
-            Log.d(TAG, "✅ Conversation $conversationId is NOT muted, showing notification")
+            Log.d(TAG, "Conversation $conversationId is NOT muted, showing notification")
 
             // Get unique sender IDs
             val senderIds = messages.map { it.second }.distinct()
@@ -713,15 +713,15 @@ class ChatRepositoryImpl @Inject constructor(
         try {
             // Compress image first
             val compressedBytes = imageCompressor.compress(imageBytes)
-            Log.d(TAG, "📸 Compressed image: ${imageBytes.size} -> ${compressedBytes.size} bytes")
+            Log.d(TAG, "Compressed image: ${imageBytes.size} -> ${compressedBytes.size} bytes")
 
             val fileName = "chat_images/${UUID.randomUUID()}.jpg"
             val imageRef = storage.child(fileName)
-            Log.d(TAG, "📸 Uploading to: $fileName")
+            Log.d(TAG, "Uploading to: $fileName")
 
             imageRef.putBytes(compressedBytes)
                 .addOnSuccessListener {
-                    Log.d(TAG, "📸 Upload successful, getting download URL...")
+                    Log.d(TAG, "Upload successful, getting download URL...")
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
                         Log.d(TAG, "Image URL obtained: $uri")
                         cont.resume(uri.toString())
@@ -743,15 +743,15 @@ class ChatRepositoryImpl @Inject constructor(
     // Sube un video a Firebase Storage
     private suspend fun uploadVideo(videoBytes: ByteArray): String? = suspendCoroutine { cont ->
         try {
-            Log.d(TAG, "🎥 Uploading video: ${videoBytes.size} bytes")
+            Log.d(TAG, "Uploading video: ${videoBytes.size} bytes")
 
             val fileName = "chat_videos/${UUID.randomUUID()}.mp4"
             val videoRef = storage.child(fileName)
-            Log.d(TAG, "🎥 Uploading to: $fileName")
+            Log.d(TAG, "Uploading to: $fileName")
 
             videoRef.putBytes(videoBytes)
                 .addOnSuccessListener {
-                    Log.d(TAG, "🎥 Upload successful, getting download URL...")
+                    Log.d(TAG, "Upload successful, getting download URL...")
                     videoRef.downloadUrl.addOnSuccessListener { uri ->
                         Log.d(TAG, "Video URL obtained: $uri")
                         cont.resume(uri.toString())
@@ -773,11 +773,11 @@ class ChatRepositoryImpl @Inject constructor(
     // Actualiza el último mensaje de una conversación en la base de datos local
     private suspend fun updateConversationLastMessage(conversationId: String) {
         try {
-            // Get the latest non-deleted message
+            // Reciba el último mensaje no eliminado
             val latestMessage = messageDao.getLatestMessages(conversationId, 1).firstOrNull()
 
             if (latestMessage != null) {
-                // Update conversation with the latest message
+                // Actualiza la conversación con el último mensaje.
                 conversationDao.updateLastMessage(
                     conversationId = conversationId,
                     text = latestMessage.text,
@@ -785,7 +785,7 @@ class ChatRepositoryImpl @Inject constructor(
                     senderId = latestMessage.senderId
                 )
             } else {
-                // No messages left, clear last message
+                // No quedan mensajes, borrando el último mensaje
                 conversationDao.updateLastMessage(
                     conversationId = conversationId,
                     text = null,
@@ -801,13 +801,13 @@ class ChatRepositoryImpl @Inject constructor(
     // Actualiza el último mensaje de una conversación en Firebase
     private suspend fun updateFirebaseConversationLastMessage(conversationId: String) {
         try {
-            // Get the latest non-deleted message
+            // Reciba el último mensaje no eliminado
             val latestMessage = messageDao.getLatestMessages(conversationId, 1).firstOrNull()
 
             val conversationRef = firebaseDb.child("conversations").child(conversationId)
 
             if (latestMessage != null) {
-                // Update Firebase conversation with latest message
+                // Actualiza la conversación de Firebase con el mensaje más reciente.
                 val lastMessageUpdate = mapOf(
                     "lastMessage" to mapOf(
                         "text" to latestMessage.text,
@@ -824,7 +824,7 @@ class ChatRepositoryImpl @Inject constructor(
                         Log.e(TAG, "Failed to update Firebase conversation lastMessage", e)
                     }
             } else {
-                // No messages left, remove lastMessage from conversation
+                // No quedan mensajes, elimina el último mensaje de la conversación.
                 conversationRef.child("lastMessage").removeValue()
                     .addOnSuccessListener {
                         Log.d(TAG, "Removed Firebase conversation lastMessage")
@@ -951,14 +951,14 @@ class ChatRepositoryImpl @Inject constructor(
             try {
                 // Archivar localmente (solo ocultar de la lista)
                 conversationDao.archiveConversation(conversationId)
-                Log.d(TAG, "📦 Archived conversation $conversationId locally")
+                Log.d(TAG, "Archived conversation $conversationId locally")
 
                 // NO eliminamos de Firebase - solo ocultamos localmente
                 // Si el otro usuario envía un mensaje, la conversación se desarchivará automáticamente
 
-                Log.d(TAG, "✅ Conversation $conversationId archived successfully")
+                Log.d(TAG, "Conversation $conversationId archived successfully")
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error archiving conversation", e)
+                Log.e(TAG, "Error archiving conversation", e)
                 throw e
             }
         }
@@ -969,9 +969,9 @@ class ChatRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 conversationDao.unarchiveConversation(conversationId)
-                Log.d(TAG, "📬 Unarchived conversation $conversationId")
+                Log.d(TAG, "Unarchived conversation $conversationId")
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error unarchiving conversation", e)
+                Log.e(TAG, "Error unarchiving conversation", e)
                 throw e
             }
         }
@@ -982,9 +982,9 @@ class ChatRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 conversationDao.blockConversation(conversationId)
-                Log.d(TAG, "🚫 Blocked conversation $conversationId")
+                Log.d(TAG, "Blocked conversation $conversationId")
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error blocking conversation", e)
+                Log.e(TAG, "Error blocking conversation", e)
                 throw e
             }
         }
@@ -995,9 +995,9 @@ class ChatRepositoryImpl @Inject constructor(
         withContext(Dispatchers.IO) {
             try {
                 conversationDao.unblockConversation(conversationId)
-                Log.d(TAG, "✅ Unblocked conversation $conversationId")
+                Log.d(TAG, "Unblocked conversation $conversationId")
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Error unblocking conversation", e)
+                Log.e(TAG, "Error unblocking conversation", e)
                 throw e
             }
         }
