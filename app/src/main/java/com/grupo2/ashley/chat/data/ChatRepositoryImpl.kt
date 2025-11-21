@@ -323,6 +323,21 @@ class ChatRepositoryImpl @Inject constructor(
         try {
             val conversationId = if (userId1 < userId2) "$userId1-$userId2" else "$userId2-$userId1"
 
+            // Check if conversation already exists locally (including archived ones)
+            val existingConv = conversationDao.getConversationById(conversationId)
+
+            // If conversation was archived, unarchive it when user reopens it
+            if (existingConv?.isArchived == true) {
+                conversationDao.unarchiveConversation(conversationId)
+                Log.d(TAG, "📬 Unarchived conversation $conversationId (user reopened chat)")
+                return@withContext Result.success(conversationId)
+            }
+
+            // If conversation exists and is not archived, just return it
+            if (existingConv != null) {
+                return@withContext Result.success(conversationId)
+            }
+
             if (connectivityObserver.isConnected()) {
                 // Create in Firebase
                 val created = suspendCoroutine { cont ->
@@ -347,26 +362,32 @@ class ChatRepositoryImpl @Inject constructor(
                 }
 
                 if (created) {
-                    // Guarda en base local
+                    // Guarda en base local (nueva conversación)
                     val entity = ConversationEntity(
                         id = conversationId,
                         participantsJson = "$userId1,$userId2",
                         lastMessageText = null,
                         lastMessageTimestamp = null,
                         lastMessageSenderId = null,
-                        isSynced = true
+                        isSynced = true,
+                        isMuted = false,
+                        isArchived = false,
+                        isBlocked = false
                     )
                     conversationDao.insertConversation(entity)
                 }
             } else {
-                // Crear solo localmente
+                // Crear solo localmente (nueva conversación)
                 val entity = ConversationEntity(
                     id = conversationId,
                     participantsJson = "$userId1,$userId2",
                     lastMessageText = null,
                     lastMessageTimestamp = null,
                     lastMessageSenderId = null,
-                    isSynced = false
+                    isSynced = false,
+                    isMuted = false,
+                    isArchived = false,
+                    isBlocked = false
                 )
                 conversationDao.insertConversation(entity)
             }
@@ -436,10 +457,18 @@ class ChatRepositoryImpl @Inject constructor(
                         for (child in snapshot.children) {
                             val conv = child.getValue(Conversation::class.java)
                             if (conv != null && conv.participants.contains(userId)) {
+                                val conversationId = child.key ?: ""
+
+                                // Preserve local-only fields (isMuted, isArchived, isBlocked)
+                                val existingConv = conversationDao.getConversationById(conversationId)
+                                val isMuted = existingConv?.isMuted ?: false
+                                val isArchived = existingConv?.isArchived ?: false
+                                val isBlocked = existingConv?.isBlocked ?: false
+
                                 conversations.add(
                                     ConversationEntity.fromConversation(
-                                        conv.copy(id = child.key ?: "")
-                                    )
+                                        conv.copy(id = conversationId, isMuted = isMuted, isBlocked = isBlocked)
+                                    ).copy(isArchived = isArchived)
                                 )
                             }
                         }
@@ -462,11 +491,25 @@ class ChatRepositoryImpl @Inject constructor(
 
     // Inicia la sincronización en tiempo real con Firebase para una conversación
     private suspend fun startFirebaseSync(conversationId: String) {
+        // Verificar si la conversación está bloqueada
+        val isBlocked = conversationDao.isConversationBlocked(conversationId) ?: false
+        if (isBlocked) {
+            Log.d(TAG, "🚫 Conversation $conversationId is BLOCKED, skipping Firebase sync")
+            return
+        }
+
         val messagesRef = firebaseDb.child("conversations").child(conversationId).child("messages")
 
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 coroutineScope.launch {
+                    // Double-check if conversation is still not blocked before syncing
+                    val isBlocked = conversationDao.isConversationBlocked(conversationId) ?: false
+                    if (isBlocked) {
+                        Log.d(TAG, "🚫 Conversation $conversationId is BLOCKED, skipping message sync")
+                        return@launch
+                    }
+
                     val firebaseMessages = mutableListOf<MessageEntity>()
                     val currentUserId = auth.currentUser?.uid
                     val newMessagesForNotification = mutableListOf<Pair<Message, String>>()
@@ -483,13 +526,6 @@ class ChatRepositoryImpl @Inject constructor(
                                 message.id = child.key ?: ""
                             }
 
-                            Log.d(TAG, "🔄 Synced message from Firebase:")
-                            Log.d(TAG, "   - ID: ${message.id}")
-                            Log.d(TAG, "   - Text: ${message.text}")
-                            Log.d(TAG, "   - ImageURL: ${message.imageUrl}")
-                            Log.d(TAG, "   - VideoURL: ${message.videoUrl}")
-                            Log.d(TAG, "   - MediaType: ${message.mediaType}")
-
                             // Chequea si ha sido eliminado
                             val isDeleted = child.child("isDeleted").getValue(Boolean::class.java) ?: false
                             val deleted = child.child("deleted").getValue(Boolean::class.java) ?: false
@@ -498,18 +534,11 @@ class ChatRepositoryImpl @Inject constructor(
                                 // El mensaje fue eliminado: borrar localmente
                                 messageDao.deleteMessage(message.id)
                             } else {
-                                // Mensaje válido: sincronizar SOLO si tiene URLs de media o si es nuevo
-                                // Esto evita sobrescribir mensajes locales que están siendo procesados
-                                val shouldUpdate = message.imageUrl != null ||
-                                                   message.videoUrl != null ||
-                                                   !existingMessageIds.contains(message.id) ||
-                                                   message.senderId != currentUserId
-
-                                if (shouldUpdate) {
-                                    firebaseMessages.add(
-                                        MessageEntity.fromMessage(message, conversationId, isSynced = true)
-                                    )
-                                }
+                                // Mensaje válido: sincronizar desde Firebase
+                                // Siempre actualizar para mantener estados sincronizados (status, readAt, etc.)
+                                firebaseMessages.add(
+                                    MessageEntity.fromMessage(message, conversationId, isSynced = true)
+                                )
 
                                 // Check if this is a new message for notification
                                 val isNewMessage = !existingMessageIds.contains(message.id)
@@ -546,6 +575,15 @@ class ChatRepositoryImpl @Inject constructor(
                     // Update conversation's last message to reflect any deletions
                     updateConversationLastMessage(conversationId)
 
+                    // Automatically unarchive conversation if there are new messages
+                    if (newMessagesForNotification.isNotEmpty()) {
+                        val isArchived = conversationDao.isConversationArchived(conversationId) ?: false
+                        if (isArchived) {
+                            conversationDao.unarchiveConversation(conversationId)
+                            Log.d(TAG, "📬 Auto-unarchived conversation $conversationId due to new message")
+                        }
+                    }
+
                     // Show notifications for new messages
                     if (newMessagesForNotification.isNotEmpty()) {
                         showNotificationsForNewMessages(conversationId, newMessagesForNotification)
@@ -569,6 +607,15 @@ class ChatRepositoryImpl @Inject constructor(
         messages: List<Pair<Message, String>>
     ) {
         try {
+            // Verificar si la conversación está silenciada
+            val isMuted = conversationDao.isConversationMuted(conversationId) ?: false
+            Log.d(TAG, "🔔 Checking mute state for conversation $conversationId: isMuted=$isMuted")
+            if (isMuted) {
+                Log.d(TAG, "🔕 Conversation $conversationId is MUTED, skipping notifications")
+                return
+            }
+            Log.d(TAG, "✅ Conversation $conversationId is NOT muted, showing notification")
+
             // Get unique sender IDs
             val senderIds = messages.map { it.second }.distinct()
 
@@ -676,19 +723,19 @@ class ChatRepositoryImpl @Inject constructor(
                 .addOnSuccessListener {
                     Log.d(TAG, "📸 Upload successful, getting download URL...")
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
-                        Log.d(TAG, "✅ Image URL obtained: $uri")
+                        Log.d(TAG, "Image URL obtained: $uri")
                         cont.resume(uri.toString())
                     }.addOnFailureListener {
-                        Log.e(TAG, "❌ Failed to get download URL", it)
+                        Log.e(TAG, "Failed to get download URL", it)
                         cont.resume(null)
                     }
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "❌ Failed to upload image", it)
+                    Log.e(TAG, "Failed to upload image", it)
                     cont.resume(null)
                 }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to process image", e)
+            Log.e(TAG, "Failed to process image", e)
             cont.resume(null)
         }
     }
@@ -706,19 +753,19 @@ class ChatRepositoryImpl @Inject constructor(
                 .addOnSuccessListener {
                     Log.d(TAG, "🎥 Upload successful, getting download URL...")
                     videoRef.downloadUrl.addOnSuccessListener { uri ->
-                        Log.d(TAG, "✅ Video URL obtained: $uri")
+                        Log.d(TAG, "Video URL obtained: $uri")
                         cont.resume(uri.toString())
                     }.addOnFailureListener {
-                        Log.e(TAG, "❌ Failed to get video download URL", it)
+                        Log.e(TAG, "Failed to get video download URL", it)
                         cont.resume(null)
                     }
                 }
                 .addOnFailureListener {
-                    Log.e(TAG, "❌ Failed to upload video", it)
+                    Log.e(TAG, "Failed to upload video", it)
                     cont.resume(null)
                 }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Failed to process video", e)
+            Log.e(TAG, "Failed to process video", e)
             cont.resume(null)
         }
     }
@@ -860,5 +907,114 @@ class ChatRepositoryImpl @Inject constructor(
                 0
             }
         }
+    }
+
+    // Silencia las notificaciones de una conversación
+    override suspend fun muteConversation(conversationId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                conversationDao.muteConversation(conversationId)
+                Log.d(TAG, "Conversation $conversationId muted")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error muting conversation", e)
+            }
+        }
+    }
+
+    // Activa las notificaciones de una conversación
+    override suspend fun unmuteConversation(conversationId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                conversationDao.unmuteConversation(conversationId)
+                Log.d(TAG, "Conversation $conversationId unmuted")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error unmuting conversation", e)
+            }
+        }
+    }
+
+    // Verifica si una conversación está silenciada
+    override suspend fun isConversationMuted(conversationId: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                conversationDao.isConversationMuted(conversationId) ?: false
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking if conversation is muted", e)
+                false
+            }
+        }
+    }
+
+    // Archiva una conversación (oculta sin eliminar datos)
+    override suspend fun archiveConversation(conversationId: String, userId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                // Archivar localmente (solo ocultar de la lista)
+                conversationDao.archiveConversation(conversationId)
+                Log.d(TAG, "📦 Archived conversation $conversationId locally")
+
+                // NO eliminamos de Firebase - solo ocultamos localmente
+                // Si el otro usuario envía un mensaje, la conversación se desarchivará automáticamente
+
+                Log.d(TAG, "✅ Conversation $conversationId archived successfully")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error archiving conversation", e)
+                throw e
+            }
+        }
+    }
+
+    // Desarchiva una conversación (la hace visible de nuevo)
+    override suspend fun unarchiveConversation(conversationId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                conversationDao.unarchiveConversation(conversationId)
+                Log.d(TAG, "📬 Unarchived conversation $conversationId")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error unarchiving conversation", e)
+                throw e
+            }
+        }
+    }
+
+    // Bloquea una conversación (impide sincronización de mensajes)
+    override suspend fun blockConversation(conversationId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                conversationDao.blockConversation(conversationId)
+                Log.d(TAG, "🚫 Blocked conversation $conversationId")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error blocking conversation", e)
+                throw e
+            }
+        }
+    }
+
+    // Desbloquea una conversación (permite sincronización de mensajes)
+    override suspend fun unblockConversation(conversationId: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                conversationDao.unblockConversation(conversationId)
+                Log.d(TAG, "✅ Unblocked conversation $conversationId")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Error unblocking conversation", e)
+                throw e
+            }
+        }
+    }
+
+    // Verifica si una conversación está bloqueada
+    override suspend fun isConversationBlocked(conversationId: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            conversationDao.isConversationBlocked(conversationId) ?: false
+        }
+    }
+
+    // Elimina una conversación completa (mensajes y conversación)
+    // DEPRECATED: Ahora usa archiveConversation para evitar perder datos
+    @Deprecated("Use archiveConversation instead to avoid data loss")
+    override suspend fun deleteConversation(conversationId: String, userId: String) {
+        // Redirigir a archiveConversation en lugar de eliminar
+        archiveConversation(conversationId, userId)
     }
 }

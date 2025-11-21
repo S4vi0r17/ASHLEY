@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -100,6 +101,11 @@ fun ChatListItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Si está bloqueada, mostrar indicador de bloqueo
+                    if (conversation.isBlocked) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
                     Text(
                         text = conversation.lastMessage?.text?.ifEmpty { "Photo" } ?: stringResource(R.string.escribe_mensaje),
                         style = MaterialTheme.typography.bodyMedium,
@@ -130,13 +136,62 @@ fun ChatListItem(
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "${conversation.unreadCount}",
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.labelSmall,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
+                            Icon(
+                                imageVector = Icons.Default.Block,
+                                contentDescription = "Blocked",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.error
                             )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Conversation blocked",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                color = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = conversation.lastMessage?.text?.ifEmpty { "Photo" } ?: "Start chatting",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            color = if (conversation.unreadCount > 0) {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            },
+                            fontWeight = if (conversation.unreadCount > 0) {
+                                FontWeight.Medium
+                            } else {
+                                FontWeight.Normal
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        if (conversation.unreadCount > 0) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .size(22.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "${conversation.unreadCount}",
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

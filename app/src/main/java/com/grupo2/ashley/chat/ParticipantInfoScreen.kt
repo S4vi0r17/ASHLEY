@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
@@ -18,11 +19,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.grupo2.ashley.R
@@ -36,8 +42,37 @@ fun ParticipantInfoScreen(
     viewModel: ChatRealtimeViewModel = hiltViewModel()
 ) {
     val participantInfo by viewModel.participantInfo.collectAsState()
+    val isMuted by viewModel.isMuted.collectAsState()
+    val isBlocked by viewModel.isBlocked.collectAsState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    // Hide navigation bar
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as? androidx.activity.ComponentActivity)?.window
+        window?.let {
+            val insetsController = WindowCompat.getInsetsController(it, view)
+            insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+            insetsController.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+    }
+
+    // Restore navigation bar when leaving the screen
+    DisposableEffect(Unit) {
+        onDispose {
+            val window = (view.context as? androidx.activity.ComponentActivity)?.window
+            window?.let {
+                val insetsController = WindowCompat.getInsetsController(it, view)
+                insetsController.show(WindowInsetsCompat.Type.navigationBars())
+            }
+        }
+    }
 
     LaunchedEffect(conversationId) {
+        // Ensure the ViewModel knows about this conversation
+        // This sets currentConversationId needed for mute/unmute
+        viewModel.startListening(conversationId)
         viewModel.loadParticipantInfo(conversationId, currentUserId)
     }
 
@@ -186,15 +221,13 @@ fun ParticipantInfoScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    var notificationsEnabled by remember { mutableStateOf(true) }
-                    var isBlocked by remember { mutableStateOf(false) }
-
                     ActionButton(
+                        text = if (!isMuted) "Mute Notifications" else "Unmute Notifications",
                         text = if (notificationsEnabled) stringResource(R.string.silenciar_notificaciones) else stringResource(R.string.activar_notificaciones),
                         icon = Icons.Default.Notifications,
-                        isEnabled = notificationsEnabled,
+                        isEnabled = !isMuted,
                         isDestructive = false,
-                        onClick = { notificationsEnabled = !notificationsEnabled }
+                        onClick = { viewModel.toggleMute() }
                     )
 
                     ActionButton(
@@ -202,13 +235,83 @@ fun ParticipantInfoScreen(
                         icon = Icons.Default.Block,
                         isEnabled = !isBlocked,
                         isDestructive = true,
-                        onClick = { isBlocked = !isBlocked }
+                        onClick = { viewModel.toggleBlock() }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Delete Conversation Section
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ActionButton(
+                        text = "Archive Conversation",
+                        icon = Icons.Default.Delete,
+                        isEnabled = true,
+                        isDestructive = true,
+                        onClick = { showDeleteDialog = true }
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    // Delete Confirmation Dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = {
+                Text(
+                    text = "Archive Conversation?",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            },
+            text = {
+                Text(
+                    text = "This will hide the conversation from your chat list. If the other person sends a new message, the conversation will reappear.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteCurrentConversation {
+                            // Navigate back after successful archiving
+                            onNavigateBack()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Archive")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

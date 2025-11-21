@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.grupo2.ashley.chat.models.Conversation
+import com.grupo2.ashley.chat.models.LastMessage
 import com.grupo2.ashley.chat.models.Message
 import com.grupo2.ashley.chat.models.MessageStatus
 import com.grupo2.ashley.chat.models.ProductInfo
@@ -84,9 +85,21 @@ class ChatRealtimeRepository(
 
         ref.setValue(messageWithId)
             .addOnSuccessListener {
+                // Create a LastMessage object from the sent message
+                val lastMessage = LastMessage(
+                    text = messageWithId.text,
+                    timestamp = messageWithId.timestamp,
+                    senderId = messageWithId.senderId,
+                    unreadCount = 1 // New message starts with unread count of 1
+                )
+
                 val conversationUpdate = mapOf(
-                    "lastMessage" to messageWithId,
-                    "timestamp" to messageWithId.timestamp
+                    "lastMessage" to mapOf(
+                        "text" to lastMessage.text,
+                        "timestamp" to lastMessage.timestamp,
+                        "senderId" to lastMessage.senderId,
+                        "unreadCount" to lastMessage.unreadCount
+                    )
                 )
 
                 db.child("conversations").child(conversationId)
@@ -128,11 +141,23 @@ class ChatRealtimeRepository(
 
         conversationRef.get().addOnSuccessListener { snapshot ->
             if (!snapshot.exists()) {
+                // Create an empty LastMessage object for new conversations
+                val emptyLastMessage = LastMessage(
+                    text = "",
+                    timestamp = System.currentTimeMillis(),
+                    senderId = "",
+                    unreadCount = 0
+                )
+
                 val newConversation = mapOf(
                     "id" to conversationId,
                     "participants" to listOf(userId1, userId2),
-                    "lastMessage" to "",
-                    "timestamp" to System.currentTimeMillis()
+                    "lastMessage" to mapOf(
+                        "text" to emptyLastMessage.text,
+                        "timestamp" to emptyLastMessage.timestamp,
+                        "senderId" to emptyLastMessage.senderId,
+                        "unreadCount" to emptyLastMessage.unreadCount
+                    )
                 )
 
                 conversationRef.setValue(newConversation)

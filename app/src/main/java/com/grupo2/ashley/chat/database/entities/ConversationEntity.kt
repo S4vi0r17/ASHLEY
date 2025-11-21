@@ -14,7 +14,10 @@ data class ConversationEntity(
     val lastMessageTimestamp: Long?,
     val lastMessageSenderId: String?,
     val unreadCount: Int = 0,
-    val isSynced: Boolean = false
+    val isSynced: Boolean = false,
+    val isMuted: Boolean = false,
+    val isArchived: Boolean = false,
+    val isBlocked: Boolean = false
 ) {
     fun toConversation(participants: List<String>): Conversation {
         return Conversation(
@@ -28,7 +31,9 @@ data class ConversationEntity(
                     unreadCount = unreadCount
                 )
             } else null,
-            participantsInfo = emptyMap()
+            participantsInfo = emptyMap(),
+            isMuted = isMuted,
+            isBlocked = isBlocked
         )
     }
 
@@ -41,7 +46,9 @@ data class ConversationEntity(
                 lastMessageTimestamp = conversation.lastMessage?.timestamp,
                 lastMessageSenderId = conversation.lastMessage?.senderId,
                 unreadCount = conversation.lastMessage?.unreadCount ?: 0,
-                isSynced = true
+                isSynced = true,
+                isMuted = conversation.isMuted,
+                isBlocked = conversation.isBlocked
             )
         }
     }

@@ -53,6 +53,34 @@ interface ChatRepository {
     // Obtiene el total de mensajes sin leer
     suspend fun getTotalUnreadCount(currentUserId: String): Int
 
+    // Silencia las notificaciones de una conversación
+    suspend fun muteConversation(conversationId: String)
+
+    // Activa las notificaciones de una conversación
+    suspend fun unmuteConversation(conversationId: String)
+
+    // Verifica si una conversación está silenciada
+    suspend fun isConversationMuted(conversationId: String): Boolean
+
+    // Archiva una conversación (oculta sin eliminar)
+    suspend fun archiveConversation(conversationId: String, userId: String)
+
+    // Desarchiva una conversación
+    suspend fun unarchiveConversation(conversationId: String)
+
+    // Bloquea una conversación (impide sincronización de mensajes)
+    suspend fun blockConversation(conversationId: String)
+
+    // Desbloquea una conversación (permite sincronización de mensajes)
+    suspend fun unblockConversation(conversationId: String)
+
+    // Verifica si una conversación está bloqueada
+    suspend fun isConversationBlocked(conversationId: String): Boolean
+
+    // Elimina una conversación completa (mensajes y conversación) - DEPRECATED: Use archiveConversation instead
+    @Deprecated("Use archiveConversation instead to avoid data loss", ReplaceWith("archiveConversation(conversationId, userId)"))
+    suspend fun deleteConversation(conversationId: String, userId: String)
+
     // Sync
 
     // Sincroniza mensajes pendientes cuando hay conexión

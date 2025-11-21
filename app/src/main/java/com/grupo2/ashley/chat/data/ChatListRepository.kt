@@ -143,7 +143,8 @@ class ChatListRepository(
                         lastMessage = conv.lastMessage,
                         isOnline = false, // Para implementar lógica de presencia después :v
                         unreadCount = 0,
-                        productInfo = productInfo
+                        productInfo = productInfo,
+                        isBlocked = conv.isBlocked
                     )
 
                     conversationsList.add(conversationWithUser)
