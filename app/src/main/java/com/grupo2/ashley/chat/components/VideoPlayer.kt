@@ -63,7 +63,7 @@ fun VideoPlayer(
                     }
 
                     // Listener para cuando comienza a reproducirse
-                    // Solo si NO hay onClick callback
+                    // Solo si no hay onClick callback
                     if (onClick == null) {
                         setOnClickListener {
                             if (isPlaying) {

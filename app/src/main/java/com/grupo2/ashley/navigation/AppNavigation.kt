@@ -44,10 +44,11 @@ import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.utils.makePhoneCall
 import com.grupo2.ashley.chat.ChatListScreen
+import com.grupo2.ashley.chat.ChatListViewModel
 import com.grupo2.ashley.chat.ChatRealtimeScreen
 import com.grupo2.ashley.chat.ParticipantInfoScreen
-import com.grupo2.ashley.chat.data.ChatRealtimeRepository
 import com.grupo2.ashley.profile.ProfileViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 object Routes {
     const val HOME = "home"
@@ -371,6 +372,7 @@ fun AppNavigation(
 
             if (product != null) {
                 val productDetailViewModel: ProductDetailViewModel = viewModel()
+                val chatListViewModel: ChatListViewModel = hiltViewModel()
 
                 // Llamar a setProduct solo una vez cuando se carga la pantalla
                 LaunchedEffect(productId) {
@@ -395,9 +397,10 @@ fun AppNavigation(
                         val sellerId = sellerProfile?.userId
 
                         if (currentUserId != null && sellerId != null) {
-                            val chatRepo = ChatRealtimeRepository()
-                            chatRepo.createOrGetConversation(currentUserId, sellerId) { conversationId ->
-                                navController.navigate("chat/$conversationId")
+                            chatListViewModel.createConversation(currentUserId, sellerId) { conversationId ->
+                                if (conversationId != null) {
+                                    navController.navigate("chat/$conversationId") 
+                                 }
                             }
                         }
                     },

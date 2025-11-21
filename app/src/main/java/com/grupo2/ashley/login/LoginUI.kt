@@ -357,7 +357,7 @@ fun RecoverTexto(navController: NavController) {
 @Composable
 fun LanguageTexto(onClick: () -> Unit) {
     Text(
-        "Idioma",
+        stringResource(R.string.idioma),
         fontSize = 12.sp,
         modifier = Modifier.clickable { onClick() },
         fontWeight = FontWeight.Bold,

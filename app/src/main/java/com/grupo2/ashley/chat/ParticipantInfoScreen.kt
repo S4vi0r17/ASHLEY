@@ -223,7 +223,6 @@ fun ParticipantInfoScreen(
                 ) {
                     ActionButton(
                         text = if (!isMuted) "Mute Notifications" else "Unmute Notifications",
-                        text = if (notificationsEnabled) stringResource(R.string.silenciar_notificaciones) else stringResource(R.string.activar_notificaciones),
                         icon = Icons.Default.Notifications,
                         isEnabled = !isMuted,
                         isDestructive = false,

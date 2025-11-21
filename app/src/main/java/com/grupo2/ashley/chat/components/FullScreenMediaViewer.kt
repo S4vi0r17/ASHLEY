@@ -75,7 +75,7 @@ fun FullScreenMediaViewer(
                                 // Configurar el video
                                 setVideoURI(Uri.parse(videoUrl))
 
-                                // IMPORTANTE: Habilitar audio
+                                // Habilitar audio
                                 setOnPreparedListener { mp ->
                                     isLoading = false
                                     mp.isLooping = false
