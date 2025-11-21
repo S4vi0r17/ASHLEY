@@ -200,7 +200,7 @@ fun ChatInputBar(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-            // 🖼️ Botón para elegir imagen
+            // Botón para elegir imagen
             IconButton(
                 onClick = { if (!isSending) onPickImage() },
                 modifier = Modifier
@@ -219,7 +219,7 @@ fun ChatInputBar(
 
             Spacer(modifier = Modifier.width(6.dp))
 
-            // 🎥 Botón para elegir video
+            //Botón para elegir video
             IconButton(
                 onClick = { if (!isSending) onPickVideo() },
                 modifier = Modifier
@@ -238,7 +238,7 @@ fun ChatInputBar(
 
             Spacer(modifier = Modifier.width(6.dp))
 
-            // 📝 Campo de texto
+            // Campo de texto
             OutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
@@ -260,7 +260,7 @@ fun ChatInputBar(
 
             Spacer(modifier = Modifier.width(6.dp))
 
-            // ✨ Botón de IA para mejorar texto
+            // Botón de IA para mejorar texto
             if (text.isNotBlank()) {
                 // Animación de rotación cuando está mejorando
                 val rotation = animateFloatAsState(
@@ -301,7 +301,7 @@ fun ChatInputBar(
                 Spacer(modifier = Modifier.width(6.dp))
             }
 
-            // 🚀 Botón de envío
+            // Botón de envío
             val canSend = (text.isNotBlank() || pendingImageBytes != null || pendingVideoBytes != null) && !isSending
             IconButton(
                 onClick = onSend,

@@ -327,9 +327,9 @@ fun ProfileSetupScreen(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = if (defaultPickupLocationName.isNotEmpty()) {
-                                        stringResource(R.string.sin_ubicacion) // ->
+                                        defaultPickupLocationName
                                     } else {
-                                        stringResource(R.string.ubicacion_seleccionada)
+                                        stringResource(R.string.sin_ubicacion)
                                     },
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
@@ -405,9 +405,9 @@ fun ProfileSetupScreen(
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     if (defaultPickupLocationName.isBlank())
-                                        stringResource(R.string.toca_para_seleccionar)
+                                        stringResource(R.string.sin_ubicacion)
                                     else
-                                        stringResource(R.string.sin_ubicacion),
+                                        defaultPickupLocationName,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = if (defaultPickupLocationName.isBlank())
                                         MaterialTheme.colorScheme.error

@@ -67,16 +67,49 @@ fun CuentaScreen(
     // Estado para mostrar indicador de ubicación actualizada
     var locationJustUpdated by remember { mutableStateOf(false) }
 
+    // Flag para evitar actualizaciones circulares durante la carga inicial
+    var isInitialLoad by remember { mutableStateOf(true) }
+
     // Sincronizar ubicación del mapa si está disponible
     ubicacionViewModel?.let { ubicacionVM ->
         val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
         val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
         val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
 
-        // Actualizar cuando la dirección cambie
+        // Cargar ubicación del perfil al UbicacionViewModel cuando se entra a la pantalla
+        // Observar userProfile para esperar a que se cargue desde Firestore
+        LaunchedEffect(userProfile) {
+            userProfile?.let {
+                val savedLat = it.defaultPickupLatitude
+                val savedLng = it.defaultPickupLongitude
+                val savedAddress = it.fullAddress
+                val savedName = it.defaultPickupLocationName
+
+                // Solo cargar si hay una ubicación válida guardada
+                if (savedAddress.isNotEmpty() && savedLat != 0.0 && savedLng != 0.0) {
+                    isInitialLoad = true // Marcar como carga inicial
+                    ubicacionVM.actualizarUbicacion(
+                        lat = savedLat,
+                        lng = savedLng,
+                        direccion = savedAddress,
+                        nombre = savedName
+                    )
+                    // Esperar un frame para que el LaunchedEffect de direccionMapa vea el flag
+                    kotlinx.coroutines.delay(100)
+                    isInitialLoad = false
+                }
+            }
+        }
+
+        // Actualizar cuando la dirección cambie (desde el mapa)
         LaunchedEffect(direccionMapa) {
-            // Actualizar SIEMPRE que haya una dirección válida
-            if (direccionMapa.isNotBlank() && direccionMapa != context.getString(R.string.sin_ubicacion)) {
+            // NO actualizar si es la carga inicial (para evitar loop)
+            if (isInitialLoad) return@LaunchedEffect
+
+            // Actualizar SOLO si viene del mapa (dirección válida y diferente a la inicial)
+            if (direccionMapa.isNotBlank() &&
+                direccionMapa != "Sin dirección seleccionada" &&
+                direccionMapa != context.getString(R.string.sin_ubicacion)) {
                 viewModel.updateLocation(
                     address = direccionMapa,
                     latitude = ubicacionMapa.latitude,
@@ -424,7 +457,7 @@ fun CuentaScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (defaultPickupLocationName.isNotEmpty()) {
-                                    stringResource(R.string.sin_ubicacion)
+                                    defaultPickupLocationName
                                 } else {
                                     stringResource(R.string.tu_ubicacion)
                                 },
