@@ -93,19 +93,15 @@ class HomeViewModel : ViewModel() {
         filterProducts()
     }
 
-    fun toggleFavorite(productId: String) {
+    fun toggleFavorite(productId: String, dashboardViewModel: com.grupo2.ashley.dashboard.DashboardViewModel? = null) {
         viewModelScope.launch {
-            // Encontrar el producto
             val product = _allProducts.value.find { it.productId == productId } ?: return@launch
-
-            // Alternar favorito en Firebase
             favoritesRepository.toggleFavorite(
                 productId = productId,
                 productTitle = product.title,
                 productImage = product.images.firstOrNull() ?: "",
                 productPrice = product.price
             ).onSuccess { isFavorite ->
-                // Actualizar estado local inmediatamente
                 _products.value = _products.value.map {
                     if (it.productId == productId) it.copy(isFavorite = isFavorite)
                     else it
@@ -114,6 +110,8 @@ class HomeViewModel : ViewModel() {
                     if (it.productId == productId) it.copy(isFavorite = isFavorite)
                     else it
                 }
+                // Notificar al dashboard que cambió favoritos
+                dashboardViewModel?.onFavoritesChanged()
             }
         }
     }

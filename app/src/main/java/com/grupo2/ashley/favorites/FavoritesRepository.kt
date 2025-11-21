@@ -26,9 +26,7 @@ class FavoritesRepository {
         return try {
             val userId = auth.currentUser?.uid 
                 ?: return Result.failure(Exception("Usuario no autenticado"))
-            
             val today = getCurrentDate()
-            
             // Agregar a la colección de favoritos del usuario
             firestore.collection("users")
                 .document(userId)
@@ -45,39 +43,34 @@ class FavoritesRepository {
                     )
                 )
                 .await()
-            
             // Incrementar contador de favoritos del producto
             firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .update("favorites", FieldValue.increment(1))
                 .await()
-            
             // Actualizar estadística diaria
             val statsRef = firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .collection(PRODUCT_STATS_COLLECTION)
                 .document(today)
-            
-            statsRef.get().await().let { doc ->
-                if (doc.exists()) {
-                    statsRef.update("favorites", FieldValue.increment(1))
-                        .await()
-                } else {
-                    statsRef.set(
-                        mapOf(
-                            "date" to today,
-                            "views" to 0,
-                            "favorites" to 1,
-                            "messages" to 0,
-                            "timestamp" to System.currentTimeMillis()
-                        )
-                    ).await()
-                }
+            val statsDoc = statsRef.get().await()
+            if (statsDoc.exists()) {
+                // Si ya existe, incrementa el campo 'favorites' SOLO para hoy
+                statsRef.update("favorites", FieldValue.increment(1)).await()
+            } else {
+                // Si no existe, crea el documento con 'favorites' en 1
+                statsRef.set(
+                    mapOf(
+                        "date" to today,
+                        "views" to 0,
+                        "favorites" to 1,
+                        "messages" to 0,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                ).await()
             }
-            
             Log.d(TAG, "Producto agregado a favoritos: $productId")
             Result.success(Unit)
-            
         } catch (e: Exception) {
             Log.e(TAG, "Error al agregar a favoritos: ${e.message}", e)
             Result.failure(e)
@@ -91,9 +84,7 @@ class FavoritesRepository {
         return try {
             val userId = auth.currentUser?.uid 
                 ?: return Result.failure(Exception("Usuario no autenticado"))
-            
             val today = getCurrentDate()
-            
             // Remover de la colección de favoritos del usuario
             firestore.collection("users")
                 .document(userId)
@@ -101,32 +92,25 @@ class FavoritesRepository {
                 .document(productId)
                 .delete()
                 .await()
-            
             // Decrementar contador de favoritos del producto
             firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .update("favorites", FieldValue.increment(-1))
                 .await()
-            
-            // Actualizar estadística diaria
+            // Actualizar estadística diaria SOLO para hoy
             val statsRef = firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .collection(PRODUCT_STATS_COLLECTION)
                 .document(today)
-            
-            statsRef.get().await().let { doc ->
-                if (doc.exists()) {
-                    val currentFavorites = doc.getLong("favorites")?.toInt() ?: 0
-                    if (currentFavorites > 0) {
-                        statsRef.update("favorites", FieldValue.increment(-1))
-                            .await()
-                    }
+            val statsDoc = statsRef.get().await()
+            if (statsDoc.exists()) {
+                val currentFavorites = statsDoc.getLong("favorites")?.toInt() ?: 0
+                if (currentFavorites > 0) {
+                    statsRef.update("favorites", FieldValue.increment(-1)).await()
                 }
             }
-            
             Log.d(TAG, "Producto removido de favoritos: $productId")
             Result.success(Unit)
-            
         } catch (e: Exception) {
             Log.e(TAG, "Error al remover de favoritos: ${e.message}", e)
             Result.failure(e)

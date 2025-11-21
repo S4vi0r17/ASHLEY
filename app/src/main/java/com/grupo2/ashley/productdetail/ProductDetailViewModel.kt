@@ -100,9 +100,8 @@ class ProductDetailViewModel(
         }
     }
 
-    fun toggleFavorite() {
+    fun toggleFavorite(dashboardViewModel: com.grupo2.ashley.dashboard.DashboardViewModel? = null) {
         val currentProduct = _product.value ?: return
-        
         viewModelScope.launch {
             _isTogglingFavorite.value = true
             try {
@@ -112,10 +111,11 @@ class ProductDetailViewModel(
                     productImage = currentProduct.images.firstOrNull() ?: "",
                     productPrice = currentProduct.price
                 )
-                
                 result.onSuccess { newState ->
                     _isFavorite.value = newState
                     Log.d("ProductDetailViewModel", "Favorito actualizado: $newState")
+                    // Notificar al dashboard que cambió favoritos
+                    dashboardViewModel?.onFavoritesChanged()
                 }
             } catch (e: Exception) {
                 Log.e("ProductDetailViewModel", "Error al alternar favorito: ${e.message}", e)

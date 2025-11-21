@@ -56,4 +56,11 @@ class DashboardViewModel : ViewModel() {
     fun refreshStats() {
         loadStats()
     }
+
+    /**
+     * Llamar este método desde HomeViewModel y ProductDetailViewModel tras modificar favoritos
+     */
+    fun onFavoritesChanged() {
+        loadStats()
+    }
 }
