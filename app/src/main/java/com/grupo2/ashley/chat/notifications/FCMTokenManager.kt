@@ -90,41 +90,4 @@ class FCMTokenManager @Inject constructor(
                 Log.e(TAG, "Failed to sync token to Firebase", e)
             }
     }
-
-    /**
-     * Remover token de firebase
-     */
-    fun removeTokenFromFirebase(userId: String) {
-        val token = getSavedToken() ?: return
-
-        firebaseDb.child("users")
-            .child(userId)
-            .child("fcmTokens")
-            .child(token.hashCode().toString())
-            .removeValue()
-            .addOnSuccessListener {
-                Log.d(TAG, "Token removed from Firebase for user: $userId")
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Failed to remove token from Firebase", e)
-            }
-    }
-
-    /**
-     * Limpiar token local
-     */
-    fun clearLocalToken() {
-        prefs.edit()
-            .remove(KEY_FCM_TOKEN)
-            .remove(KEY_TOKEN_SYNCED)
-            .apply()
-        Log.d(TAG, "Local token cleared")
-    }
-
-    /**
-     * Revisar si el token está sincronizado con el firebase (sirve para el botón :v)
-     */
-    fun isTokenSynced(): Boolean {
-        return prefs.getBoolean(KEY_TOKEN_SYNCED, false)
-    }
 }
