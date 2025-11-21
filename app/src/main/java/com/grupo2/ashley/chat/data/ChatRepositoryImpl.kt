@@ -326,15 +326,15 @@ class ChatRepositoryImpl @Inject constructor(
             // Check if conversation already exists locally (including archived ones)
             val existingConv = conversationDao.getConversationById(conversationId)
 
-            // If conversation was archived, unarchive it when user reopens it
-            if (existingConv?.isArchived == true) {
-                conversationDao.unarchiveConversation(conversationId)
-                Log.d(TAG, "📬 Unarchived conversation $conversationId (user reopened chat)")
-                return@withContext Result.success(conversationId)
-            }
-
-            // If conversation exists and is not archived, just return it
             if (existingConv != null) {
+                // If conversation was archived, unarchive it when user reopens it
+                // Note: We DON'T unblock automatically - user must unblock manually
+                if (existingConv.isArchived) {
+                    conversationDao.unarchiveConversation(conversationId)
+                    Log.d(TAG, "📬 Unarchived conversation $conversationId (user reopened chat)")
+                }
+
+                // Return existing conversation (now unarchived if it was)
                 return@withContext Result.success(conversationId)
             }
 
