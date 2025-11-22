@@ -14,7 +14,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 interface ConnectivityObserver {
+
+    // Observa continuamente el estado de conexión y emite cambios como un Flow
     fun observe(): Flow<Status>
+
+    // Retorna inmediatamente si el dispositivo está conectado a Internet
     fun isConnected(): Boolean
 
     enum class Status {
@@ -33,6 +37,7 @@ class NetworkConnectivityObserver @Inject constructor(
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
+    // Observa los cambios de conectividad usando NetworkCallback y los expone como Flow
     override fun observe(): Flow<ConnectivityObserver.Status> {
         return callbackFlow {
             val callback = object : ConnectivityManager.NetworkCallback() {
@@ -63,7 +68,7 @@ class NetworkConnectivityObserver @Inject constructor(
 
             connectivityManager.registerNetworkCallback(request, callback)
 
-            // Send initial state
+            // Enviar estado inicial al flow
             trySend(if (isConnected()) ConnectivityObserver.Status.Available else ConnectivityObserver.Status.Unavailable)
 
             awaitClose {
@@ -72,6 +77,7 @@ class NetworkConnectivityObserver @Inject constructor(
         }.distinctUntilChanged()
     }
 
+    // Verifica de forma inmediata si hay una red activa con capacidad de Internet
     override fun isConnected(): Boolean {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false

@@ -21,28 +21,33 @@ import javax.inject.Singleton
 @Retention(AnnotationRetention.BINARY)
 annotation class ApplicationScope
 
+// Módulo de Dagger/Hilt que provee instancias de Firebase y el CoroutineScope de aplicación
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
+    // Provee una instancia singleton de FirebaseAuth
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
     }
 
+    // Provee la referencia raíz de Firebase Realtime Database
     @Provides
     @Singleton
     fun provideFirebaseDatabase(): DatabaseReference {
         return FirebaseDatabase.getInstance().reference
     }
 
+    // Provee una instancia singleton de Firebase Firestore
     @Provides
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore {
         return FirebaseFirestore.getInstance()
     }
 
+    // Provee un CoroutineScope global para tareas de larga duración en la aplicación
     @Provides
     @Singleton
     @ApplicationScope

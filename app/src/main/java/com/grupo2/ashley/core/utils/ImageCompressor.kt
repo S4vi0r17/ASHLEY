@@ -11,12 +11,12 @@ import kotlin.math.sqrt
 class ImageCompressor @Inject constructor() {
 
     /**
-     * Compresses an image to reduce its file size
-     * @param imageBytes Original image bytes
-     * @param maxSizeKb Maximum size in KB (default 500KB)
-     * @param maxWidth Maximum width in pixels (default 1024)
-     * @param maxHeight Maximum height in pixels (default 1024)
-     * @return Compressed image bytes
+     * Comprime una imagen para reducir su tamaño de archivo.
+     * @param imageBytes Bytes de la imagen original
+     * @param maxSizeKb Tamaño máximo en KB (predeterminado: 500 KB)
+     * @param maxWidth Ancho máximo en píxeles (predeterminado: 1024)
+     * @param maxHeight Alto máximo en píxeles (predeterminado: 1024)
+     * @return Bytes de la imagen comprimida
      */
     fun compress(
         imageBytes: ByteArray,
