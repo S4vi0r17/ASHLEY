@@ -341,6 +341,8 @@ private fun DashboardContent(
         }
 
         // Gráfico de tendencias de engagement
+        // COMENTADO: Deshabilitado temporalmente
+        /*
         if (stats.viewsLast7Days.isNotEmpty()) {
             Text(
                 text = "Tendencias de Engagement",
@@ -364,6 +366,35 @@ private fun DashboardContent(
                 viewsData = viewsData,
                 favoritesData = favoritesData,
                 title = "Últimos 7 Días"
+            )
+        }
+        */
+
+        // Gráfico de pie - Distribución de vistas por producto
+        if (stats.recentProducts.isNotEmpty() && stats.totalViews > 0) {
+            Text(
+                text = "Distribución de Vistas",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            // Preparar datos: Top 5 productos por vistas
+            val productViewsData = stats.recentProducts
+                .sortedByDescending { it.views }
+                .take(5)
+                .associate {
+                    val truncatedTitle = if (it.title.length > 25) {
+                        it.title.take(22) + "..."
+                    } else {
+                        it.title
+                    }
+                    truncatedTitle to it.views
+                }
+
+            VicoPieChart(
+                data = productViewsData,
+                title = "Top 5 Productos más Vistos"
             )
         }
 

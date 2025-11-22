@@ -375,9 +375,8 @@ fun VicoMultiLineChart(
                 )
             }
 
-            // Mostrar mensaje solo si AMBAS listas están vacías o TODAS tienen valores 0
-            val hasNoData = (viewsData.isEmpty() && favoritesData.isEmpty()) ||
-                    (viewsData.all { it.second == 0 } && favoritesData.all { it.second == 0 })
+            // Mostrar mensaje solo si las listas están COMPLETAMENTE vacías (no tienen estructura)
+            val hasNoData = viewsData.isEmpty() && favoritesData.isEmpty()
 
             if (hasNoData) {
                 Box(
@@ -393,8 +392,9 @@ fun VicoMultiLineChart(
                     )
                 }
             } else {
+                // Siempre mostrar el gráfico, incluso si todos los valores son 0
                 val modelProducer = remember { CartesianChartModelProducer() }
-                
+
                 LaunchedEffect(viewsData, favoritesData) {
                     modelProducer.runTransaction {
                         lineSeries {
