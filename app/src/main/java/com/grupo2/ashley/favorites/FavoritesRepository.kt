@@ -56,10 +56,14 @@ class FavoritesRepository {
                 .document(productId)
                 .collection(PRODUCT_STATS_COLLECTION)
                 .document(today)
+
+            Log.d(TAG, "Guardando favorito para fecha: $today en producto: $productId")
+
             val statsDoc = statsRef.get().await()
             if (statsDoc.exists()) {
                 // Si ya existe, incrementa el campo 'favorites' SOLO para hoy
                 statsRef.update("favorites", FieldValue.increment(1)).await()
+                Log.d(TAG, "Incrementado favoritos para $today. Valor anterior: ${statsDoc.getLong("favorites")}")
             } else {
                 // Si no existe, crea el documento con 'favorites' en 1
                 statsRef.set(
@@ -71,6 +75,7 @@ class FavoritesRepository {
                         "timestamp" to System.currentTimeMillis()
                     )
                 ).await()
+                Log.d(TAG, "Creado nuevo documento de estadísticas para $today con 1 favorito")
             }
             Log.d(TAG, "Producto agregado a favoritos: $productId")
             Result.success(Unit)
@@ -238,8 +243,10 @@ class FavoritesRepository {
     }
     
     private fun getCurrentDate(): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return dateFormat.format(Date())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val date = dateFormat.format(Date())
+        Log.d(TAG, "Fecha actual generada: $date")
+        return date
     }
 }
 

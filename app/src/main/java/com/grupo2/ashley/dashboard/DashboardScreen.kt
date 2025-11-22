@@ -341,7 +341,7 @@ private fun DashboardContent(
         }
 
         // Gráfico de tendencias de engagement
-        if (stats.totalViews > 0 || stats.totalFavorites > 0) {
+        if (stats.viewsLast7Days.isNotEmpty()) {
             Text(
                 text = "Tendencias de Engagement",
                 style = MaterialTheme.typography.titleLarge,
@@ -349,14 +349,17 @@ private fun DashboardContent(
                 modifier = Modifier.padding(top = 8.dp)
             )
 
+            // Mostrar TODOS los días (incluso si tienen 0 vistas/favoritos)
             val viewsData = stats.viewsLast7Days.map { daily ->
                 val label = daily.date.takeLast(5) // "MM-dd"
+                android.util.Log.d("DashboardScreen", "Día: ${daily.date} -> Label: $label | Vistas: ${daily.views} | Favoritos: ${daily.favorites}")
                 label to daily.views
             }
             val favoritesData = stats.viewsLast7Days.map { daily ->
                 val label = daily.date.takeLast(5)
                 label to daily.favorites
             }
+
             VicoMultiLineChart(
                 viewsData = viewsData,
                 favoritesData = favoritesData,

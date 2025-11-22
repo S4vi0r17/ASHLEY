@@ -375,7 +375,11 @@ fun VicoMultiLineChart(
                 )
             }
 
-            if (viewsData.isEmpty() || viewsData.all { it.second == 0 }) {
+            // Mostrar mensaje solo si AMBAS listas están vacías o TODAS tienen valores 0
+            val hasNoData = (viewsData.isEmpty() && favoritesData.isEmpty()) ||
+                    (viewsData.all { it.second == 0 } && favoritesData.all { it.second == 0 })
+
+            if (hasNoData) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

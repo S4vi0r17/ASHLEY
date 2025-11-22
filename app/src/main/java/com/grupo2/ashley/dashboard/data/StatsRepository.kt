@@ -179,16 +179,18 @@ class StatsRepository {
      */
     suspend fun getUserDailyStats(userId: String, days: Int = 7): Result<List<DailyStats>> {
         return try {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             val calendar = Calendar.getInstance()
             val statsMap = mutableMapOf<String, DailyStats>()
             
             // Inicializar mapa con últimos 7 días
+            Log.d(TAG, "=== Inicializando mapa para los últimos $days días ===")
             for (i in (days - 1) downTo 0) {
                 calendar.timeInMillis = System.currentTimeMillis()
                 calendar.add(Calendar.DAY_OF_YEAR, -i)
                 val date = dateFormat.format(calendar.time)
                 statsMap[date] = DailyStats(date = date, views = 0, favorites = 0, messages = 0)
+                Log.d(TAG, "Inicializado día: $date")
             }
             
             // Obtener todos los productos del usuario
@@ -198,24 +200,30 @@ class StatsRepository {
                 .await()
             
             // Para cada producto, obtener sus estadísticas diarias
+            Log.d(TAG, "=== Procesando ${productsSnapshot.documents.size} productos ===")
             for (productDoc in productsSnapshot.documents) {
                 val productId = productDoc.id
-                
+                Log.d(TAG, "Procesando producto: $productId")
+
                 // Obtener subcollection de estadísticas
                 val statsSnapshot = firestore.collection(PRODUCTS_COLLECTION)
                     .document(productId)
                     .collection("product_stats")
                     .get()
                     .await()
-                
+
+                Log.d(TAG, "  Documentos de stats encontrados: ${statsSnapshot.documents.size}")
+
                 // Sumar estadísticas de cada día
                 for (statDoc in statsSnapshot.documents) {
                     val date = statDoc.getString("date") ?: continue
+                    val views = statDoc.getLong("views")?.toInt() ?: 0
+                    val favorites = statDoc.getLong("favorites")?.toInt() ?: 0
+                    val messages = statDoc.getLong("messagesReceived")?.toInt() ?: 0
+
+                    Log.d(TAG, "  Doc ID: ${statDoc.id} | date field: $date | views: $views | favorites: $favorites")
+
                     if (statsMap.containsKey(date)) {
-                        val views = statDoc.getLong("views")?.toInt() ?: 0
-                        val favorites = statDoc.getLong("favorites")?.toInt() ?: 0
-                        val messages = statDoc.getLong("messagesReceived")?.toInt() ?: 0
-                        
                         val currentStats = statsMap[date]!!
                         statsMap[date] = DailyStats(
                             date = date,
@@ -223,12 +231,22 @@ class StatsRepository {
                             favorites = currentStats.favorites + favorites,
                             messages = currentStats.messages + messages
                         )
+                        Log.d(TAG, "  ✓ Sumado a $date: Total views=${statsMap[date]!!.views}, Total favorites=${statsMap[date]!!.favorites}")
+                    } else {
+                        Log.w(TAG, "  ✗ Fecha $date NO está en el rango de los últimos $days días. Ignorando.")
                     }
                 }
             }
             
             // Convertir a lista ordenada por fecha
             val statsList = statsMap.values.sortedBy { it.date }
+
+            // Log para debugging
+            Log.d(TAG, "=== Estadísticas Diarias (Últimos $days días) ===")
+            statsList.forEach { daily ->
+                Log.d(TAG, "Fecha: ${daily.date} | Vistas: ${daily.views} | Favoritos: ${daily.favorites}")
+            }
+
             Result.success(statsList)
             
         } catch (e: Exception) {
