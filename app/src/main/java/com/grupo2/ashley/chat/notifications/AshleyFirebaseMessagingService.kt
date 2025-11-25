@@ -32,36 +32,35 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
         private const val TAG = "AshleyFCMService"
     }
 
+    // Se llama cuando Firebase genera un nuevo token FCM para el dispositivo
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d(TAG, "New FCM token: $token")
 
-        // Save the new token
         serviceScope.launch {
             fcmTokenManager.saveToken(token)
         }
     }
 
+    // Recibe mensajes push de Firebase Cloud Messaging
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
         Log.d(TAG, "Message received from: ${remoteMessage.from}")
 
-        // Handle data payload
+        // Manejo de la data de push noti
         remoteMessage.data.isNotEmpty().let {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
             handleDataMessage(remoteMessage.data)
         }
 
-        // Handle notification payload (if sent from console)
+        // Las push noti se moestrarán automaticamente por el sistema cuando la app esté en segundo plano y en primero
         remoteMessage.notification?.let {
             Log.d(TAG, "Message notification body: ${it.body}")
-            // Note: Notification messages are automatically displayed by the system
-            // when the app is in the background. We only need to handle them manually
-            // when the app is in the foreground.
         }
     }
 
+    // Procesa mensajes de datos (data payload) recibidos desde FCM
     private fun handleDataMessage(data: Map<String, String>) {
         try {
             val type = data["type"] ?: return
@@ -76,6 +75,7 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
+    // Maneja notificaciones de nuevos mensajes y las muestra al usuario
     private fun handleNewMessage(data: Map<String, String>) {
         serviceScope.launch {
             try {
@@ -128,22 +128,26 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 
+    // Maneja indicadores de escritura recibidos por FCM
     private fun handleTypingIndicator(data: Map<String, String>) {
         // Handle typing indicator if needed
         // This could be used to show a notification or update UI
         Log.d(TAG, "Typing indicator received: $data")
     }
 
+    // Se llama cuando algunos mensajes fueron eliminados del servidor
     override fun onDeletedMessages() {
         super.onDeletedMessages()
         Log.d(TAG, "Some messages were deleted from server")
     }
 
+    // Se llama cuando un mensaje fue enviado exitosamente
     override fun onMessageSent(msgId: String) {
         super.onMessageSent(msgId)
         Log.d(TAG, "Message sent: $msgId")
     }
 
+    // Se llama cuando ocurre un error al enviar un mensaje
     override fun onSendError(msgId: String, exception: Exception) {
         super.onSendError(msgId, exception)
         Log.e(TAG, "Message send error: $msgId", exception)

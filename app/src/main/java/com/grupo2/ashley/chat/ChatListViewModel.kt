@@ -41,8 +41,8 @@ class ChatListViewModel @Inject constructor(
     private var currentUserId: String? = null
 
     /**
-     * Starts listening to conversations in real-time with participant info
-     * @param userId The user ID to filter conversations
+     * Se utiliza para escuchar las conversaciones en tiempo real
+     * Se usa userId para filtrar desde el primer hijo en participantes :)
      */
     fun startListening(userId: String?) {
         if (userId == null) return
@@ -58,11 +58,9 @@ class ChatListViewModel @Inject constructor(
                     _uiState.value = ChatListUiState(error = "Error al cargar conversaciones")
                 }
                 .collectLatest { conversationList ->
-                    // Load participant info for each conversation
                     val enrichedConversations = conversationList.map { conversation ->
                         val participantIds = conversation.participants.filter { it != userId }
                         val otherUserId = participantIds.firstOrNull() ?: ""
-
                         val userProfile = if (otherUserId.isNotEmpty()) {
                             try {
                                 userRepository.getUserProfiles(listOf(otherUserId))[otherUserId]

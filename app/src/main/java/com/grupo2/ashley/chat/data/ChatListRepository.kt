@@ -43,12 +43,6 @@ class ChatListRepository(
         })
     }
 
-    /**
-     * Adds a real-time listener for user conversations
-     * @param userId The user ID to filter conversations
-     * @param onChange Callback invoked when conversations change
-     * @return ValueEventListener that can be used to remove the listener later
-     */
     fun addConversationsListener(
         userId: String?,
         onChange: (List<Conversation>) -> Unit
@@ -78,10 +72,6 @@ class ChatListRepository(
         return listener
     }
 
-    /**
-     * Removes a conversations listener
-     * @param listener The ValueEventListener to remove
-     */
     fun removeConversationsListener(listener: ValueEventListener) {
         db.child("conversations").removeEventListener(listener)
     }
@@ -151,8 +141,8 @@ class ChatListRepository(
                         },
                         otherUserImageUrl = userProfile?.profileImageUrl ?: "",
                         lastMessage = conv.lastMessage,
-                        isOnline = false, // Puedes implementar lógica de presencia después
-                        unreadCount = 0, // Puedes implementar contador de no leídos después
+                        isOnline = false, // Para implementar lógica de presencia después :v
+                        unreadCount = 0,
                         productInfo = productInfo
                     )
 

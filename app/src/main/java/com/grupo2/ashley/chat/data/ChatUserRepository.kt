@@ -61,15 +61,14 @@ class ChatUserRepository @Inject constructor(
     }
 
     /**
-     * Gets multiple user profiles at once with caching
-     * @param userIds List of user IDs to fetch
-     * @return Map of userId to UserProfile (only includes found profiles)
+     * Obtiene múltiples perfiles de usuario con caché en memoria
+     * Retorna un mapa de ID de usuario a perfil de usuario
      */
     suspend fun getUserProfiles(userIds: List<String>): Map<String, UserProfile> {
         val result = mutableMapOf<String, UserProfile>()
         val uncachedUserIds = mutableListOf<String>()
 
-        // Check cache for each user
+        // Checking de memoria caché :v
         userIds.forEach { userId ->
             profileCache[userId]?.let {
                 result[userId] = it
@@ -78,13 +77,11 @@ class ChatUserRepository @Inject constructor(
             }
         }
 
-        // Fetch uncached profiles from Firestore
+        // Atrae los usuarios que no están en cacheados y en bloques :v
         if (uncachedUserIds.isNotEmpty()) {
             try {
                 Log.d(TAG, "Fetching ${uncachedUserIds.size} profiles from Firestore")
 
-                // Firestore allows querying up to 10 documents with 'in' operator
-                // Split into chunks of 10 if needed
                 uncachedUserIds.chunked(10).forEach { chunk ->
                     val documents = profilesCollection
                         .whereIn("userId", chunk)
@@ -109,17 +106,14 @@ class ChatUserRepository @Inject constructor(
         return result
     }
 
-    /**
-     * Clears the profile cache
-     */
+    // Limpia el caché
     fun clearCache() {
         profileCache.clear()
         Log.d(TAG, "Profile cache cleared")
     }
 
     /**
-     * Removes a specific profile from cache
-     * @param userId The user ID to remove from cache
+     * Remueve el caché de cierto usuario; podría servir para limpiar ciertos chats, pero se debería sincronizar :/
      */
     fun removeCacheEntry(userId: String) {
         profileCache.remove(userId)
@@ -127,8 +121,7 @@ class ChatUserRepository @Inject constructor(
     }
 
     /**
-     * Gets cache size for debugging
-     * @return Number of cached profiles
+     * Obtiene el cache para debugging, podría servir para pruebas :/
      */
     fun getCacheSize(): Int = profileCache.size
 }

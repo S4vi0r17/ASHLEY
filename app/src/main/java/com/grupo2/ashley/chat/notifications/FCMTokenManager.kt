@@ -27,7 +27,7 @@ class FCMTokenManager @Inject constructor(
     }
 
     /**
-     * Get the current FCM token, request a new one if not available
+     * Obtener el token, sino se crea uno nuevo
      */
     suspend fun getToken(): String? {
         return try {
@@ -42,7 +42,7 @@ class FCMTokenManager @Inject constructor(
     }
 
     /**
-     * Save token locally
+     * Guardar token localmnte
      */
     fun saveToken(token: String) {
         prefs.edit()
@@ -52,7 +52,6 @@ class FCMTokenManager @Inject constructor(
 
         Log.d(TAG, "Token saved locally: $token")
 
-        // Sync with Firebase if user is logged in
         val userId = auth.currentUser?.uid
         if (userId != null) {
             syncTokenToFirebase(userId, token)
@@ -60,14 +59,14 @@ class FCMTokenManager @Inject constructor(
     }
 
     /**
-     * Get the locally saved token
+     * Obtener el token guardado localmente
      */
     fun getSavedToken(): String? {
         return prefs.getString(KEY_FCM_TOKEN, null)
     }
 
     /**
-     * Sync token to Firebase for the current user
+     * Sincroniza token
      */
     fun syncTokenToFirebase(userId: String, token: String? = null) {
         val fcmToken = token ?: getSavedToken() ?: return
@@ -93,7 +92,7 @@ class FCMTokenManager @Inject constructor(
     }
 
     /**
-     * Remove token from Firebase when user logs out
+     * Remover token de firebase
      */
     fun removeTokenFromFirebase(userId: String) {
         val token = getSavedToken() ?: return
@@ -112,7 +111,7 @@ class FCMTokenManager @Inject constructor(
     }
 
     /**
-     * Clear local token data
+     * Limpiar token local
      */
     fun clearLocalToken() {
         prefs.edit()
@@ -123,37 +122,9 @@ class FCMTokenManager @Inject constructor(
     }
 
     /**
-     * Check if token is synced with Firebase
+     * Revisar si el token está sincronizado con el firebase (sirve para el botón :v)
      */
     fun isTokenSynced(): Boolean {
         return prefs.getBoolean(KEY_TOKEN_SYNCED, false)
-    }
-
-    /**
-     * Subscribe to a topic (useful for broadcast notifications)
-     */
-    suspend fun subscribeToTopic(topic: String): Boolean {
-        return try {
-            FirebaseMessaging.getInstance().subscribeToTopic(topic).await()
-            Log.d(TAG, "Subscribed to topic: $topic")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to subscribe to topic: $topic", e)
-            false
-        }
-    }
-
-    /**
-     * Unsubscribe from a topic
-     */
-    suspend fun unsubscribeFromTopic(topic: String): Boolean {
-        return try {
-            FirebaseMessaging.getInstance().unsubscribeFromTopic(topic).await()
-            Log.d(TAG, "Unsubscribed from topic: $topic")
-            true
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to unsubscribe from topic: $topic", e)
-            false
-        }
     }
 }
