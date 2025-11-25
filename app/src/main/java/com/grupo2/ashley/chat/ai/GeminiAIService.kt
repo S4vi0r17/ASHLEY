@@ -8,8 +8,6 @@ import kotlinx.coroutines.withContext
 
 class GeminiAIService {
 
-    // For security reasons, it's recommended to move the API key to a more secure location,
-    // such as a local.properties file and access it via BuildConfig.
     private val apiKey = "AIzaSyA0rD3HaFD4g4Z6ahHQlDge0eTy_zeTCVU"
 
     private val generativeModel = GenerativeModel(

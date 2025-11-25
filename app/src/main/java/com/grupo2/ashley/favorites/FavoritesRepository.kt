@@ -5,6 +5,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,9 +29,7 @@ class FavoritesRepository {
         return try {
             val userId = auth.currentUser?.uid 
                 ?: return Result.failure(Exception("Usuario no autenticado"))
-            
             val today = getCurrentDate()
-            
             // Agregar a la colección de favoritos del usuario
             firestore.collection("users")
                 .document(userId)
@@ -45,39 +46,39 @@ class FavoritesRepository {
                     )
                 )
                 .await()
-            
             // Incrementar contador de favoritos del producto
             firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .update("favorites", FieldValue.increment(1))
                 .await()
-            
             // Actualizar estadística diaria
             val statsRef = firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .collection(PRODUCT_STATS_COLLECTION)
                 .document(today)
-            
-            statsRef.get().await().let { doc ->
-                if (doc.exists()) {
-                    statsRef.update("favorites", FieldValue.increment(1))
-                        .await()
-                } else {
-                    statsRef.set(
-                        mapOf(
-                            "date" to today,
-                            "views" to 0,
-                            "favorites" to 1,
-                            "messages" to 0,
-                            "timestamp" to System.currentTimeMillis()
-                        )
-                    ).await()
-                }
+
+            Log.d(TAG, "Guardando favorito para fecha: $today en producto: $productId")
+
+            val statsDoc = statsRef.get().await()
+            if (statsDoc.exists()) {
+                // Si ya existe, incrementa el campo 'favorites' SOLO para hoy
+                statsRef.update("favorites", FieldValue.increment(1)).await()
+                Log.d(TAG, "Incrementado favoritos para $today. Valor anterior: ${statsDoc.getLong("favorites")}")
+            } else {
+                // Si no existe, crea el documento con 'favorites' en 1
+                statsRef.set(
+                    mapOf(
+                        "date" to today,
+                        "views" to 0,
+                        "favorites" to 1,
+                        "messagesReceived" to 0,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+                ).await()
+                Log.d(TAG, "Creado nuevo documento de estadísticas para $today con 1 favorito")
             }
-            
             Log.d(TAG, "Producto agregado a favoritos: $productId")
             Result.success(Unit)
-            
         } catch (e: Exception) {
             Log.e(TAG, "Error al agregar a favoritos: ${e.message}", e)
             Result.failure(e)
@@ -91,9 +92,7 @@ class FavoritesRepository {
         return try {
             val userId = auth.currentUser?.uid 
                 ?: return Result.failure(Exception("Usuario no autenticado"))
-            
             val today = getCurrentDate()
-            
             // Remover de la colección de favoritos del usuario
             firestore.collection("users")
                 .document(userId)
@@ -101,32 +100,25 @@ class FavoritesRepository {
                 .document(productId)
                 .delete()
                 .await()
-            
             // Decrementar contador de favoritos del producto
             firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .update("favorites", FieldValue.increment(-1))
                 .await()
-            
-            // Actualizar estadística diaria
+            // Actualizar estadística diaria SOLO para hoy
             val statsRef = firestore.collection(PRODUCTS_COLLECTION)
                 .document(productId)
                 .collection(PRODUCT_STATS_COLLECTION)
                 .document(today)
-            
-            statsRef.get().await().let { doc ->
-                if (doc.exists()) {
-                    val currentFavorites = doc.getLong("favorites")?.toInt() ?: 0
-                    if (currentFavorites > 0) {
-                        statsRef.update("favorites", FieldValue.increment(-1))
-                            .await()
-                    }
+            val statsDoc = statsRef.get().await()
+            if (statsDoc.exists()) {
+                val currentFavorites = statsDoc.getLong("favorites")?.toInt() ?: 0
+                if (currentFavorites > 0) {
+                    statsRef.update("favorites", FieldValue.increment(-1)).await()
                 }
             }
-            
             Log.d(TAG, "Producto removido de favoritos: $productId")
             Result.success(Unit)
-            
         } catch (e: Exception) {
             Log.e(TAG, "Error al remover de favoritos: ${e.message}", e)
             Result.failure(e)
@@ -194,6 +186,36 @@ class FavoritesRepository {
             Result.failure(e)
         }
     }
+
+    /**
+     * Observa en tiempo real los IDs de productos marcados como favoritos por el usuario.
+     * Emite un Set de productId cada vez que cambian.
+     */
+    fun observeUserFavoriteIds(): Flow<Set<String>> = callbackFlow {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            trySend(emptySet())
+            close()
+            return@callbackFlow
+        }
+
+        val favoritesRef = firestore.collection("users")
+            .document(userId)
+            .collection(FAVORITES_COLLECTION)
+
+        val listener = favoritesRef.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                // En caso de error, no cerramos el flow, solo enviamos vacío
+                trySend(emptySet())
+                return@addSnapshotListener
+            }
+
+            val ids = snapshot?.documents?.mapNotNull { it.getString("productId") }?.toSet() ?: emptySet()
+            trySend(ids)
+        }
+
+        awaitClose { listener.remove() }
+    }
     
     /**
      * Alterna el estado de favorito (agregar/remover)
@@ -221,8 +243,10 @@ class FavoritesRepository {
     }
     
     private fun getCurrentDate(): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return dateFormat.format(Date())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val date = dateFormat.format(Date())
+        Log.d(TAG, "Fecha actual generada: $date")
+        return date
     }
 }
 

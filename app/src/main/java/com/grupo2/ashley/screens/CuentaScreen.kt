@@ -48,7 +48,8 @@ fun CuentaScreen(
     viewModel: ProfileViewModel = viewModel(),
     ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null,
     onNavigateToMap: (() -> Unit)? = null,
-    onNavigateToDashboard: (() -> Unit)? = null
+    onNavigateToDashboard: (() -> Unit)? = null,
+    onNavigateToFavorites: (() -> Unit)? = null
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
@@ -67,16 +68,49 @@ fun CuentaScreen(
     // Estado para mostrar indicador de ubicación actualizada
     var locationJustUpdated by remember { mutableStateOf(false) }
 
+    // Flag para evitar actualizaciones circulares durante la carga inicial
+    var isInitialLoad by remember { mutableStateOf(true) }
+
     // Sincronizar ubicación del mapa si está disponible
     ubicacionViewModel?.let { ubicacionVM ->
         val ubicacionMapa by ubicacionVM.ubicacionSeleccionada.collectAsState()
         val direccionMapa by ubicacionVM.direccionSeleccionada.collectAsState()
         val nombreUbicacion by ubicacionVM.nombreUbicacion.collectAsState()
 
-        // Actualizar cuando la dirección cambie
+        // Cargar ubicación del perfil al UbicacionViewModel cuando se entra a la pantalla
+        // Observar userProfile para esperar a que se cargue desde Firestore
+        LaunchedEffect(userProfile) {
+            userProfile?.let {
+                val savedLat = it.defaultPickupLatitude
+                val savedLng = it.defaultPickupLongitude
+                val savedAddress = it.fullAddress
+                val savedName = it.defaultPickupLocationName
+
+                // Solo cargar si hay una ubicación válida guardada
+                if (savedAddress.isNotEmpty() && savedLat != 0.0 && savedLng != 0.0) {
+                    isInitialLoad = true // Marcar como carga inicial
+                    ubicacionVM.actualizarUbicacion(
+                        lat = savedLat,
+                        lng = savedLng,
+                        direccion = savedAddress,
+                        nombre = savedName
+                    )
+                    // Esperar un frame para que el LaunchedEffect de direccionMapa vea el flag
+                    kotlinx.coroutines.delay(100)
+                    isInitialLoad = false
+                }
+            }
+        }
+
+        // Actualizar cuando la dirección cambie (desde el mapa)
         LaunchedEffect(direccionMapa) {
-            // Actualizar SIEMPRE que haya una dirección válida
-            if (direccionMapa.isNotBlank() && direccionMapa != context.getString(R.string.sin_ubicacion)) {
+            // NO actualizar si es la carga inicial (para evitar loop)
+            if (isInitialLoad) return@LaunchedEffect
+
+            // Actualizar SOLO si viene del mapa (dirección válida y diferente a la inicial)
+            if (direccionMapa.isNotBlank() &&
+                direccionMapa != "Sin dirección seleccionada" &&
+                direccionMapa != context.getString(R.string.sin_ubicacion)) {
                 viewModel.updateLocation(
                     address = direccionMapa,
                     latitude = ubicacionMapa.latitude,
@@ -289,6 +323,67 @@ fun CuentaScreen(
             }
         }
 
+        // Botón para ir a Favoritos
+        if (onNavigateToFavorites != null && !isEditing) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToFavorites() },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.tertiary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Favorite,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onTertiary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.mis_favoritos),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Text(
+                                text = stringResource(R.string.productos_guardados),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
+        }
+
         // Mensaje de error
         AnimatedVisibility(
             visible = updateState.error != null,
@@ -424,7 +519,7 @@ fun CuentaScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (defaultPickupLocationName.isNotEmpty()) {
-                                    stringResource(R.string.sin_ubicacion)
+                                    defaultPickupLocationName
                                 } else {
                                     stringResource(R.string.tu_ubicacion)
                                 },

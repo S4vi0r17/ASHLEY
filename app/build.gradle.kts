@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.navigation)
     implementation(libs.mapas)
     implementation(libs.places)
@@ -75,10 +76,10 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.database)
 
-    // Google Services
+    // Google Services :v
     implementation(libs.google.play.services.auth)
 
-    // Librerías externas
+    // Librerías externas :b
     implementation(libs.coil.compose)
     implementation(libs.coroutines.android)
     implementation(libs.accompanist.permissions)
@@ -92,15 +93,16 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+
     // Gemini AI para mejorar mensajes
-    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    implementation(libs.generativeai)
 
     // Vico Charts
     implementation(libs.vico.compose)
     implementation(libs.vico.compose.m3)
     implementation(libs.vico.core)
 
-    // Testing
+    // Testing (tercer sprint creo)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

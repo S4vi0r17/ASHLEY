@@ -10,7 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.grupo2.ashley.chat.data.ChatListRepository
 import com.grupo2.ashley.chat.models.ConversationWithUser
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,7 +80,8 @@ class ChatListViewModel @Inject constructor(
                             lastMessage = conversation.lastMessage,
                             isOnline = false,
                             unreadCount = 0,
-                            productInfo = null
+                            productInfo = null,
+                            isBlocked = conversation.isBlocked
                         )
                     }
                     _uiState.value = ChatListUiState(conversations = enrichedConversations)

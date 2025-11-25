@@ -44,10 +44,12 @@ import com.grupo2.ashley.screens.CuentaScreen
 import com.grupo2.ashley.screens.VenderScreen
 import com.grupo2.ashley.utils.makePhoneCall
 import com.grupo2.ashley.chat.ChatListScreen
+import com.grupo2.ashley.chat.ChatListViewModel
 import com.grupo2.ashley.chat.ChatRealtimeScreen
 import com.grupo2.ashley.chat.ParticipantInfoScreen
-import com.grupo2.ashley.chat.data.ChatRealtimeRepository
 import com.grupo2.ashley.profile.ProfileViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.grupo2.ashley.favorites.FavoritesScreen
 
 object Routes {
     const val HOME = "home"
@@ -60,6 +62,7 @@ object Routes {
     const val PRODUCT_MAP = "product_map/{productId}"
     const val DASHBOARD = "dashboard"
     const val MODIFICAR_ANUNCIOS = "editar_anuncio/{productId}"
+    const val FAVORITES = "favorites"
 
     fun productDetail(productId: String) = "product_detail/$productId"
     fun productMap(productId: String) = "product_map/$productId"
@@ -338,6 +341,9 @@ fun AppNavigation(
                 },
                 onNavigateToDashboard = {
                     navController.navigate(Routes.DASHBOARD)
+                },
+                onNavigateToFavorites = {
+                    navController.navigate(Routes.FAVORITES)
                 }
             )
         }
@@ -371,6 +377,7 @@ fun AppNavigation(
 
             if (product != null) {
                 val productDetailViewModel: ProductDetailViewModel = viewModel()
+                val chatListViewModel: ChatListViewModel = hiltViewModel()
 
                 // Llamar a setProduct solo una vez cuando se carga la pantalla
                 LaunchedEffect(productId) {
@@ -395,9 +402,10 @@ fun AppNavigation(
                         val sellerId = sellerProfile?.userId
 
                         if (currentUserId != null && sellerId != null) {
-                            val chatRepo = ChatRealtimeRepository()
-                            chatRepo.createOrGetConversation(currentUserId, sellerId) { conversationId ->
-                                navController.navigate("chat/$conversationId")
+                            chatListViewModel.createConversation(currentUserId, sellerId) { conversationId ->
+                                if (conversationId != null) {
+                                    navController.navigate("chat/$conversationId") 
+                                 }
                             }
                         }
                     },
@@ -476,6 +484,21 @@ fun AppNavigation(
                     navController.popBackStack()
                 }
             }
+        }
+
+        composable(
+            route = Routes.FAVORITES,
+            enterTransition = { NavigationAnimations.verticalSlideEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.verticalSlideExit() }
+        ) {
+            FavoritesScreen(
+                onBackClick = { navController.popBackStack() },
+                onProductClick = { productId ->
+                    navController.navigate(Routes.productDetail(productId))
+                }
+            )
         }
     }
 }

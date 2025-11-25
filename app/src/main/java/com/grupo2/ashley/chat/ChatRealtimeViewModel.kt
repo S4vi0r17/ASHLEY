@@ -53,6 +53,12 @@ class ChatRealtimeViewModel @Inject constructor(
     private val _pendingVideoThumbnail = MutableStateFlow<ByteArray?>(null)
     val pendingVideoThumbnail: StateFlow<ByteArray?> = _pendingVideoThumbnail.asStateFlow()
 
+    private val _isMuted = MutableStateFlow(false)
+    val isMuted: StateFlow<Boolean> = _isMuted.asStateFlow()
+
+    private val _isBlocked = MutableStateFlow(false)
+    val isBlocked: StateFlow<Boolean> = _isBlocked.asStateFlow()
+
     private var currentConversationId: String? = null
     private var currentUserId: String? = null
     private var otherUserId: String? = null
@@ -62,6 +68,14 @@ class ChatRealtimeViewModel @Inject constructor(
 
     // Inicia la escucha de mensajes en tiempo real para una conversación
     fun startListening(conversationId: String) {
+        // Si ya estamos escuchando esta conversación, solo actualizar el estado de mute y block
+        if (currentConversationId == conversationId) {
+            Log.d("ChatVM", "Already listening to $conversationId, refreshing mute and block state only")
+            loadMuteState(conversationId)
+            loadBlockState(conversationId)
+            return
+        }
+
         currentConversationId = conversationId
         currentOffset = 0
 
@@ -81,6 +95,12 @@ class ChatRealtimeViewModel @Inject constructor(
 
         // Cargar información del producto
         loadProductInfo(conversationId)
+
+        // Cargar estado de silenciado
+        loadMuteState(conversationId)
+
+        // Cargar estado de bloqueo
+        loadBlockState(conversationId)
     }
 
     // Carga información del producto asociado a la conversación
@@ -305,5 +325,130 @@ class ChatRealtimeViewModel @Inject constructor(
         _pendingImageBytes.value = null
         _pendingVideoBytes.value = null
         _pendingVideoThumbnail.value = null
+    }
+
+    // Carga el estado de silenciado de la conversación
+    private fun loadMuteState(conversationId: String) {
+        viewModelScope.launch {
+            try {
+                val isMuted = chatRepository.isConversationMuted(conversationId)
+                _isMuted.value = isMuted
+                Log.d("ChatVM", "Loaded mute state for $conversationId: isMuted=$isMuted")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error loading mute state", e)
+            }
+        }
+    }
+
+    // Carga el estado de bloqueo de la conversación
+    private fun loadBlockState(conversationId: String) {
+        viewModelScope.launch {
+            try {
+                val isBlocked = chatRepository.isConversationBlocked(conversationId)
+                _isBlocked.value = isBlocked
+                Log.d("ChatVM", "Loaded block state for $conversationId: isBlocked=$isBlocked")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error loading block state", e)
+            }
+        }
+    }
+
+    // Silencia la conversación actual
+    fun muteConversation() {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            try {
+                chatRepository.muteConversation(conversationId)
+                _isMuted.value = true
+                Log.d("ChatVM", "Conversation $conversationId MUTED successfully")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error muting conversation", e)
+                _error.value = "Error al silenciar conversación"
+            }
+        }
+    }
+
+    // Activa las notificaciones de la conversación actual
+    fun unmuteConversation() {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            try {
+                chatRepository.unmuteConversation(conversationId)
+                _isMuted.value = false
+                Log.d("ChatVM", "Conversation $conversationId UNMUTED successfully")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error unmuting conversation", e)
+                _error.value = "Error al activar notificaciones"
+            }
+        }
+    }
+
+    // Alterna el estado de silenciado
+    fun toggleMute() {
+        if (_isMuted.value) {
+            unmuteConversation()
+        } else {
+            muteConversation()
+        }
+    }
+
+    // Bloquea la conversación actual
+    fun blockConversation() {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            try {
+                chatRepository.blockConversation(conversationId)
+                _isBlocked.value = true
+                Log.d("ChatVM", "Conversation $conversationId BLOCKED successfully")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error blocking conversation", e)
+                _error.value = "Error al bloquear conversación"
+            }
+        }
+    }
+
+    // Desbloquea la conversación actual
+    fun unblockConversation() {
+        val conversationId = currentConversationId ?: return
+        viewModelScope.launch {
+            try {
+                chatRepository.unblockConversation(conversationId)
+                _isBlocked.value = false
+                Log.d("ChatVM", "Conversation $conversationId UNBLOCKED successfully")
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error unblocking conversation", e)
+                _error.value = "Error al desbloquear conversación"
+            }
+        }
+    }
+
+    // Alterna el estado de bloqueo
+    fun toggleBlock() {
+        if (_isBlocked.value) {
+            unblockConversation()
+        } else {
+            blockConversation()
+        }
+    }
+
+    // Archiva la conversación actual (oculta sin eliminar)
+    fun deleteCurrentConversation(onSuccess: () -> Unit) {
+        val conversationId = currentConversationId ?: return
+        val userId = currentUserId ?: return
+
+        viewModelScope.launch {
+            try {
+                // Usar archiveConversation en lugar de deleteConversation
+                chatRepository.archiveConversation(conversationId, userId)
+                Log.d("ChatVM", "Conversation archived successfully")
+                // Detener la escucha
+                stopListening()
+                // Notificar éxito
+                onSuccess()
+            } catch (e: Exception) {
+                Log.e("ChatVM", "Error archiving conversation", e)
+                _error.value = "Error al archivar la conversación"
+            }
+        }
     }
 }

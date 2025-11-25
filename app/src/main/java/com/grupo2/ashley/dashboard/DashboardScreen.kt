@@ -341,7 +341,9 @@ private fun DashboardContent(
         }
 
         // Gráfico de tendencias de engagement
-        if (stats.totalViews > 0 || stats.totalFavorites > 0) {
+        // COMENTADO: Deshabilitado temporalmente
+        /*
+        if (stats.viewsLast7Days.isNotEmpty()) {
             Text(
                 text = "Tendencias de Engagement",
                 style = MaterialTheme.typography.titleLarge,
@@ -349,56 +351,51 @@ private fun DashboardContent(
                 modifier = Modifier.padding(top = 8.dp)
             )
 
-            // Datos simulados para demostración (reemplazar con datos reales de Firebase)
-            val viewsData = listOf(
-                "11-01" to 0,
-                "11-02" to 0,
-                "11-03" to 0,
-                "11-04" to 0,
-                "11-05" to 0,
-                "11-06" to 0,
-                "11-07" to stats.totalViews
-            )
-            val favoritesData = listOf(
-                "11-01" to 0,
-                "11-02" to 0,
-                "11-03" to 0,
-                "11-04" to 0,
-                "11-05" to 0,
-                "11-06" to 0,
-                "11-07" to stats.totalFavorites
-            )
-            
+            // Mostrar TODOS los días (incluso si tienen 0 vistas/favoritos)
+            val viewsData = stats.viewsLast7Days.map { daily ->
+                val label = daily.date.takeLast(5) // "MM-dd"
+                android.util.Log.d("DashboardScreen", "Día: ${daily.date} -> Label: $label | Vistas: ${daily.views} | Favoritos: ${daily.favorites}")
+                label to daily.views
+            }
+            val favoritesData = stats.viewsLast7Days.map { daily ->
+                val label = daily.date.takeLast(5)
+                label to daily.favorites
+            }
+
             VicoMultiLineChart(
                 viewsData = viewsData,
                 favoritesData = favoritesData,
                 title = "Últimos 7 Días"
             )
-            
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                )
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "📊 Los datos históricos se mostrarán cuando implementes el tracking de vistas diarias",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+        }
+        */
+
+        // Gráfico de pie - Distribución de vistas por producto
+        if (stats.recentProducts.isNotEmpty() && stats.totalViews > 0) {
+            Text(
+                text = "Distribución de Vistas",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+
+            // Preparar datos: Top 5 productos por vistas
+            val productViewsData = stats.recentProducts
+                .sortedByDescending { it.views }
+                .take(5)
+                .associate {
+                    val truncatedTitle = if (it.title.length > 25) {
+                        it.title.take(22) + "..."
+                    } else {
+                        it.title
+                    }
+                    truncatedTitle to it.views
                 }
-            }
+
+            VicoPieChart(
+                data = productViewsData,
+                title = "Top 5 Productos más Vistos"
+            )
         }
 
         // Espaciado final para que el último elemento no quede tapado por la barra de navegación

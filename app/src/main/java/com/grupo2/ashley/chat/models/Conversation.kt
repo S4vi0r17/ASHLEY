@@ -5,13 +5,15 @@ data class Conversation(
     val participants: List<String> = emptyList(),
     val lastMessage: LastMessage? = null,
     val participantsInfo: Map<String, ParticipantInfo> = emptyMap(),
-    val productId: String? = null
+    val productId: String? = null,
+    val isMuted: Boolean = false,
+    val isBlocked: Boolean = false
 )
 
 data class LastMessage(
     val text: String = "",
     val timestamp: Long = 0L,
-    val senderId: String = "",
+    val senderId: String? = "",
     val unreadCount: Int = 0
 )
 
@@ -42,5 +44,6 @@ data class ConversationWithUser(
     val lastMessage: LastMessage? = null,
     val isOnline: Boolean = false,
     val unreadCount: Int = 0,
-    val productInfo: ProductInfo? = null
+    val productInfo: ProductInfo? = null,
+    val isBlocked: Boolean = false
 )

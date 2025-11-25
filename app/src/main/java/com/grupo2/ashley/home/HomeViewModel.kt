@@ -7,15 +7,19 @@ import com.grupo2.ashley.home.data.CategoryData
 import com.grupo2.ashley.product.data.ProductRepository
 import com.grupo2.ashley.home.models.Category
 import com.grupo2.ashley.product.models.Product
+import com.grupo2.ashley.favorites.FavoritesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collectLatest
 
 class HomeViewModel : ViewModel() {
 
     private val productRepository = ProductRepository()
+    private val favoritesRepository = FavoritesRepository()
     private val auth = FirebaseAuth.getInstance()
+    private var currentFavoriteIds: Set<String> = emptySet()
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -38,9 +42,39 @@ class HomeViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        loadProducts()
+        observeProductsRealtime()
+        observeFavoritesRealtime()
     }
 
+    private fun observeFavoritesRealtime() {
+        viewModelScope.launch {
+            favoritesRepository.observeUserFavoriteIds().collectLatest { favoriteIds ->
+                currentFavoriteIds = favoriteIds
+                // Actualizar _allProducts y _products según los favoritos actuales
+                _allProducts.value = _allProducts.value.map { product ->
+                    product.copy(isFavorite = favoriteIds.contains(product.productId))
+                }
+                // Reaplicar filtro para mostrar cambios en pantalla
+                filterProducts()
+            }
+        }
+    }
+
+    private fun observeProductsRealtime() {
+        viewModelScope.launch {
+            productRepository.observeAllProducts().collectLatest { productsList ->
+                val userid = auth.currentUser?.uid
+                val filteredProducts = productsList.filter { it.userId != userid && it.isActive }
+                // aplicar favoritos conocidos
+                _allProducts.value = filteredProducts.map { product ->
+                    product.copy(isFavorite = currentFavoriteIds.contains(product.productId))
+                }
+                filterProducts()
+            }
+        }
+    }
+
+    // loadProducts is kept for manual refresh if needed
     fun loadProducts() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -49,7 +83,11 @@ class HomeViewModel : ViewModel() {
             productRepository.getAllProducts()
                 .onSuccess { products ->
                     val userid = auth.currentUser?.uid
-                    _allProducts.value = products.filter { it.userId != userid && it.isActive }
+                    val filteredProducts = products.filter { it.userId != userid && it.isActive }
+                    val favoriteIds = currentFavoriteIds
+                    _allProducts.value = filteredProducts.map { product ->
+                        product.copy(isFavorite = favoriteIds.contains(product.productId))
+                    }
                     filterProducts()
                 }
                 .onFailure { exception ->
@@ -77,9 +115,27 @@ class HomeViewModel : ViewModel() {
         filterProducts()
     }
 
-    fun toggleFavorite(productId: String) {
-        _products.value = productRepository.toggleFavorite(productId, _products.value)
-        _allProducts.value = productRepository.toggleFavorite(productId, _allProducts.value)
+    fun toggleFavorite(productId: String, dashboardViewModel: com.grupo2.ashley.dashboard.DashboardViewModel? = null) {
+        viewModelScope.launch {
+            val product = _allProducts.value.find { it.productId == productId } ?: return@launch
+            favoritesRepository.toggleFavorite(
+                productId = productId,
+                productTitle = product.title,
+                productImage = product.images.firstOrNull() ?: "",
+                productPrice = product.price
+            ).onSuccess { isFavorite ->
+                _products.value = _products.value.map {
+                    if (it.productId == productId) it.copy(isFavorite = isFavorite)
+                    else it
+                }
+                _allProducts.value = _allProducts.value.map {
+                    if (it.productId == productId) it.copy(isFavorite = isFavorite)
+                    else it
+                }
+                // Notificar al dashboard que cambió favoritos
+                dashboardViewModel?.onFavoritesChanged()
+            }
+        }
     }
 
     private fun filterProducts() {

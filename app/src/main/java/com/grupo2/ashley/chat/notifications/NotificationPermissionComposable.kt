@@ -6,7 +6,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -79,18 +78,4 @@ private fun NotificationPermissionRationaleDialog(
             }
         }
     )
-}
-
-/**
- * Revisar si se han brindado las notificaciones
- */
-@OptIn(ExperimentalPermissionsApi::class)
-@Composable
-fun rememberNotificationPermissionState(): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val permissionState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
-        permissionState.status.isGranted
-    } else {
-        true
-    }
 }

@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.grupo2.ashley.chat.data.ChatUserRepository
+import com.grupo2.ashley.chat.database.dao.ConversationDao
 import com.grupo2.ashley.chat.models.Message
 import com.grupo2.ashley.chat.models.MessageStatus
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +26,9 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
 
     @Inject
     lateinit var userRepository: ChatUserRepository
+
+    @Inject
+    lateinit var conversationDao: ConversationDao
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -54,7 +58,7 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
             handleDataMessage(remoteMessage.data)
         }
 
-        // Las push noti se moestrarán automaticamente por el sistema cuando la app esté en segundo plano y en primero
+        // Las push noti se mostrarán automaticamente por el sistema cuando la app esté en segundo plano y en primero
         remoteMessage.notification?.let {
             Log.d(TAG, "Message notification body: ${it.body}")
         }
@@ -92,6 +96,14 @@ class AshleyFirebaseMessagingService : FirebaseMessagingService() {
                     Log.d(TAG, "Ignoring notification for own message")
                     return@launch
                 }
+
+                // Check if the conversation is muted
+                val isMuted = conversationDao.isConversationMuted(conversationId) ?: false
+                if (isMuted) {
+                    Log.d(TAG, "Conversation $conversationId is MUTED, skipping notification")
+                    return@launch
+                }
+                Log.d(TAG, "Conversation $conversationId is NOT muted, showing notification")
 
                 // Get sender information
                 val userProfiles = userRepository.getUserProfiles(listOf(senderId))

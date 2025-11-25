@@ -47,12 +47,15 @@ class ProductTrackingRepository {
                 .document(productId)
                 .collection(PRODUCT_STATS_COLLECTION)
                 .document(today)
-            
+
+            Log.d(TAG, "Guardando vista para fecha: $today en producto: $productId")
+
             statsRef.get().await().let { doc ->
                 if (doc.exists()) {
                     // Incrementar vista del día
                     statsRef.update("views", FieldValue.increment(1))
                         .await()
+                    Log.d(TAG, "Incrementada vista para $today. Valor anterior: ${doc.getLong("views")}")
                 } else {
                     // Crear nuevo registro del día
                     statsRef.set(
@@ -60,10 +63,11 @@ class ProductTrackingRepository {
                             "date" to today,
                             "views" to 1,
                             "favorites" to 0,
-                            "messages" to 0,
+                            "messagesReceived" to 0,
                             "timestamp" to System.currentTimeMillis()
                         )
                     ).await()
+                    Log.d(TAG, "Creado nuevo documento de estadísticas para $today con 1 vista")
                 }
             }
             
@@ -126,7 +130,7 @@ class ProductTrackingRepository {
     suspend fun getProductStatsLastDays(productId: String, days: Int = 7): Result<List<DailyProductStats>> {
         return try {
             val stats = mutableListOf<DailyProductStats>()
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
             val calendar = Calendar.getInstance()
             
             for (i in (days - 1) downTo 0) {
@@ -147,7 +151,7 @@ class ProductTrackingRepository {
                             date = date,
                             views = doc.getLong("views")?.toInt() ?: 0,
                             favorites = doc.getLong("favorites")?.toInt() ?: 0,
-                            messages = doc.getLong("messages")?.toInt() ?: 0
+                            messages = doc.getLong("messagesReceived")?.toInt() ?: 0
                         )
                     )
                 } else {
@@ -171,8 +175,10 @@ class ProductTrackingRepository {
     }
     
     private fun getCurrentDate(): String {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return dateFormat.format(Date())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val date = dateFormat.format(Date())
+        Log.d(TAG, "Fecha actual generada: $date")
+        return date
     }
 }
 
