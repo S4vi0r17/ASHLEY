@@ -10,6 +10,7 @@ import com.grupo2.ashley.product.models.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class AnunciosViewModel : ViewModel() {
@@ -38,7 +39,18 @@ class AnunciosViewModel : ViewModel() {
     val error: StateFlow<String?> = _error.asStateFlow()
 
     init {
-        loadProducts()
+        observeProductsRealtime()
+    }
+
+    private fun observeProductsRealtime() {
+        viewModelScope.launch {
+            productRepository.observeAllProducts().collectLatest { productsList ->
+                val userid = auth.currentUser?.uid
+                val filteredProducts = productsList.filter { it.userId == userid }
+                _allProducts.value = filteredProducts
+                filterProducts()
+            }
+        }
     }
 
     fun loadProducts() {

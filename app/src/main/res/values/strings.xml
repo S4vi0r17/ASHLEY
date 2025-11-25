@@ -339,6 +339,8 @@
     <string name="producto_eliminado_satisfactoriamente">Producto eliminado satisfactoriamente</string>
     <string name="error_al_eliminar">Error al eliminar: %1$s</string>
     <string name="error_al_crear_el_producto">Error al crear el producto: %1$s</string>
+    <string name="desea_eliminar_este_producto">¿Desea eliminar este producto?</string>
+    <string name="una_vez_eliminado_no_se_puede_recuperar">Una vez eliminado no se puede recuperar</string>
 
 
 </resources>
