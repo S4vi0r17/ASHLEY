@@ -245,4 +245,22 @@ ProductRepository {
             }
         }
     }
+
+    suspend fun updateProductActiveState(productId: String, isActive: Boolean): Result<String> {
+        return try {
+            val updateMap = mapOf(
+                "active" to isActive,
+                "updatedAt" to System.currentTimeMillis()
+            )
+
+            firestore.collection("products")
+                .document(productId)
+                .update(updateMap)
+                .await()
+
+            Result.success(productId)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

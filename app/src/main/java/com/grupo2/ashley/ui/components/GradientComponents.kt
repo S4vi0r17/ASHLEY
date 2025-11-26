@@ -35,6 +35,7 @@ fun GradientButton(
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
 
+
     // Animación de escala al presionar
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.95f else 1f,
@@ -168,28 +169,44 @@ fun GradientCard(
 @Composable
 fun GradientTextButton(
     onClick: () -> Unit,
-    text: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    textColor: Color = MaterialTheme.colorScheme.primary
+    gradient: Brush = AppGradients.PrimaryGradient,
+    shape: RoundedCornerShape = RoundedCornerShape(16.dp),
+    content: @Composable RowScope.() -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
 
-    TextButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier,
-        interactionSource = interactionSource,
-        colors = ButtonDefaults.textButtonColors(
-            contentColor = textColor
-        )
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = AnimationConstants.QuickSpring,
+        label = "gradient_text_button_scale"
+    )
+
+    Box(
+        modifier = modifier
+            .scale(scale)
+            .clip(shape)
+            .background(gradient)
+            .clickable(
+                onClick = onClick,
+                enabled = enabled,
+                interactionSource = interactionSource,
+                indication = ripple(color = Color.White.copy(alpha = 0.3f))
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            content = content
         )
     }
 }
+
+
 
 // FAB (Floating Action Button)
 @Composable

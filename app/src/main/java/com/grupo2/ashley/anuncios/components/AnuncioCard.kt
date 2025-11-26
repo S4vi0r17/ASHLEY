@@ -56,7 +56,10 @@ import com.grupo2.ashley.anuncios.AnunciosViewModel
 import com.grupo2.ashley.navigation.Routes
 import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.product.models.ProductDeletedState
+import com.grupo2.ashley.ui.components.GradientButton
+import com.grupo2.ashley.ui.components.GradientTextButton
 import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.ui.theme.AppGradients
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -146,6 +149,24 @@ fun AnuncioCard(
                         contentDescription = stringResource(R.string.eliminar),
                         tint = Color.White,
                         modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                GradientTextButton(
+                    onClick = {
+                        viewModel.updateStateProduct(product.productId, !product.isActive)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .size(width = 108.dp, height = 36.dp),
+                    gradient = if (product.isActive) AppGradients.SuccessGradient else AppGradients.ErrorGradient,
+                ) {
+                    Text(
+                        text = if (product.isActive) stringResource(R.string.activo) else stringResource(R.string.inactivo),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     )
                 }
             }

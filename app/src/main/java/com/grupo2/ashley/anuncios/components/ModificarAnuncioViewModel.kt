@@ -316,4 +316,10 @@ class ModificarAnuncioViewModel() : ViewModel() {
     fun resetDeletedState() {
         _deletedState.value = ProductDeletedState()
     }
+
+    fun updateStateProduct(productId: String, isActive: Boolean){
+        viewModelScope.launch {
+            productRepository.updateProductActiveState(productId, isActive)
+        }
+    }
 }
