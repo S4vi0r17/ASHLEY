@@ -41,6 +41,10 @@ class HomeViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _showOnlyFavorites = MutableStateFlow(false)
+    val showOnlyFavorites = _showOnlyFavorites.asStateFlow()
+
+
     init {
         observeProductsRealtime()
         observeFavoritesRealtime()
@@ -115,6 +119,11 @@ class HomeViewModel : ViewModel() {
         filterProducts()
     }
 
+    fun favoriteFilter(){
+        _showOnlyFavorites.value = !_showOnlyFavorites.value
+        filterProducts()
+    }
+
     fun toggleFavorite(productId: String, dashboardViewModel: com.grupo2.ashley.dashboard.DashboardViewModel? = null) {
         viewModelScope.launch {
             val product = _allProducts.value.find { it.productId == productId } ?: return@launch
@@ -139,11 +148,18 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun filterProducts() {
-        _products.value = productRepository.filterProducts(
+        var list = productRepository.filterProducts(
             _allProducts.value,
             _selectedCategory.value,
             _searchQuery.value
         )
+
+        // Si el filtro de favoritos está activo → filtrar solo los favoritos
+        if (_showOnlyFavorites.value) {
+            list = list.filter { it.isFavorite }
+        }
+
+        _products.value = list
     }
 
     fun refreshProducts() {

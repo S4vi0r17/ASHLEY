@@ -172,6 +172,18 @@
     <string name="precio_promedio">Precio promedio</string>
     <string name="activo">Activo</string>
     <string name="inactivo">Inactivo</string>
+    <string name="productos_destacados">Productos Destacados</string>
+    <string name="mas_visto">Más Visto</string>
+    <string name="mas_favorito">Más Favorito</string>
+    <string name="analisis_por_categoria">Análisis por Categoría</string>
+    <string name="distribucion_de_productos">Distribución de Productos</string>
+    <string name="estado_de_productos">Estado de Productos</string>
+    <string name="productos_por_condicion">Productos por Condición</string>
+    <string name="publicaciones_recientes">Publicaciones Recientes</string>
+    <string name="distribucion_de_vistas">Distribución de Vistas</string>
+    <string name="top_5_productos_mas_vistos">Top 5 Productos más Vistos</string>
+    <string name="bienvenido_a_tu_dashboard">¡Bienvenido a tu Dashboard!</string>
+    <string name="miembro_desde_variable">Miembro desde: %1$s</string>
 
     <!-- DashboardComponents -->
 
@@ -341,6 +353,7 @@
     <string name="error_al_crear_el_producto">Error al crear el producto: %1$s</string>
     <string name="desea_eliminar_este_producto">¿Desea eliminar este producto?</string>
     <string name="una_vez_eliminado_no_se_puede_recuperar">Una vez eliminado no se puede recuperar</string>
+
 
 
 </resources>

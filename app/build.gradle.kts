@@ -83,6 +83,7 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coroutines.android)
     implementation(libs.accompanist.permissions)
+    implementation("androidx.datastore:datastore-preferences:1.2.0")
 
     // Hilt
     implementation(libs.hilt.android)

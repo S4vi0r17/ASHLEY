@@ -155,6 +155,18 @@
     <string name="precio_promedio">Average price</string>
     <string name="activo">Active</string>
     <string name="inactivo">Inactive</string>
+    <string name="productos_destacados">Featured Products</string>
+    <string name="mas_visto">Most Viewed</string>
+    <string name="mas_favorito">Most Favorited</string>
+    <string name="analisis_por_categoria">Analysis by Category</string>
+    <string name="distribucion_de_productos">Product Distribution</string>
+    <string name="estado_de_productos">Product Status</string>
+    <string name="productos_por_condicion">Products by Condition</string>
+    <string name="publicaciones_recientes">Recent Posts</string>
+    <string name="distribucion_de_vistas">View Distribution</string>
+    <string name="top_5_productos_mas_vistos">Top 5 Most Viewed Products</string>
+    <string name="bienvenido_a_tu_dashboard">Welcome to your Dashboard!</string>
+    <string name="miembro_desde_variable">Member since: %1$s</string>
 
     <!-- DashboardComponents -->
     <string name="no_hay_dcategorias">No category data</string>
@@ -311,6 +323,5 @@
     <string name="error_al_crear_el_producto">Couldn\'t create the product: %1$s</string>
     <string name="desea_eliminar_este_producto">Do you want to delete this product?</string>
     <string name="una_vez_eliminado_no_se_puede_recuperar">Once deleted, it cannot be recovered.</string>
-
 
 </resources>

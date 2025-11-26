@@ -23,6 +23,7 @@ import com.google.android.libraries.places.api.Places
 import com.grupo2.ashley.anuncios.AnunciosViewModel
 import com.grupo2.ashley.chat.UnreadMessagesViewModel
 import com.grupo2.ashley.home.HomeViewModel
+import com.grupo2.ashley.login.updateLocale
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.navigation.AppNavigation
 import com.grupo2.ashley.navigation.Routes
@@ -30,15 +31,32 @@ import com.grupo2.ashley.product.ProductViewModel
 import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.runBlocking
+import java.util.Locale
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         if (!Places.isInitialized()) {
             Places.initialize(applicationContext, "AIzaSyD-htAcCn275_30Bvi7EuErkxd4tS8BumE")
         }
+
+        runBlocking {
+            val savedLanguage = LanguagePreferences.languageFlow(this@MainActivity).firstOrNull()
+            val languageToUse = savedLanguage ?: Locale.getDefault().language
+
+            // Guardar el idioma del dispositivo si es la primera vez
+            if (savedLanguage == null) {
+                LanguagePreferences.saveLanguage(this@MainActivity, languageToUse)
+            }
+
+            updateLocale(languageToUse)
+        }
+
         setContent {
             ASHLEYTheme {
                 AshleyApp()
