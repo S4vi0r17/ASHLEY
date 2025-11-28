@@ -36,7 +36,7 @@ fun MessageBubble(
     onImageClick: ((String) -> Unit)? = null,
     onVideoClick: ((String) -> Unit)? = null
 ) {
-    // Debug log
+
     android.util.Log.d("MessageBubble", "Message ${message.id}: imageUrl=${message.imageUrl}, videoUrl=${message.videoUrl}, mediaType=${message.mediaType}")
 
     var showMenu by remember { mutableStateOf(false) }
@@ -80,7 +80,7 @@ fun MessageBubble(
                     .widthIn(max = 280.dp)
             ) {
                 Column {
-                    // Show deleted placeholder
+                    // Mostrar marcador de posición eliminado
                     if (message.isDeleted) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -155,7 +155,7 @@ fun MessageBubble(
                 }
             }
 
-            // Dropdown menu for actions
+            // Dropdown para el menu de acciones
             DropdownMenu(
                 expanded = showMenu,
                 onDismissRequest = { showMenu = false }
@@ -202,7 +202,7 @@ fun MessageBubble(
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            // Show status indicator for own messages (only if not deleted)
+            // Mostrar indicador de estado para los propios mensajes (solo si no se han eliminado)
             if (isOwnMessage && !message.isDeleted) {
                 when (message.status) {
                     MessageStatus.PENDING -> {

@@ -79,7 +79,7 @@ class ChatRealtimeViewModel @Inject constructor(
         currentConversationId = conversationId
         currentOffset = 0
 
-        // Set this conversation as active to prevent notifications
+        // Establezca esta conversación como activa para evitar notificaciones
         (chatRepository as? com.grupo2.ashley.chat.data.ChatRepositoryImpl)?.setActiveConversation(conversationId)
 
         viewModelScope.launch {

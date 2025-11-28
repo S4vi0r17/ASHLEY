@@ -25,21 +25,21 @@ class ImageCompressor @Inject constructor() {
         maxHeight: Int = 1024
     ): ByteArray {
         try {
-            // Decode the image
+            // Decodificar la imagen
             val options = BitmapFactory.Options().apply {
                 inJustDecodeBounds = true
             }
             BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
 
-            // Calculate inSampleSize
+            // Calcular tamaño de muestra
             options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight)
             options.inJustDecodeBounds = false
 
-            // Decode with inSampleSize
+            // Decodificar con tamaño de muestra
             val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size, options)
                 ?: return imageBytes
 
-            // Further resize if needed
+            // Redimensionar más si es necesario
             val scaledBitmap = if (bitmap.width > maxWidth || bitmap.height > maxHeight) {
                 val scale = minOf(
                     maxWidth.toFloat() / bitmap.width,
@@ -52,7 +52,7 @@ class ImageCompressor @Inject constructor() {
                 bitmap
             }
 
-            // Compress to JPEG with quality adjustment
+            // Comprimir a JPEG con ajuste de calidad
             var quality = 90
             var compressedBytes: ByteArray
             do {
@@ -69,7 +69,7 @@ class ImageCompressor @Inject constructor() {
 
             return compressedBytes
         } catch (e: Exception) {
-            // If compression fails, return original
+            // Si la compresión falla, devuelva la original.
             return imageBytes
         }
     }
