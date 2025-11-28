@@ -23,6 +23,7 @@ import com.grupo2.ashley.product.models.Product
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.R
 import com.grupo2.ashley.anuncios.AnunciosViewModel
+import com.grupo2.ashley.home.components.CategoriesRow
 import com.grupo2.ashley.home.components.SearchBar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +60,23 @@ fun AnunciosScreen(
                 query = searchQuery,
                 onQueryChange = { viewModel.onSearchQueryChange(it) },
                 onClearClick = { viewModel.clearSearch() }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = stringResource(R.string.categorias),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            CategoriesRow(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategoryClick = { viewModel.onCategorySelected(it) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))

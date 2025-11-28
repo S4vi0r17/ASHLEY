@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.grupo2.ashley.R
+import kotlinx.coroutines.flow.collectLatest
 
 class ProductViewModel : ViewModel() {
     private val productRepository = ProductRepository()
@@ -250,13 +251,9 @@ class ProductViewModel : ViewModel() {
 
     fun loadProducts() {
         viewModelScope.launch {
-            productRepository.getAllProducts()
-                .onSuccess { products ->
-                    _allProducts.value = products
-                }
-                .onFailure { exception ->
-                    _allProducts.value = emptyList()
-                }
+            productRepository.observeAllProducts().collectLatest { productsList ->
+                _allProducts.value = productsList
+            }
         }
     }
 

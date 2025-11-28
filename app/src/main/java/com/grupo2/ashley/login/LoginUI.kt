@@ -53,12 +53,16 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.grupo2.ashley.AshleyApp
+import com.grupo2.ashley.LanguagePreferences
 import com.grupo2.ashley.R
 import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -382,19 +386,27 @@ fun LanguageDialog(
                 Text(
                     stringResource(R.string.espanol),
                     modifier = Modifier.clickable {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            LanguagePreferences.saveLanguage(context, "es")
+                        }
                         context.updateLocale("es")
                         onLanguageChanged()
                         onDismiss()
                     }
+
                 )
 
                 Text(
                     stringResource(R.string.ingles),
                     modifier = Modifier.clickable {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            LanguagePreferences.saveLanguage(context, "en")
+                        }
                         context.updateLocale("en")
                         onLanguageChanged()
                         onDismiss()
                     }
+
                 )
             }
         },

@@ -1,6 +1,7 @@
 package com.grupo2.ashley.anuncios.components
 
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -33,6 +34,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -51,7 +55,11 @@ import com.grupo2.ashley.R
 import com.grupo2.ashley.anuncios.AnunciosViewModel
 import com.grupo2.ashley.navigation.Routes
 import com.grupo2.ashley.product.models.Product
+import com.grupo2.ashley.product.models.ProductDeletedState
+import com.grupo2.ashley.ui.components.GradientButton
+import com.grupo2.ashley.ui.components.GradientTextButton
 import com.grupo2.ashley.ui.theme.AnimationConstants
+import com.grupo2.ashley.ui.theme.AppGradients
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -69,6 +77,7 @@ fun AnuncioCard(
     )
     val context = LocalContext.current
     val deletedState by viewModel.deletedState.collectAsState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -125,7 +134,7 @@ fun AnuncioCard(
 
                 // --- BOTÓN ELIMINAR ---
                 IconButton(
-                    onClick = { viewModel.deleteProductbyID(product.productId, context) },
+                    onClick = { showDeleteDialog = true },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
@@ -140,6 +149,24 @@ fun AnuncioCard(
                         contentDescription = stringResource(R.string.eliminar),
                         tint = Color.White,
                         modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                GradientTextButton(
+                    onClick = {
+                        viewModel.updateStateProduct(product.productId, !product.isActive)
+                    },
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .size(width = 108.dp, height = 36.dp),
+                    gradient = if (product.isActive) AppGradients.SuccessGradient else AppGradients.ErrorGradient,
+                ) {
+                    Text(
+                        text = if (product.isActive) stringResource(R.string.activo) else stringResource(R.string.inactivo),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     )
                 }
             }
@@ -212,5 +239,31 @@ fun AnuncioCard(
                 }
             )
         }
+
+        if(showDeleteDialog){
+            AlertDialog(
+                onDismissRequest = {
+                    showDeleteDialog = false
+                },
+                title = { Text(stringResource(R.string.desea_eliminar_este_producto)) },
+                text = { Text(stringResource(R.string.una_vez_eliminado_no_se_puede_recuperar))  },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteProductbyID(product.productId, product.images, context)
+                    }) {
+                        Text(stringResource(R.string.aceptar))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showDeleteDialog = false
+                    }) {
+                        Text(stringResource(R.string.cancelar))
+                    }
+                }
+            )
+        }
     }
 }
+

@@ -20,8 +20,11 @@ data class Product(
     val deliveryAddress: String = "",
     val deliveryLatitude: Double = 0.0,
     val deliveryLongitude: Double = 0.0,
-    @PropertyName("active")
-    val isActive: Boolean = true,
+
+    @get:PropertyName("active")
+    @set:PropertyName("active")
+    var isActive: Boolean = true,
+
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     // Campos para tracking y estadísticas

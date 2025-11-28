@@ -14,6 +14,7 @@ import com.grupo2.ashley.R
 import com.grupo2.ashley.product.models.ProductCondition
 import com.grupo2.ashley.product.models.ProductDeletedState
 import com.grupo2.ashley.product.models.ProductUploadState
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class ModificarAnuncioViewModel() : ViewModel() {
@@ -75,6 +76,9 @@ class ModificarAnuncioViewModel() : ViewModel() {
     private var _localURIs = MutableStateFlow<List<Uri>>(emptyList())
     var localURIs: StateFlow<List<Uri>> = _localURIs.asStateFlow()
 
+    private var _deletedRemoteURLs = MutableStateFlow<List<String>>(emptyList())
+    var deletedRemoteURLs: StateFlow<List<String>> = _deletedRemoteURLs.asStateFlow()
+
     private val _remoteURLs = MutableStateFlow<List<String>>(emptyList())
     var remoteURLs: StateFlow<List<String>> = _remoteURLs.asStateFlow()
 
@@ -116,12 +120,22 @@ class ModificarAnuncioViewModel() : ViewModel() {
     }
     fun removeImage(image: Uri){
         _selectedImages.value = _selectedImages.value - image
+        val url = image.toString()
+        if (url in _remoteURLs.value) {
+            addDeletedRemoteURL(image)
+            return
+        }
         removeLocalURI(image)
     }
 
     fun addImage(images: List<Uri>){
         _selectedImages.value = _selectedImages.value + images
         _localURIs.value = images
+    }
+
+    fun addDeletedRemoteURL(image: Uri){
+        _deletedRemoteURLs.update { it + image.toString() }
+        _remoteURLs.update { it - image.toString() }
     }
 
     fun addLocalURI(image : Uri){
@@ -202,6 +216,15 @@ class ModificarAnuncioViewModel() : ViewModel() {
 
                 _uploadState.value = ProductUploadState(isLoading = true, isUploadingImages = true)
 
+                // Eliminar imagenes
+                val deleteResult = productRepository.deleteProductImage(_deletedRemoteURLs.value)
+                if (deleteResult.isFailure) {
+                    _uploadState.value = ProductUploadState(
+                        error = "Error al eliminar las imágenes: ${deleteResult.exceptionOrNull()?.message}"
+                    )
+                    return@launch
+                }
+
                 // Subir imágenes
                 val imageResult = productRepository.uploadProductImages(_localURIs.value)
                 if (imageResult.isFailure) {
@@ -263,9 +286,20 @@ class ModificarAnuncioViewModel() : ViewModel() {
         _onProductPublished.value = false
     }
 
-    fun deleteProductbyID(productId: String, context: Context){
+    fun deleteProductbyID(productId: String, images: List<String>, context: Context){
         _deletedState.value = ProductDeletedState(isLoading = true)
         viewModelScope.launch {
+            val deleteImages = productRepository.deleteProductImage(images)
+            if (deleteImages.isFailure) {
+                _deletedState.value = ProductDeletedState(
+                    error = context.getString(
+                        R.string.error_al_eliminar,
+                        deleteImages.exceptionOrNull()?.message
+                    )
+                )
+                return@launch
+            }
+
             val result = productRepository.deleteProduct(productId)
             if (result.isFailure) {
                 _deletedState.value = ProductDeletedState(
@@ -279,8 +313,13 @@ class ModificarAnuncioViewModel() : ViewModel() {
             _deletedState.value = ProductDeletedState(isLoading = false, success = true)
         } 
     }
-
     fun resetDeletedState() {
         _deletedState.value = ProductDeletedState()
+    }
+
+    fun updateStateProduct(productId: String, isActive: Boolean){
+        viewModelScope.launch {
+            productRepository.updateProductActiveState(productId, isActive)
+        }
     }
 }

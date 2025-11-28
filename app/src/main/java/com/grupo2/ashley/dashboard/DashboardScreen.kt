@@ -267,7 +267,7 @@ private fun DashboardContent(
         // Productos destacados
         if (stats.mostViewedProduct != null || stats.mostFavoritedProduct != null) {
             Text(
-                text = "Productos Destacados",
+                text = stringResource(R.string.productos_destacados),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
@@ -275,7 +275,7 @@ private fun DashboardContent(
 
             stats.mostViewedProduct?.let { product ->
                 TopProductCard(
-                    title = "Más Visto",
+                    title = stringResource(R.string.mas_visto),
                     product = product,
                     icon = Icons.Default.Visibility,
                     gradient = Brush.linearGradient(
@@ -286,7 +286,7 @@ private fun DashboardContent(
 
             stats.mostFavoritedProduct?.let { product ->
                 TopProductCard(
-                    title = "Más Favorito",
+                    title = stringResource(R.string.mas_favorito),
                     product = product,
                     icon = Icons.Default.Favorite,
                     gradient = Brush.linearGradient(
@@ -299,7 +299,7 @@ private fun DashboardContent(
         // Análisis por categoría
         if (stats.productsByCategory.isNotEmpty()) {
             Text(
-                text = "Análisis por Categoría",
+                text = stringResource(R.string.analisis_por_categoria),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
@@ -307,14 +307,14 @@ private fun DashboardContent(
 
             VicoBarChart(
                 categories = stats.productsByCategory,
-                title = "Distribución de Productos"
+                title = stringResource(R.string.distribucion_de_productos)
             )
         }
 
         // Productos por condición
         if (stats.productsByCondition.isNotEmpty()) {
             Text(
-                text = "Estado de Productos",
+                text = stringResource(R.string.estado_de_productos),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
@@ -322,14 +322,14 @@ private fun DashboardContent(
 
             VicoPieChart(
                 data = stats.productsByCondition,
-                title = "Productos por Condición"
+                title = stringResource(R.string.productos_por_condicion)
             )
         }
 
         // Productos recientes
         if (stats.recentProducts.isNotEmpty()) {
             Text(
-                text = "Publicaciones Recientes",
+                text = stringResource(R.string.publicaciones_recientes),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
@@ -373,7 +373,7 @@ private fun DashboardContent(
         // Gráfico de pie - Distribución de vistas por producto
         if (stats.recentProducts.isNotEmpty() && stats.totalViews > 0) {
             Text(
-                text = "Distribución de Vistas",
+                text = stringResource(R.string.distribucion_de_vistas),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(top = 8.dp)
@@ -394,7 +394,7 @@ private fun DashboardContent(
 
             VicoPieChart(
                 data = productViewsData,
-                title = "Top 5 Productos más Vistos"
+                title = stringResource(R.string.top_5_productos_mas_vistos)
             )
         }
 
@@ -434,13 +434,13 @@ private fun WelcomeCard(stats: com.grupo2.ashley.dashboard.models.UserStats) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "¡Bienvenido a tu Dashboard!",
+                    text = stringResource(R.string.bienvenido_a_tu_dashboard),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "Miembro desde: $memberSinceDate",
+                    text = stringResource(R.string.miembro_desde_variable, memberSinceDate),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )

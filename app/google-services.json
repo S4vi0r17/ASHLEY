@@ -31,6 +31,14 @@
           }
         },
         {
+          "client_id": "440995167304-s7f3qg05qo54h2svhd81a61mlf41ug5u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.grupo2.ashley",
+            "certificate_hash": "d261b9ba3a9b191c08a35f3f533e7f13a860567b"
+          }
+        },
+        {
           "client_id": "440995167304-8hc733q2dgvfbf6k9pmf04mlmil1qsfb.apps.googleusercontent.com",
           "client_type": 3
         }

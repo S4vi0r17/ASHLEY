@@ -2,15 +2,22 @@ package com.grupo2.ashley.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -19,6 +26,10 @@ import androidx.compose.ui.unit.sp
 import com.grupo2.ashley.home.components.*
 import com.grupo2.ashley.map.UbicacionViewModel
 import com.grupo2.ashley.R
+import com.grupo2.ashley.ui.components.GradientButton
+import com.grupo2.ashley.ui.components.GradientIconButton
+import com.grupo2.ashley.ui.theme.AppGradients
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +47,7 @@ fun HomeScreen(
     val direccion by ubicacionViewModel.direccionSeleccionada.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    var favoritesSelected by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -49,11 +61,35 @@ fun HomeScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = { viewModel.onSearchQueryChange(it) },
-                onClearClick = { viewModel.clearSearch() }
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Box(modifier = Modifier.weight(1f)) {
+                    SearchBar(
+                        query = searchQuery,
+                        onQueryChange = { viewModel.onSearchQueryChange(it) },
+                        onClearClick = { viewModel.clearSearch() }
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                GradientIconButton(
+                    onClick = {
+                        viewModel.favoriteFilter()
+                        favoritesSelected = !favoritesSelected
+                    },
+                    modifier = Modifier.size(48.dp),
+                    icon = if (favoritesSelected) Icons.Default.Favorite
+                    else Icons.Default.FavoriteBorder,
+                    gradient = AppGradients.ErrorGradient,
+                    contentDescription = stringResource(R.string.favorito)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

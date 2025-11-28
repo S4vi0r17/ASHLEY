@@ -39,6 +39,22 @@ ProductRepository {
         }
     }
 
+    suspend fun deleteProductImage(imageUrls: List<String>): Result<List<String>> {
+        return try {
+            val deletedImages = mutableListOf<String>()
+
+            for (url in imageUrls) {
+                val storageRef = storage.getReferenceFromUrl(url)
+                storageRef.delete().await()
+                deletedImages.add(url)
+            }
+            Result.success(deletedImages)
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun createProduct(product: Product): Result<String> {
         return try {
             val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
@@ -227,6 +243,24 @@ ProductRepository {
             } else {
                 product
             }
+        }
+    }
+
+    suspend fun updateProductActiveState(productId: String, isActive: Boolean): Result<String> {
+        return try {
+            val updateMap = mapOf(
+                "active" to isActive,
+                "updatedAt" to System.currentTimeMillis()
+            )
+
+            firestore.collection("products")
+                .document(productId)
+                .update(updateMap)
+                .await()
+
+            Result.success(productId)
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }
