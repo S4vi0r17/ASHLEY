@@ -2,7 +2,7 @@ package com.grupo2.ashley.chat.models
 
 data class Conversation(
     val id: String = "",
-    val participants: List<String> = emptyList(),
+    val participants: Map<String, Boolean> = emptyMap(),
     val lastMessage: LastMessage? = null,
     val participantsInfo: Map<String, ParticipantInfo> = emptyMap(),
     val productId: String? = null,

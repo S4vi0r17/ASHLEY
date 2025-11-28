@@ -22,7 +22,7 @@ data class ConversationEntity(
     fun toConversation(participants: List<String>): Conversation {
         return Conversation(
             id = id,
-            participants = participants,
+            participants = participants.associateWith { true },
             lastMessage = if (lastMessageText != null && lastMessageTimestamp != null && lastMessageSenderId != null) {
                 LastMessage(
                     text = lastMessageText,
@@ -41,7 +41,7 @@ data class ConversationEntity(
         fun fromConversation(conversation: Conversation): ConversationEntity {
             return ConversationEntity(
                 id = conversation.id,
-                participantsJson = conversation.participants.joinToString(","),
+                participantsJson = conversation.participants.keys.joinToString(","),
                 lastMessageText = conversation.lastMessage?.text,
                 lastMessageTimestamp = conversation.lastMessage?.timestamp,
                 lastMessageSenderId = conversation.lastMessage?.senderId,

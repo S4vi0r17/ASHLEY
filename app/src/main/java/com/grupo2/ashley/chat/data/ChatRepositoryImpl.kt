@@ -455,21 +455,70 @@ class ChatRepositoryImpl @Inject constructor(
                     coroutineScope.launch {
                         val conversations = mutableListOf<ConversationEntity>()
                         for (child in snapshot.children) {
-                            val conv = child.getValue(Conversation::class.java)
-                            if (conv != null && conv.participants.contains(userId)) {
+                            try {
                                 val conversationId = child.key ?: ""
 
-                                // Preserve local-only fields (isMuted, isArchived, isBlocked)
-                                val existingConv = conversationDao.getConversationById(conversationId)
-                                val isMuted = existingConv?.isMuted ?: false
-                                val isArchived = existingConv?.isArchived ?: false
-                                val isBlocked = existingConv?.isBlocked ?: false
+                                // Manually parse participants to handle both array and map formats
+                                val participantsMap = mutableMapOf<String, Boolean>()
+                                val participantsSnapshot = child.child("participants")
 
-                                conversations.add(
-                                    ConversationEntity.fromConversation(
-                                        conv.copy(id = conversationId, isMuted = isMuted, isBlocked = isBlocked)
-                                    ).copy(isArchived = isArchived)
-                                )
+                                if (participantsSnapshot.exists()) {
+                                    when (val participantsValue = participantsSnapshot.value) {
+                                        is Map<*, *> -> {
+                                            // Handle map format: {"userId1": true, "userId2": true}
+                                            participantsValue.forEach { (key, value) ->
+                                                if (key is String) {
+                                                    participantsMap[key] = value as? Boolean ?: true
+                                                }
+                                            }
+                                        }
+                                        is List<*> -> {
+                                            // Handle array format: ["userId1", "userId2"]
+                                            participantsValue.forEach { item ->
+                                                if (item is String) {
+                                                    participantsMap[item] = true
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Only process if current user is a participant
+                                if (participantsMap.containsKey(userId)) {
+                                    // Parse lastMessage
+                                    val lastMessageSnapshot = child.child("lastMessage")
+                                    val lastMessage = if (lastMessageSnapshot.exists()) {
+                                        LastMessage(
+                                            text = lastMessageSnapshot.child("text").getValue(String::class.java) ?: "",
+                                            timestamp = lastMessageSnapshot.child("timestamp").getValue(Long::class.java) ?: 0L,
+                                            senderId = lastMessageSnapshot.child("senderId").getValue(String::class.java),
+                                            unreadCount = lastMessageSnapshot.child("unreadCount").getValue(Int::class.java) ?: 0
+                                        )
+                                    } else null
+
+                                    // Create conversation object
+                                    val conv = Conversation(
+                                        id = conversationId,
+                                        participants = participantsMap,
+                                        lastMessage = lastMessage,
+                                        participantsInfo = emptyMap(), // We don't store this in Firebase
+                                        productId = child.child("productId").getValue(String::class.java)
+                                    )
+
+                                    // Preserve local-only fields (isMuted, isArchived, isBlocked)
+                                    val existingConv = conversationDao.getConversationById(conversationId)
+                                    val isMuted = existingConv?.isMuted ?: false
+                                    val isArchived = existingConv?.isArchived ?: false
+                                    val isBlocked = existingConv?.isBlocked ?: false
+
+                                    conversations.add(
+                                        ConversationEntity.fromConversation(
+                                            conv.copy(id = conversationId, isMuted = isMuted, isBlocked = isBlocked)
+                                        ).copy(isArchived = isArchived)
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to parse conversation ${child.key}", e)
                             }
                         }
                         conversationDao.insertConversations(conversations)

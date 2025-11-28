@@ -239,7 +239,7 @@ class ChatRealtimeViewModel @Inject constructor(
                     .find { it.id == conversationId }
 
                 if (conversation != null) {
-                    val otherUserIdFound = conversation.participants.firstOrNull { it != currentUserId }
+                    val otherUserIdFound = conversation.participants.keys.firstOrNull { it != currentUserId }
                     otherUserId = otherUserIdFound
 
                     if (otherUserIdFound != null) {

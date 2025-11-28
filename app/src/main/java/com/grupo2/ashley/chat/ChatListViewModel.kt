@@ -58,7 +58,7 @@ class ChatListViewModel @Inject constructor(
                 }
                 .collectLatest { conversationList ->
                     val enrichedConversations = conversationList.map { conversation ->
-                        val participantIds = conversation.participants.filter { it != userId }
+                        val participantIds = conversation.participants.keys.filter { it != userId }
                         val otherUserId = participantIds.firstOrNull() ?: ""
                         val userProfile = if (otherUserId.isNotEmpty()) {
                             try {
