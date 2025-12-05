@@ -56,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.grupo2.ashley.R
 import com.grupo2.ashley.ui.components.GradientButton
@@ -63,6 +65,12 @@ import com.grupo2.ashley.ui.theme.ASHLEYTheme
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
 import dagger.hilt.android.AndroidEntryPoint
+import android.app.Activity
+import android.content.Intent
+import com.grupo2.ashley.MainActivity
+import com.grupo2.ashley.profile.ProfileSetupScreen
+import com.grupo2.ashley.profile.ProfileViewModel
+import com.grupo2.ashley.map.UbicacionViewModel
 
 @AndroidEntryPoint
 class RegistroUI : ComponentActivity() {
@@ -72,10 +80,34 @@ class RegistroUI : ComponentActivity() {
         setContent {
             ASHLEYTheme {
                 val navController = rememberNavController()
-                val viewModel: RegistroViewModel = viewModel()
-                Registro(
-                    viewModel, navController
-                )
+
+                NavHost(navController = navController, startDestination = "registro") {
+                    composable("registro") {
+                        val viewModel: RegistroViewModel = viewModel()
+                        Registro(viewModel, navController)
+                    }
+
+                    composable("profileSetup") {
+                        val context = LocalContext.current
+                        val profileViewModel: ProfileViewModel = viewModel()
+                        val ubicacionViewModel: UbicacionViewModel = viewModel()
+
+                        ProfileSetupScreen(
+                            viewModel = profileViewModel,
+                            ubicacionViewModel = ubicacionViewModel,
+                            onProfileComplete = {
+                                // Después de completar el perfil, ir a MainActivity
+                                val intent = Intent(context, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                context.startActivity(intent)
+                                (context as? Activity)?.finish()
+                            },
+                            onSelectLocation = {
+                                // Manejar selección de ubicación
+                            }
+                        )
+                    }
+                }
             }
         }
     }

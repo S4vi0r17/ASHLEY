@@ -49,6 +49,7 @@ import com.grupo2.ashley.chat.ChatListViewModel
 import com.grupo2.ashley.chat.ChatRealtimeScreen
 import com.grupo2.ashley.chat.ParticipantInfoScreen
 import com.grupo2.ashley.profile.ProfileViewModel
+import com.grupo2.ashley.profile.ProfileSetupScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.grupo2.ashley.favorites.FavoritesScreen
 
@@ -64,6 +65,7 @@ object Routes {
     const val DASHBOARD = "dashboard"
     const val MODIFICAR_ANUNCIOS = "editar_anuncio/{productId}"
     const val FAVORITES = "favorites"
+    const val PROFILE_SETUP = "profileSetup"
 
     fun productDetail(productId: String) = "product_detail/$productId"
     fun productMap(productId: String) = "product_map/$productId"
@@ -500,6 +502,28 @@ fun AppNavigation(
                 onBackClick = { navController.popBackStack() },
                 onProductClick = { productId ->
                     navController.navigate(Routes.productDetail(productId))
+                }
+            )
+        }
+
+        composable(
+            route = Routes.PROFILE_SETUP,
+            enterTransition = { NavigationAnimations.verticalSlideEnter() },
+            exitTransition = { NavigationAnimations.noAnimationExit() },
+            popEnterTransition = { NavigationAnimations.noAnimation() },
+            popExitTransition = { NavigationAnimations.verticalSlideExit() }
+        ) {
+            ProfileSetupScreen(
+                viewModel = profileViewModel,
+                ubicacionViewModel = ubicacionViewModel,
+                onProfileComplete = {
+                    // Navegar al home cuando el perfil esté completo
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.PROFILE_SETUP) { inclusive = true }
+                    }
+                },
+                onSelectLocation = {
+                    navController.navigate(Routes.SELECCIONAR_UBICACION)
                 }
             )
         }

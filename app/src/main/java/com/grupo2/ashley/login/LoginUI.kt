@@ -68,6 +68,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
+import com.grupo2.ashley.profile.ProfileSetupScreen
+import com.grupo2.ashley.profile.ProfileViewModel
+import com.grupo2.ashley.map.UbicacionViewModel
 
 @AndroidEntryPoint
 class Login : ComponentActivity() {
@@ -103,6 +106,28 @@ class Login : ComponentActivity() {
 
                     composable("recover") {
                         RecuperarContra()
+                    }
+
+                    composable("profileSetup") {
+                        val context = LocalContext.current
+                        val profileViewModel: ProfileViewModel = viewModel()
+                        val ubicacionViewModel: UbicacionViewModel = viewModel()
+
+                        ProfileSetupScreen(
+                            viewModel = profileViewModel,
+                            ubicacionViewModel = ubicacionViewModel,
+                            onProfileComplete = {
+                                // Después de completar el perfil, ir a MainActivity
+                                val intent = Intent(context, MainActivity::class.java)
+                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                context.startActivity(intent)
+                                (context as? Activity)?.finish()
+                            },
+                            onSelectLocation = {
+                                // Para seleccionar ubicación, puedes navegar a un MapScreen aquí
+                                // o manejarlo dentro de ProfileSetupScreen
+                            }
+                        )
                     }
                 }
             }
