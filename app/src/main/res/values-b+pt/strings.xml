@@ -1,0 +1,334 @@
+<resources>
+    <!-- ProfileSetupScreen -->
+    <string name="completar_perfil">Completar perfil</string>
+    <string name="mensaje_informativo">Para continuar usando ASHLEY, precisamos de alguns dados adicionais para personalizar sua experiência.</string>
+    <string name="foto_perfil">Foto de perfil</string>
+    <string name="agregar_foto">Adicionar foto (opcional)</string>
+    <string name="cambiar_foto">Alterar foto</string>
+    <string name="agregar_foto_desc">Enviar foto</string>
+    <string name="nombre_label">Nome *</string>
+    <string name="apellido_label">Sobrenome *</string>
+    <string name="telefono_label">Número de telefone *</string>
+    <string name="telefono_placeholder">+55 11 99999-9999</string>
+    <string name="direccion_label">Endereço *</string>
+    <string name="ubicacion_seleccionada">Localização selecionada</string>
+    <string name="seleccionar_direccion">Selecionar endereço</string>
+    <string name="cambiar_direccion">Alterar endereço</string>
+    <string name="ubicacion_entrega_predeterminada">Localização de entrega padrão *</string>
+    <string name="toca_para_seleccionar">Toque no mapa para escolher sua localização</string>
+    <string name="mensaje_entrega_predeterminada">Esta será a localização preferida onde os compradores poderão retirar os produtos que você vende.</string>
+    <string name="guardar_y_continuar">Salvar e continuar</string>
+    <string name="campos_obligatorios">* Campos obrigatórios</string>
+
+    <!-- ProfileLocationPickerScreen -->
+    <string name="titulo_seleccionar_ubicacion">Selecionar localização de entrega</string>
+    <string name="volver">Voltar</string>
+    <string name="mi_ubicacion">Minha localização atual</string>
+    <string name="confirmar">Confirmar</string>
+    <string name="ubicacion_entrega">Localização de entrega</string>
+    <string name="ubicacion_desconocida">Localização desconhecida</string>
+
+    <!-- ProductMapScreen -->
+    <string name="centrar_ubicacion">Centralizar na minha localização</string>
+    <string name="distancia">Distância</string>
+    <string name="tiempo">Tempo estimado</string>
+    <string name="calculando_ruta">Calculando rota...</string>
+    <string name="error_ruta">Não conseguimos calcular a rota. Por favor, verifique sua conexão.</string>
+    <string name="activar_ubicacion">Ative a localização para ver distância e tempo estimado.</string>
+
+    <!-- ProductDetailScreen -->
+    <string name="quitar_favoritos">Remover dos favoritos</string>
+    <string name="agregar_favoritos">Adicionar aos favoritos</string>
+    <string name="imagen_de">Imagem %1$d de %2$d</string>
+    <string name="estado">Condição do produto</string>
+    <string name="disponible">Disponível</string>
+    <string name="categorias">Categorias</string>
+    <string name="descripcion">Descrição</string>
+    <string name="vendedor">Vendedor</string>
+    <string name="mapa">Mapa</string>
+    <string name="llamar">Ligar</string>
+    <string name="chat">Chat</string>
+    <string name="foto_vendedor">Foto do vendedor</string>
+    <string name="avatar">Avatar</string>
+    <string name="miembro_desde">Membro desde: %1$s</string>
+    <string name="recientemente">Recentemente</string>
+    <string name="electronica">Eletrônica</string>
+    <string name="moda">Moda</string>
+    <string name="hogar">Casa</string>
+    <string name="deportes">Esportes</string>
+    <string name="libros">Livros</string>
+    <string name="juguetes">Brinquedos</string>
+    <string name="vehiculos">Veículos</string>
+    <string name="otros">Outros</string>
+
+    <!-- ProductUI - ImageComponents -->
+    <string name="agregar_imagen">Adicionar imagem</string>
+    <string name="imagen_producto">Imagem do produto</string>
+    <string name="eliminar_imagen">Excluir imagem</string>
+
+    <!-- MapScreen -->
+    <string name="buscar_direccion">Buscar endereço...</string>
+    <string name="direccion_desconocida">Endereço não disponível</string>
+    <string name="ubicacion_actualizada">Localização atualizada</string>
+    <string name="ubicacion_personalizada">Localização personalizada</string>
+    <string name="toca_para_cambiar_ubicacion">Toque no mapa para atualizar a localização</string>
+    <string name="permiso_concedido">Permissão de localização concedida</string>
+    <string name="permiso_denegado">Permissão de localização negada</string>
+    <string name="ubicacion_detectada">Localização atual detectada</string>
+    <string name="error_obtener_ubicacion">Não conseguimos obter sua localização</string>
+    <string name="ubicacion_guardada">Localização salva corretamente</string>
+    <string name="confirmar_ubicacion">Confirmar localização</string>
+
+    <!-- LoginUI -->
+    <string name="bienvenido_a">Bem-vindo ao</string>
+    <string name="titulo">ASHLEY</string>
+    <string name="continuar_con_google">Continuar com Google</string>
+    <string name="email">E-mail</string>
+    <string name="contrasena">Senha</string>
+    <string name="ingresar">Entrar</string>
+    <string name="no_tiene_cuenta">Não tem conta?</string>
+    <string name="registrese">Cadastre-se</string>
+    <string name="olvide_mi_contrasena">Esqueci minha senha</string>
+    <string name="idioma">Idioma</string>
+    <string name="espanol">Espanhol</string>
+    <string name="ingles">Inglês</string>
+    <string name="portugues">Português</string>
+
+    <!-- RecuperarUI -->
+    <string name="recuperar_contrasena">Recuperar senha</string>
+    <string name="instrucciones">Enviaremos um e-mail com as instruções para redefinir sua senha.</string>
+    <string name="correo_satisfactorio">E-mail enviado com sucesso</string>
+    <string name="error_correo_no_registrado">Este e-mail não está registrado</string>
+    <string name="enviar_correo">Enviar e-mail</string>
+
+    <!-- RegistroUI -->
+    <string name="registro_exitoso">Cadastro concluído com sucesso!</string>
+    <string name="crear_cuenta">Criar conta</string>
+    <string name="registrate_en_ashley">Crie sua conta no ASHLEY</string>
+    <string name="ocultar_contrasena">Ocultar senha</string>
+    <string name="mostrar_contrasena">Mostrar senha</string>
+    <string name="confirmar_contrasena">Confirmar senha</string>
+    <string name="registrarme">Cadastrar</string>
+    <string name="ya_tienes_cuenta">Já tem uma conta?</string>
+    <string name="iniciar_sesion">Entrar</string>
+
+    <!-- HomeScreen -->
+    <string name="cargando_productos">Carregando produtos...</string>
+    <string name="error_desconocido">Ocorreu um erro inesperado</string>
+    <string name="reintentar">Tentar novamente</string>
+    <string name="no_se_encontraron_productos">Nenhum produto encontrado</string>
+    <string name="aun_no_hay_productos">Ainda não há produtos publicados</string>
+    <string name="se_el_primero_en_publicar">Seja o primeiro a publicar um!</string>
+
+    <!-- Components -->
+    <string name="ubicacion">Localização</string>
+    <string name="elegir_ubicacion">Escolher outra localização</string>
+    <string name="favorito">Favorito</string>
+    <string name="buscar_productos">Buscar produtos...</string>
+    <string name="buscar">Buscar</string>
+    <string name="limpiar_busqueda">Limpar busca</string>
+
+    <!-- Favoritos -->
+    <string name="favoritos">Favoritos</string>
+    <string name="mis_favoritos">Meus favoritos</string>
+    <string name="productos_guardados">Ver produtos salvos</string>
+    <string name="total_productos">%d produtos</string>
+    <string name="error_favoritos">Não conseguimos carregar seus favoritos</string>
+    <string name="no_favoritos">Você ainda não tem favoritos</string>
+    <string name="placeholder_favoritos">Os produtos que você marcar como favoritos aparecerão aqui.</string>
+    <string name="confirmar_quitar_favoritos">Deseja remover este produto dos seus favoritos?</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="confirmar_quitar">Sim, remover</string>
+    <string name="momento">há um momento</string>
+    <string name="hace_minutos">há %d minutos</string>
+    <string name="hace_horas">há %d horas</string>
+    <string name="hace_dias">há %d dias</string>
+
+    <!-- DashboardScreen -->
+    <string name="mi_dashboard">Meu painel</string>
+    <string name="ultima_actualizacion">Última atualização: %s</string>
+    <string name="actualizar">Atualizar</string>
+    <string name="cargando_estadisticas">Carregando estatísticas...</string>
+    <string name="error_cargar_datos">Erro ao carregar os dados</string>
+    <string name="resumen_general">Resumo geral</string>
+    <string name="productos_publicados">Produtos publicados</string>
+    <string name="vistas_totales">Visualizações totais</string>
+    <string name="precio_promedio">Preço médio</string>
+    <string name="activo">Ativo</string>
+    <string name="inactivo">Inativo</string>
+    <string name="productos_destacados">Produtos em Destaque</string>
+    <string name="mas_visto">Mais Visto</string>
+    <string name="mas_favorito">Mais Favoritado</string>
+    <string name="analisis_por_categoria">Análise por Categoria</string>
+    <string name="distribucion_de_productos">Distribuição de Produtos</string>
+    <string name="estado_de_productos">Status dos Produtos</string>
+    <string name="productos_por_condicion">Produtos por Condição</string>
+    <string name="publicaciones_recientes">Publicações Recentes</string>
+    <string name="distribucion_de_vistas">Distribuição de Visualizações</string>
+    <string name="top_5_productos_mas_vistos">Top 5 Produtos mais Vistos</string>
+    <string name="bienvenido_a_tu_dashboard">Bem-vindo ao seu Painel!</string>
+    <string name="miembro_desde_variable">Membro desde: %1$s</string>
+
+    <!-- DashboardComponents -->
+    <string name="no_hay_dcategorias">Não há dados de categorias</string>
+    <string name="productos_categorias">Produtos por categoria</string>
+    <string name="no_hay_datos">Não há dados disponíveis</string>
+    <string name="vistas">Visualizações</string>
+
+    <!-- ParticipantInfoScreen -->
+    <string name="titulo_informacion_contacto">Informações do contato</string>
+    <string name="cargando">Carregando...</string>
+    <string name="telefono">Telefone</string>
+    <string name="acerca_de">Sobre</string>
+    <string name="contenido_acerca_de">Olá! Uso ASHLEY para comprar e vender.</string>
+    <string name="titulo_multimedia">Mídia, links e documentos</string>
+    <string name="contenido_multimedia">Nenhum arquivo compartilhado ainda</string>
+    <string name="silenciar_notificaciones">Silenciar notificações</string>
+    <string name="activar_notificaciones">Ativar notificações</string>
+    <string name="bloquear_contacto">Bloquear contato</string>
+    <string name="desbloquear_contacto">Desbloquear contato</string>
+
+    <!-- ChatRealtimeScreen -->
+    <string name="error_imagen">Houve um erro ao processar a imagem</string>
+    <string name="error_video">Houve um erro ao processar o vídeo</string>
+    <string name="tocar_contacto">Toque aqui para ver as informações do contato</string>
+    <string name="escribiendo">digitando...</string>
+    <string name="ia_mejora">Texto melhorado com IA!</string>
+
+    <!-- ChatListScreen -->
+    <string name="mensajes">Mensagens</string>
+    <string name="sin_conversaciones">Você não tem conversas</string>
+    <string name="empezar_conversar">Inicie uma conversa com alguém</string>
+
+    <!-- ChatComponents -->
+    <string name="vista_pimagen">Pré-visualização da imagem</string>
+    <string name="vista_pvideo">Pré-visualização do vídeo</string>
+    <string name="empezar">Começar</string>
+    <string name="video_seleccionado">Vídeo selecionado</string>
+    <string name="seleccionar_imagen">Selecionar imagem</string>
+    <string name="seleccionar_video">Selecionar vídeo</string>
+    <string name="escribe_mensaje">Escreva uma mensagem...</string>
+    <string name="mejorar_ia">Melhorar com IA</string>
+    <string name="enviar">Enviar</string>
+    <string name="imagen_pantalla_completa">Imagem em tela cheia</string>
+    <string name="eliminado">Excluído</string>
+    <string name="contenido_eliminado">Esta mensagem foi excluída</string>
+    <string name="imagen_mensaje">Imagem da mensagem</string>
+    <string name="reintentar_envio">Tentar enviar novamente</string>
+    <string name="eliminar_mensaje">Excluir mensagem</string>
+    <string name="eliminar">Excluir</string>
+    <string name="enviando">Enviando...</string>
+    <string name="enviado">Enviado</string>
+    <string name="entregado">Entregue</string>
+    <string name="leido">Lido</string>
+    <string name="fallido">Falhou</string>
+    <string name="sin_imagen">Sem imagem</string>
+    <string name="producto">Produto</string>
+    <string name="ver_producto">Ver produto</string>
+    <string name="ahora">Agora</string>
+    <string name="reproducir_video">Reproduzir vídeo</string>
+
+    <!-- Main Activity -->
+    <string name="inicio">Início</string>
+    <string name="chats">Chats</string>
+    <string name="vender">Vender</string>
+    <string name="anuncios">Meus anúncios</string>
+    <string name="cuenta">Conta</string>
+
+    <!-- IntentUtils -->
+    <string name="error_mapa">Erro ao abrir o mapa: %s</string>
+    <string name="error_telefono_vendedor">O vendedor não tem um número de telefone registrado</string>
+    <string name="error_marcador">Erro ao abrir o discador: %s</string>
+    <string name="metros">%d metros</string>
+
+    <!-- CuentaScreen -->
+    <string name="ver_mis_estadisticas">Ver minhas estatísticas</string>
+    <string name="perfil_actualizado">Perfil atualizado com sucesso</string>
+    <string name="informacion_personal">Informações pessoais</string>
+    <string name="nombre">Nome</string>
+    <string name="apellido">Sobrenome</string>
+    <string name="direccion">Endereço</string>
+    <string name="tu_ubicacion">Sua localização</string>
+    <string name="sin_ubicacion">Sem localização</string>
+    <string name="no_direccion_configurada">Você ainda não configurou um endereço</string>
+    <string name="guardar">Salvar</string>
+    <string name="editar_perfil">Editar perfil</string>
+    <string name="cerrar_sesion">Sair</string>
+    <string name="confirmar_cerrar_sesion">Tem certeza de que deseja sair?</string>
+    <string name="si_cerrar_sesion">Sim, sair</string>
+
+    <!-- Vender Screen -->
+    <string name="publicar_producto">Publicar produto</string>
+    <string name="fotos_producto">Fotos do produto *</string>
+    <string name="limite_fotos">Você pode adicionar até 5 imagens.</string>
+    <string name="titulo_producto">Título do produto *</string>
+    <string name="marca">Marca</string>
+    <string name="categoria">Categoria *</string>
+    <string name="condicion">Condição *</string>
+    <string name="precio">Preço (R$) *</string>
+    <string name="lugar_entrega">Local de retirada *</string>
+    <string name="usar_direccion_perfil">Usar meu endereço do perfil</string>
+    <string name="direccion_perfil">Endereço do perfil</string>
+    <string name="subiendo_imagen">Enviando imagens...</string>
+    <string name="publicando">Publicando...</string>
+    <string name="producto_publicado">Produto publicado!</string>
+    <string name="exito_publicar">Seu produto foi publicado com sucesso.</string>
+    <string name="aceptar">Aceitar</string>
+
+    <!-- ProfileViewModel -->
+    <string name="error_nombre_requerido">O nome é obrigatório.</string>
+    <string name="error_apellido_requerido">O sobrenome é obrigatório.</string>
+    <string name="error_telefono_requerido">O telefone é obrigatório.</string>
+    <string name="error_telefono_longitud">O número deve ter pelo menos 9 dígitos.</string>
+    <string name="error_direccion_requerida">O endereço é obrigatório.</string>
+    <string name="error_ubicacion_predeterminada_requerida">Você deve selecionar uma localização de entrega padrão.</string>
+
+    <!-- Product Conditions -->
+    <string name="condicion_nuevo">Novo</string>
+    <string name="condicion_como_nuevo">Como novo</string>
+    <string name="condicion_buen_estado">Bom estado</string>
+    <string name="condicion_usado">Usado</string>
+    <string name="condicion_para_reparar">Para reparar</string>
+
+    <!-- Categories -->
+    <string name="cat_electronics">Eletrônica</string>
+    <string name="cat_fashion">Moda</string>
+    <string name="cat_home">Casa</string>
+    <string name="cat_sports">Esportes</string>
+    <string name="cat_books">Livros</string>
+    <string name="cat_toys">Brinquedos</string>
+    <string name="cat_vehicles">Veículos</string>
+    <string name="cat_others">Outros</string>
+    <string name="cat_all">Todos</string>
+
+    <!-- NotificationPermissionComposable -->
+    <string name="titulo_notificacion_chat">Notificações do chat</string>
+    <string name="descripcion_permiso_notificacion_chat">Para avisá-lo quando receber novas mensagens, precisamos de sua permissão para enviar notificações. Deseja ativá-las?</string>
+    <string name="accion_permitir">Permitir</string>
+    <string name="accion_ahora_no">Agora não</string>
+
+    <!-- AnunciosScreen -->
+    <string name="aqui_mostraran_tus_anuncios">Seus anúncios serão exibidos aqui</string>
+    <string name="editar_producto">Editar Produto</string>
+    <string name="el_titulo_es_requerido">O título é obrigatório</string>
+    <string name="la_categoria_es_requerida">A categoria é obrigatória</string>
+    <string name="error_numero_invalido">O preço deve ser um número válido</string>
+    <string name="debes_seleccionar_al_menos_una_imagen">Você deve selecionar pelo menos uma imagem</string>
+    <string name="error_inesperado">Erro inesperado: %s</string>
+    <string name="modificando">Modificando...</string>
+    <string name="producto_editado">Produto Editado!</string>
+    <string name="editado_satisfactoriamente">Seu produto foi editado com sucesso</string>
+    <string name="producto_eliminado">Produto Excluído</string>
+    <string name="producto_eliminado_satisfactoriamente">Produto excluído com sucesso</string>
+    <string name="error_al_eliminar">Erro ao excluir: %1$s</string>
+    <string name="error_al_crear_el_producto">Erro ao criar o produto: %1$s</string>
+    <string name="desea_eliminar_este_producto">Deseja excluir este produto?</string>
+    <string name="una_vez_eliminado_no_se_puede_recuperar">Uma vez excluído não pode ser recuperado</string>
+
+    <!-- Session Management -->
+    <string name="sesion_expirada">Sessão expirada</string>
+    <string name="sesion_expirada_mensaje">Sua sessão expirou por inatividade. Por favor, digite sua senha para continuar.</string>
+    <string name="password">Senha</string>
+    <string name="ingresa_tu_password">Digite sua senha</string>
+    <string name="verificando">Verificando...</string>
+</resources>

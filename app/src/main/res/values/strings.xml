@@ -102,6 +102,7 @@
     <string name="idioma">Idioma</string>
     <string name="espanol">Español</string>
     <string name="ingles">Inglés</string>
+    <string name="portugues">Portugués</string>
 
 
     <!-- RecuperarUI -->
@@ -353,6 +354,14 @@
     <string name="error_al_crear_el_producto">Error al crear el producto: %1$s</string>
     <string name="desea_eliminar_este_producto">¿Desea eliminar este producto?</string>
     <string name="una_vez_eliminado_no_se_puede_recuperar">Una vez eliminado no se puede recuperar</string>
+
+    <!-- Session Management -->
+
+    <string name="sesion_expirada">Sesión expirada</string>
+    <string name="sesion_expirada_mensaje">Tu sesión ha expirado por inactividad. Por favor, ingresa tu contraseña para continuar.</string>
+    <string name="password">Contraseña</string>
+    <string name="ingresa_tu_password">Ingresa tu contraseña</string>
+    <string name="verificando">Verificando...</string>
 
 
 

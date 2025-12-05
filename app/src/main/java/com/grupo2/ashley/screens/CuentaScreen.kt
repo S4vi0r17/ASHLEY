@@ -35,11 +35,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.google.firebase.auth.FirebaseAuth
+import com.grupo2.ashley.auth.SessionManager
 import com.grupo2.ashley.profile.ProfileViewModel
 import com.grupo2.ashley.ui.components.GradientButton
 import com.grupo2.ashley.ui.theme.AnimationConstants
 import com.grupo2.ashley.ui.theme.AppGradients
 import com.grupo2.ashley.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,11 +53,13 @@ fun CuentaScreen(
     ubicacionViewModel: com.grupo2.ashley.map.UbicacionViewModel? = null,
     onNavigateToMap: (() -> Unit)? = null,
     onNavigateToDashboard: (() -> Unit)? = null,
-    onNavigateToFavorites: (() -> Unit)? = null
+    onNavigateToFavorites: (() -> Unit)? = null,
+    sessionManager: SessionManager? = null
 ) {
     val auth = FirebaseAuth.getInstance()
     val currentUser = auth.currentUser
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     val userProfile by viewModel.userProfile.collectAsState()
     val firstName by viewModel.firstName.collectAsState()
@@ -735,6 +741,10 @@ fun CuentaScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
+                        // Invalidar token de sesión antes de cerrar
+                        coroutineScope.launch {
+                            sessionManager?.invalidateSession()
+                        }
                         auth.signOut()
                         showLogoutDialog = false
                         (context as? Activity)?.finish()

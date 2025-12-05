@@ -1,5 +1,7 @@
 package com.grupo2.ashley.login
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.content.Context
@@ -9,6 +11,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import com.grupo2.ashley.MainActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -43,6 +46,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -77,12 +81,19 @@ class Login : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "main") {
 
                     composable("main") {
-                        val viewModel: LoginViewModel = viewModel()
+                        val viewModel: LoginViewModel = hiltViewModel()
                         LoginOpt(viewModel, navController)
                     }
 
                     composable("login") {
-                        AshleyApp()
+                        // Iniciar MainActivity y finalizar LoginActivity
+                        val context = LocalContext.current
+                        LaunchedEffect(Unit) {
+                            val intent = Intent(context, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            context.startActivity(intent)
+                            (context as? Activity)?.finish()
+                        }
                     }
 
                     composable("registro") {
@@ -403,6 +414,19 @@ fun LanguageDialog(
                             LanguagePreferences.saveLanguage(context, "en")
                         }
                         context.updateLocale("en")
+                        onLanguageChanged()
+                        onDismiss()
+                    }
+
+                )
+
+                Text(
+                    stringResource(R.string.portugues),
+                    modifier = Modifier.clickable {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            LanguagePreferences.saveLanguage(context, "pt")
+                        }
+                        context.updateLocale("pt")
                         onLanguageChanged()
                         onDismiss()
                     }

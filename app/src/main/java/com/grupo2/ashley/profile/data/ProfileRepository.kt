@@ -5,10 +5,20 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.grupo2.ashley.profile.models.UserProfile
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class ProfileRepository {
-    private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+@Singleton
+class ProfileRepository @Inject constructor(
+    private val firestore: FirebaseFirestore,
+    private val auth: FirebaseAuth
+) {
+    // Constructor sin parámetros para compatibilidad con código existente
+    constructor() : this(
+        FirebaseFirestore.getInstance(),
+        FirebaseAuth.getInstance()
+    )
+
     private val profilesCollection = firestore.collection("users")
 
     companion object {

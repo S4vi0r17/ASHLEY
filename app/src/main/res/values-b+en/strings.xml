@@ -92,6 +92,7 @@
     <string name="idioma">Language</string>
     <string name="espanol">Spanish</string>
     <string name="ingles">English</string>
+    <string name="portugues">Portuguese</string>
 
     <!-- RecuperarUI -->
     <string name="recuperar_contrasena">Recover password</string>
@@ -324,4 +325,11 @@
     <string name="desea_eliminar_este_producto">Do you want to delete this product?</string>
     <string name="una_vez_eliminado_no_se_puede_recuperar">Once deleted, it cannot be recovered.</string>
 
+    <!-- Session Management -->
+
+    <string name="sesion_expirada">Session Expired</string>
+    <string name="sesion_expirada_mensaje">Your session has expired for inactivity. Please, re-enter your password to continue.</string>
+    <string name="password">Password</string>
+    <string name="ingresa_tu_password">Enter your password</string>
+    <string name="verificando">Checking...</string>
 </resources>

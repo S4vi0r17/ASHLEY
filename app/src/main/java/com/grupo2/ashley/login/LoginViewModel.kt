@@ -6,16 +6,21 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.AuthCredential
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.grupo2.ashley.auth.SessionManager
 import com.grupo2.ashley.profile.data.ProfileRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class LoginViewModel : ViewModel() {
-
-    private var auth = FirebaseAuth.getInstance()
-    private val profileRepository = ProfileRepository()
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val sessionManager: SessionManager,
+    private val profileRepository: ProfileRepository
+) : ViewModel() {
 
     private val _email = MutableStateFlow("")
     val email: StateFlow<String> = _email
@@ -134,33 +139,40 @@ class LoginViewModel : ViewModel() {
             try {
                 val currentUser = auth.currentUser
                 val userId = currentUser?.uid
-                
+
                 Log.d("AUTH", "================================================")
                 Log.d("AUTH", "INICIO DE VERIFICACIÓN DE PERFIL")
                 Log.d("AUTH", "Usuario autenticado: $userId")
                 Log.d("AUTH", "Email: ${currentUser?.email}")
-                
+
+                // Crear token de sesión para el usuario autenticado
+                if (userId != null) {
+                    Log.d("AUTH", "Creando token de sesión para usuario: $userId")
+                    sessionManager.createSession(userId)
+                    Log.d("AUTH", "Token de sesión creado exitosamente")
+                }
+
                 // Pequeña pausa para asegurar que Firestore esté sincronizado
                 Log.d("AUTH", "Esperando 500ms para sincronización...")
                 kotlinx.coroutines.delay(500)
-                
+
                 // Verificar si el perfil está completo (ahora lee desde servidor)
                 Log.d("AUTH", "Llamando a profileRepository.isProfileComplete()...")
                 val isComplete = profileRepository.isProfileComplete()
-                
+
                 Log.d("AUTH", "================================================")
                 Log.d("AUTH", "RESULTADO FINAL: isComplete = $isComplete")
                 Log.d("AUTH", "================================================")
-                
+
                 // Guardar foto de perfil de Google si existe (después de verificar)
                 val photoUrl = currentUser?.photoUrl?.toString()
                 if (!photoUrl.isNullOrBlank() && !isComplete) {
                     Log.d("AUTH", "Guardando foto de Google para nuevo usuario")
                     saveGoogleProfilePhoto(photoUrl)
                 }
-                
+
                 _isLoading.value = false
-                
+
                 if (isComplete) {
                     Log.d("AUTH", "✓ Perfil completo, navegando a Home")
                     _needsProfileSetup.value = false

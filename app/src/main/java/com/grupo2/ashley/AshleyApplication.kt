@@ -3,6 +3,7 @@ package com.grupo2.ashley
 import android.app.Application
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.grupo2.ashley.auth.SessionLifecycleObserver
 import com.grupo2.ashley.chat.notifications.FCMTokenManager
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -19,6 +20,9 @@ class AshleyApplication : Application() {
 
     @Inject
     lateinit var auth: FirebaseAuth
+
+    @Inject
+    lateinit var sessionLifecycleObserver: SessionLifecycleObserver
 
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -59,5 +63,9 @@ class AshleyApplication : Application() {
                 // fcmTokenManager.clearLocalToken()
             }
         }
+
+        // Register session lifecycle observer to monitor app background/foreground
+        sessionLifecycleObserver.register()
+        Log.d("AshleyApp", "SessionLifecycleObserver registered")
     }
 }

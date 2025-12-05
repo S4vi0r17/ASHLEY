@@ -27,6 +27,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import com.grupo2.ashley.auth.SessionManager
 import com.grupo2.ashley.home.HomeScreen
 import com.grupo2.ashley.home.HomeViewModel
 import com.grupo2.ashley.map.MapScreen
@@ -133,7 +134,8 @@ fun AppNavigation(
     anunciosViewModel : AnunciosViewModel,
     innerPadding: PaddingValues,
     navigationItems: List<Triple<String, Any, String>>,
-    productViewModel: ProductViewModel
+    productViewModel: ProductViewModel,
+    sessionManager: SessionManager? = null
 ) {
     val currentBackStack by navController.currentBackStackEntryAsState()
     val currentDestination = currentBackStack?.destination?.route
@@ -344,7 +346,8 @@ fun AppNavigation(
                 },
                 onNavigateToFavorites = {
                     navController.navigate(Routes.FAVORITES)
-                }
+                },
+                sessionManager = sessionManager
             )
         }
 
