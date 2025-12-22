@@ -84,4 +84,4 @@ Ver [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) para detalles.
 
 ## 📄 Licencia
 
-Proyecto académico — Grupo 2, UNSA. Uso comercial no permitido.
+Proyecto académico — Grupo 2, UNMSM. Uso comercial no permitido.
